@@ -1,5 +1,5 @@
 #!/bin/sh
-for file in jars/*.jar; do
+for file in lib/*.jar; do
     jars=$jars:$file
 done
 java -cp $jars jline.ConsoleRunner clojure.lang.Repl
