@@ -1,13 +1,10 @@
-(in-ns 'cljine)
+(load-file "base/general.clj")
+
+(in-ns 'compojure)
 (clojure/refer 'clojure)
 
 (def symbol-regex  (re-pattern ":([a-z_]+)"))
 (def segment-regex "([^/.,;?]+)")
-
-(defn include?
-  "Returns true if x is included in coll."
-  [x coll]
-    (some (partial = x) coll))
 
 (defn re-escape
   "Escape all special regex chars in a string s."
