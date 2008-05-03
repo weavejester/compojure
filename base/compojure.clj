@@ -7,12 +7,6 @@
   [x coll]
   (some (partial = x) coll))
 
-(defn number?
-  "Returns true if an Clojure number type."
-  [x]
-  (or (instance? clojure.lang.FixNum x)
-      (instance? clojure.lang.DoubleNum x)))
-
 (defn re-escape
   "Escape all special regex chars in a string s."
   [#^String s]
@@ -38,7 +32,8 @@
     [(re-pattern regex) (map second symbols)]))
 
 (defn match-route 
-  "Match a path against a parsed route."
+  "Match a path against a parsed route. Returns a map of keywords and their
+   matching path values."
   [[regex symbols] path]
   (let [matcher (re-matcher regex path)]
     (if (. matcher (matches))
@@ -47,7 +42,14 @@
                     (rest (re-groups matcher)))))))
 
 (defn update-response!
-  "Update a HttpServletResponse via a Clojure datatype."
+  "Destructively update a HttpServletResponse via a Clojure datatype.
+     * FixNum        - updates status code
+     * map           - updates headers
+     * string or seq - updates body
+   Additionally, multiple updates can be chained through a vector.
+
+   e.g (update-response! \"Foo\")       ; write 'Foo' to response body
+       (update-response! [200 \"Bar\"]) ; set status to 200, and write 'Bar'"
   [#^HttpServletResponse response change]
   (cond 
     (string? change)
@@ -56,7 +58,7 @@
       (let [writer (. response (getWriter))]
         (doseq c change
           (. writer (print c))))
-    (number? change)
+    (instance? clojure.lang.FixNum change)
       (. response (setStatus change))
     (map? change)
       (doseq [k v] change
