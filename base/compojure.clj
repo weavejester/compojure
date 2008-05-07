@@ -33,7 +33,7 @@
 
 (defn match-route 
   "Match a path against a parsed route. Returns a map of keywords and their
-   matching path values."
+  matching path values."
   [[regex symbols] path]
   (let [matcher (re-matcher regex path)]
     (if (. matcher (matches))
@@ -46,10 +46,10 @@
      * FixNum        - updates status code
      * map           - updates headers
      * string or seq - updates body
-   Additionally, multiple updates can be chained through a vector.
+  Additionally, multiple updates can be chained through a vector.
 
-   e.g (update-response! \"Foo\")       ; write 'Foo' to response body
-       (update-response! [200 \"Bar\"]) ; set status to 200, and write 'Bar'"
+  e.g (update-response! \"Foo\")       ; write 'Foo' to response body
+      (update-response! [200 \"Bar\"]) ; set status to 200, and write 'Bar'"
   [#^HttpServletResponse response change]
   (cond 
     (string? change)
@@ -67,26 +67,27 @@
       (doseq c change
         (update-response! response c))))
 
-(def *resources* {})
+(def #^{:doc
+  "A global list of all registered resources. A resource is a vector
+  consisting of a HTTP method, a parsed route, and a list of evaluatable
+  actions.
+  e.g.
+  [\"GET\" (parse-route \"/welcome/:name\")
+   '((str \"Hello \" (path :name))]"}
+  *resources* '())
 
 (defn add-resource
-  "Add a resource to the global *resources* map. A resource is a HTTP
-   method keyword, a route, and a body to be evaluated in order to generate
-   a response.
-   e.g. (add-resource :GET \"/welcome/:name\"
-          '(str \"Hello \" (path :name)))"
+  "Add a resource to the global *resources*."
   [method route & body]
   (def *resources*
-    (assoc *resources* method
-      (cons [(parse-route route) body]
-        (*resources* method)))))
+    (cons [method (parse-route route) body] *resources*)))
 
 (defn find-resource
   "Find the first resource that matches the HttpServletRequest"
   [#^HttpServletRequest request]
   (let [method    (. request (getMethod))
         path      (. request (getPathInfo))
-        resources (*resources* (keyword method))
-        matches?  (fn [[route body]]
-                    (if (match-route route path) body))]
-    (some matches? resources)))
+        matches?  (fn [[meth route body]]
+                    (if (and (= meth method) (match-route route path))
+                       body))]
+    (some matches? *resources*)))
