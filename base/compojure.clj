@@ -1,6 +1,6 @@
 (in-ns 'compojure)
 (clojure/refer 'clojure)
-(import '(javax.servlet.http HttpServletResponse))
+(import '(javax.servlet.http HttpServletRequest HttpServletResponse))
 
 (defn includes?
   "Returns true if x is contained in coll, else false."
@@ -9,7 +9,7 @@
 
 (defn re-escape
   "Escape all special regex chars in a string s."
-  [#^String s]
+  [s]
   (let [chars  "\\.*+|?()[]{}$^"
         escape #(if (includes? % chars) [\\ %] [%])]
     (apply str (mapcat escape s))))
@@ -66,3 +66,27 @@
     (vector? change)
       (doseq c change
         (update-response! response c))))
+
+(def *resources* {})
+
+(defn add-resource
+  "Add a resource to the global *resources* map. A resource is a HTTP
+   method keyword, a route, and a body to be evaluated in order to generate
+   a response.
+   e.g. (add-resource :GET \"/welcome/:name\"
+          '(str \"Hello \" (path :name)))"
+  [method route & body]
+  (def *resources*
+    (assoc *resources* method
+      (cons [(parse-route route) body]
+        (*resources* method)))))
+
+(defn find-resource
+  "Find the first resource that matches the HttpServletRequest"
+  [#^HttpServletRequest request]
+  (let [method    (. request (getMethod))
+        path      (. request (getPathInfo))
+        resources (*resources* (keyword method))
+        matches?  (fn [[route body]]
+                    (if (match-route route path) body))]
+    (some matches? resources)))
