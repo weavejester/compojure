@@ -78,7 +78,7 @@
 
 (defn add-resource
   "Add a resource to the global *resources*."
-  [method route & body]
+  [method route body]
   (def *resources*
     (cons [method (parse-route route) body] *resources*)))
 
@@ -91,3 +91,23 @@
                     (if (and (= meth method) (match-route route path))
                        body))]
     (some matches? *resources*)))
+
+(defn resource-servlet
+  "Create a pseudo-servlet from a resource. It's not quite a real
+  servlet because it's just a function that takes in a request and
+  a response object as arguments."
+  [resource]
+  (eval
+   `(fn ~'[request response]
+      (let ~'[method     (. request (getMethod))
+              full-path  (. request (getPathInfo))
+              param     #(. request (getParameter %))
+              header    #(. request (getHeader %))]
+        (update-response! ~'response (do ~@resource))))))
+
+; Add macros for GET, POST, PUT and DELETE
+(doseq method '(GET POST PUT DELETE)
+  (eval
+   `(defmacro ~method
+      ~'[route & body]
+      (add-resource ~(str method) ~'route ~'body))))
