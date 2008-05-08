@@ -1,5 +1,8 @@
 #!/bin/sh
-for file in lib/*.jar; do
+for file in jars/*.jar; do
     jars=$jars:$file
 done
-java -cp $jars jline.ConsoleRunner clojure.lang.Repl
+for file in plugins/**/jars/*.jar; do
+    jars=$jars:$file
+done
+java -cp $jars jline.ConsoleRunner clojure.lang.Repl config/boot.clj

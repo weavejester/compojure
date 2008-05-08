@@ -1,5 +1,6 @@
 (in-ns 'compojure)
 (clojure/refer 'clojure)
+(import '(java.io File))
 (import '(javax.servlet.http HttpServletRequest HttpServletResponse))
 
 (defn includes?
@@ -111,3 +112,14 @@
    `(defmacro ~method
       ~'[route & body]
       (add-resource ~(str method) ~'route ~'body))))
+
+(defn list-dir
+  "List all the files in a directory."
+  [path]
+  (seq (. (new File path) (listFiles))))
+  
+(defn load-plugins
+  "Loads the files matching the following pattern: plugins/*/init.clj"
+  []
+  (doseq dir (list-dir "plugins")
+    (load-file (str dir (. File separator) "init.clj"))))
