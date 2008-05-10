@@ -12,17 +12,17 @@
   "Escape a set of special characters chars in a string s."
   [chars s]
   (apply str
-    (mapcat #(if (includes? % chars) [\\ %] [%]) s)
+    (mapcat #(if (includes? % chars) [\\ %] [%]) s)))
 
 (defn grep
   "Filters a seq by a regular expression."
   [re coll]
-  (filter #(re-matcher re %) coll))
+  (filter #(re-matches re %) coll))
 
 (defn re-escape
   "Escape all special regex chars in a string s."
   [s]
-  (escape "\\.*+|?()[]{}$^" s)
+  (escape "\\.*+|?()[]{}$^" s))
 
 (def symbol-regex  (re-pattern ":([a-z_]+)"))
 
@@ -97,16 +97,17 @@
   [#^HttpServletRequest request]
   (let [method    (. request (getMethod))
         path      (. request (getPathInfo))
-        matches?  (fn [[meth route body]]
-                    (if (and (= meth method) (match-route route path))
-                       body))]
+        matches?  (fn [[meth route resource]]
+                    (if (= meth method)
+                      (if-let route-params (match-route route path)
+                         [route-params resource] nil)))]
     (some matches? *resources*)))
 
 (defn resource-servlet
   "Create a pseudo-servlet from a resource. It's not quite a real
   servlet because it's just a function that takes in a request and
   a response object as arguments."
-  [resource]
+  [[route resource]]
   (eval
    `(fn ~'[request response]
       (let ~'[method  (. request (getMethod))
@@ -127,5 +128,6 @@
 (defn load-file-pattern
   "Load all files matching a regular expression."
   [re]
-  (doseq file (grep re file-seq)
+  (doseq
+    file (grep re (map str (file-seq (new File "."))))
     (load-file file)))

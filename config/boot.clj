@@ -1,3 +1,4 @@
 (load-file "vendor/compojure.clj")
 (refer 'compojure)
-(load-file-pattern "plugins/[^/]+/init.clj")
+(load-file-pattern
+  (re-pattern "\\./plugins/[^/]+/init.clj"))
