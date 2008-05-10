@@ -107,13 +107,16 @@
   "Create a pseudo-servlet from a resource. It's not quite a real
   servlet because it's just a function that takes in a request and
   a response object as arguments."
-  [[route resource]]
+  [[route-params resource]]
   (eval
    `(fn ~'[request response]
-      (let ~'[method  (. request (getMethod))
+      (let
+        ~(apply vector
+             'route   route-params
+            '[method  (. request (getMethod))
               path    (. request (getPathInfo))
               param  #(. request (getParameter %))
-              header #(. request (getHeader %))]
+              header #(. request (getHeader %))])
         (update-response! ~'response (do ~@resource))))))
 
 ; Add macros for GET, POST, PUT and DELETE
