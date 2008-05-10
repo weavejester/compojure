@@ -1,3 +1,3 @@
 (load-file "vendor/compojure.clj")
 (refer 'compojure)
-(load-plugins)
+(load-file-pattern "plugins/[^/]+/init.clj")

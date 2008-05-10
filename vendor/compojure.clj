@@ -8,12 +8,21 @@
   [x coll]
   (some (partial = x) coll))
 
+(defn escape
+  "Escape a set of special characters chars in a string s."
+  [chars s]
+  (apply str
+    (mapcat #(if (includes? % chars) [\\ %] [%]) s)
+
+(defn grep
+  "Filters a seq by a regular expression."
+  [re coll]
+  (filter #(re-matcher re %) coll))
+
 (defn re-escape
   "Escape all special regex chars in a string s."
   [s]
-  (let [chars  "\\.*+|?()[]{}$^"
-        escape #(if (includes? % chars) [\\ %] [%])]
-    (apply str (mapcat escape s))))
+  (escape "\\.*+|?()[]{}$^" s)
 
 (def symbol-regex  (re-pattern ":([a-z_]+)"))
 
@@ -100,10 +109,10 @@
   [resource]
   (eval
    `(fn ~'[request response]
-      (let ~'[method     (. request (getMethod))
-              full-path  (. request (getPathInfo))
-              param     #(. request (getParameter %))
-              header    #(. request (getHeader %))]
+      (let ~'[method  (. request (getMethod))
+              path    (. request (getPathInfo))
+              param  #(. request (getParameter %))
+              header #(. request (getHeader %))]
         (update-response! ~'response (do ~@resource))))))
 
 ; Add macros for GET, POST, PUT and DELETE
@@ -113,13 +122,10 @@
       ~'[route & body]
       (add-resource ~(str method) ~'route ~'body))))
 
-(defn list-dir
-  "List all the files in a directory."
-  [path]
-  (seq (. (new File path) (listFiles))))
-  
-(defn load-plugins
-  "Loads the files matching the following pattern: plugins/*/init.clj"
-  []
-  (doseq dir (list-dir "plugins")
-    (load-file (str dir (. File separator) "init.clj"))))
+(def sep (. File separator))
+
+(defn load-file-pattern
+  "Load all files matching a regular expression."
+  [re]
+  (doseq file (grep re file-seq)
+    (load-file file)))
