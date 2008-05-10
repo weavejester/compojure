@@ -24,7 +24,7 @@
   [s]
   (escape "\\.*+|?()[]{}$^" s))
 
-(def symbol-regex  (re-pattern ":([a-z_]+)"))
+(def symbol-regex (re-pattern ":([a-z_]+)"))
 
 (defn re-find-all
   "Repeat re-find for matcher m until nil, and return the seq of results."
@@ -48,8 +48,7 @@
   (let [matcher (re-matcher regex path)]
     (if (. matcher (matches))
       (apply hash-map
-        (interleave (map keyword symbols)
-                    (rest (re-groups matcher)))))))
+        (interleave symbols (rest (re-groups matcher)))))))
 
 (defn update-response!
   "Destructively update a HttpServletResponse via a Clojure datatype.

@@ -2,12 +2,16 @@
         '(org.mortbay.jetty.handler AbstractHandler)
         '(javax.servlet.http HttpServletRequest HttpServletResponse))
 
-(def handler
+(def *server* (new Server 8080))
+
+(. *server* (setHandler
   (proxy [AbstractHandler] []
     (handle [target request response dispatch]
       (let [servlet (resource-servlet (find-resource request))]
         (if servlet (servlet request response)))
-      (. request (setHandled true)))))
+      (. request (setHandled true))))))
 
-(def server (new Server 8080))
-(. server (setHandler handler))
+(defmacro server [action]
+  (cond
+    (= action 'start) (. *server* (start))
+    (= action 'stop)  (. *server* (stop))))
