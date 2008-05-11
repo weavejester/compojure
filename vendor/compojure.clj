@@ -1,6 +1,5 @@
 (in-ns 'compojure)
 (clojure/refer 'clojure)
-(import '(java.io File))
 (import '(javax.servlet.http HttpServletRequest HttpServletResponse))
 
 (defn includes?
@@ -102,6 +101,15 @@
                          [route-params resource] nil)))]
     (some matches? *resources*)))
 
+(def #^{:doc
+  "A set of bindings available to each resource. This can be extended
+  by plugins, if required."}
+  *resource-bindings*
+  '(method    (. request (getMethod))
+    full-path (. request (getPathInfo))
+    param    #(. request (getParameter %))
+    header   #(. request (getHeader %))))
+
 (defn resource-servlet
   "Create a pseudo-servlet from a resource. It's not quite a real
   servlet because it's just a function that takes in a request and
@@ -111,11 +119,8 @@
    `(fn ~'[request response]
       (let
         ~(apply vector
-             'route   route-params
-            '[method  (. request (getMethod))
-              path    (. request (getPathInfo))
-              param  #(. request (getParameter %))
-              header #(. request (getHeader %))])
+           'route route-params
+           *resource-bindings*)
         (update-response! ~'response (do ~@resource))))))
 
 ; Add macros for GET, POST, PUT and DELETE
@@ -125,11 +130,16 @@
       ~'[route & body]
       (add-resource ~(str method) ~'route ~'body))))
 
-(def sep (. File separator))
+(def sep (. java.io.File separator))
+
+(defn file
+  "Returns an instance of java.io.File."
+  [path]
+  (new java.io.File path))
 
 (defn load-file-pattern
   "Load all files matching a regular expression."
   [re]
   (doseq
-    file (grep re (map str (file-seq (new File "."))))
+    file (grep re (map str (file-seq (file "."))))
     (load-file file)))
