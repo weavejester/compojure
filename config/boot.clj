@@ -8,3 +8,5 @@
 ; Load up application
 (load-file-pattern
   (re-pattern "\\./app/.*\\.clj"))
+
+(refer 'compojure/plugins)

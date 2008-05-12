@@ -1,3 +1,7 @@
+(in-ns 'compojure/plugins)
+(clojure/refer 'clojure)
+(clojure/refer 'compojure)
+
 (import '(org.mortbay.jetty Server)
         '(org.mortbay.jetty.handler AbstractHandler)
         '(javax.servlet.http HttpServletRequest HttpServletResponse))

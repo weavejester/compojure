@@ -1,5 +1,6 @@
 (in-ns 'compojure)
 (clojure/refer 'clojure)
+(import '(java.io File FileInputStream))
 (import '(javax.servlet.http HttpServletRequest HttpServletResponse))
 
 (defn includes?
@@ -17,6 +18,30 @@
   "Filters a seq by a regular expression."
   [re coll]
   (filter #(re-matches re %) coll))
+
+(defmacro override
+  "Redefine an existing definition, rebinding the original to 'super'.
+  e.g. (def x 10)
+       (override x (+ 2 super))"
+  [name body]
+  `(let [~'super ~name] (def ~name ~body)))
+
+(def sep (. File separator))
+
+(defn file
+  "Returns an instance of java.io.File."
+  [path]
+  (new File path))
+
+(defn pipe-stream
+  "Pipe the contents of an InputStream into an OutputStream."
+  ([in out] (pipe-stream in out 4096))
+  ([in out bufsize]
+    (let [buffer (make-array (. Byte TYPE) bufsize)]
+      (loop [len (. in (read buffer))]
+        (when (pos? len)
+          (. out (write buffer 0 len))
+          (recur (. in (read buffer))))))))
 
 (defn re-escape
   "Escape all special regex chars in a string s."
@@ -49,31 +74,35 @@
       (apply hash-map
         (interleave symbols (rest (re-groups matcher)))))))
 
-(defn update-response!
+(defn update-response
   "Destructively update a HttpServletResponse via a Clojure datatype.
      * FixNum        - updates status code
      * map           - updates headers
      * string or seq - updates body
   Additionally, multiple updates can be chained through a vector.
 
-  e.g (update-response! \"Foo\")       ; write 'Foo' to response body
-      (update-response! [200 \"Bar\"]) ; set status to 200, and write 'Bar'"
-  [#^HttpServletResponse response change]
+  e.g (update-response response \"Foo\")       ; write 'Foo' to response body
+      (update-response response [200 \"Bar\"]) ; set status 200, write 'Bar'"
+  [#^HttpServletResponse response update]
   (cond 
-    (string? change)
-      (.. response (getWriter) (print change))
-    (seq? change)
+    (vector? update)
+      (doseq d update
+        (update-response response d))
+    (string? update)
+      (.. response (getWriter) (print update))
+    (seq? update)
       (let [writer (. response (getWriter))]
-        (doseq c change
-          (. writer (print c))))
-    (instance? clojure.lang.FixNum change)
-      (. response (setStatus change))
-    (map? change)
-      (doseq [k v] change
+        (doseq d update
+          (. writer (print d))))
+    (map? update)
+      (doseq [k v] update
         (. response (setHeader k v)))
-    (vector? change)
-      (doseq c change
-        (update-response! response c))))
+    (instance? clojure.lang.FixNum update)
+      (. response (setStatus update))
+    (instance? java.io.File update)
+      (let [out (. response (getOutputStream))
+            in  (new FileInputStream update)]
+        (pipe-stream in out))))
 
 (def #^{:doc
   "A global list of all registered resources. A resource is a vector
@@ -121,21 +150,23 @@
         ~(apply vector
            'route route-params
            *resource-bindings*)
-        (update-response! ~'response (do ~@resource))))))
+        (update-response ~'response (do ~@resource))))))
 
-; Add macros for GET, POST, PUT and DELETE
-(doseq method '(GET POST PUT DELETE)
-  (eval
-   `(defmacro ~method
-      ~'[route & body]
-      (add-resource ~(str method) ~'route ~'body))))
+(defmacro GET "Creates a GET resource."
+  [route & body]
+  `(add-resource "GET" ~route '~body))
 
-(def sep (. java.io.File separator))
+(defmacro PUT "Creates a PUT resource."
+  [route & body]
+  `(add-resource "POST" ~route '~body))
 
-(defn file
-  "Returns an instance of java.io.File."
-  [path]
-  (new java.io.File path))
+(defmacro POST "Creates a POST resource."
+  [route & body]
+  `(add-resource "PUT" ~route '~body))
+
+(defmacro DELETE "Creates a DELE resource."
+  [route & body]
+  `(add-resource "DELETE" ~route '~body))
 
 (defn load-file-pattern
   "Load all files matching a regular expression."
