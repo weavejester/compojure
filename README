@@ -1,40 +1,49 @@
-Compojure is a minimal web framework for Clojure. It has a small,
-functional core that can be extended through plugins, and a succinct
-syntax.
+Compojure is a minimal web framework for Clojure. It has a small, functional
+core that can be extended through plugins, and a succinct syntax.
 
 Compojure works by declaring resources. A resource takes the form:
 
 (method route & body)
 
-The method is the HTTP method to be used. The route is the requested
-path, and the body is a set of expressions to be evaluated when the
-resource is accessed.
+The method is the HTTP method to be used. The route is the requested path, and
+the body is a set of expressions to be evaluated when the resource is accessed.
 
 Here is an example of a 'hello world' resource:
 
 (GET "/" "Hello World")
 
-The above line ties a resource to the GET method and the root path.
-There are four valid methods: GET, PUT, POST and DELETE. Routes
-follow the same format as used in Ruby on Rails and similar web
-frameworks:
+The above line ties a resource to the GET method and the root path.There are
+four valid methods: GET, PUT, POST and DELETE. Routes follow the same format as
+used in Ruby on Rails and similar web frameworks:
 
 (GET "/greet/:name"
   (str "Hello " (route "name")))
 
-Along with 'route', there are several other special variables that can
-be used to gather information from the HTTP request:
+Along with 'route', there are several other special variables that can be used
+to gather information from the HTTP request:
 
  * method        - the HTTP method
- * path          - the full path of the request
+ * full-path     - the full path of the request
  * param [name]  - a HTTP parameter
  * header [name] - a HTTP header
  * route [name]  - a named part of the request path
 
-Compojure uses standard Clojure types to specify a response. Strings
-change the body of the HTTP response, FixNums change the status code,
-and hash maps alter the HTTP headers. These effects can be changed
-together via a vector:
+Compojure uses standard Clojure types to generate the HTTP response:
+
+ * string or seq                 - adds to the response body
+ * integer (clojure.lang.FixNum) - changes the status code
+ * hash map                      - changes the HTTP headers
+ * file (java.io.File)           - sends the file to the response body
+
+These effects can be chained together using a vector. For example:
 
 (GET "/text"
-  [200 {"Content Type" "text/plain"} "This is some plain text."])
+  [{"Content-Type" "text/plain"}
+   "This is plain text."
+   "And some more text."])
+
+(GET "/bad"
+  [404 "<h1>This page does not exist!</h1>"])
+
+(GET "/download"
+  (file "compojure.tar.gz"))   ; 'file' is an alias to 'new java.io.File'
