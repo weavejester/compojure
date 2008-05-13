@@ -113,23 +113,6 @@
    '((str \"Hello \" (path :name))]"}
   *resources* '())
 
-(defn add-resource
-  "Add a resource to the global *resources*."
-  [method route body]
-  (def *resources*
-    (cons [method (parse-route route) body] *resources*)))
-
-(defn find-resource
-  "Find the first resource that matches the HttpServletRequest"
-  [#^HttpServletRequest request]
-  (let [method    (. request (getMethod))
-        path      (. request (getPathInfo))
-        matches?  (fn [[meth route resource]]
-                    (if (= meth method)
-                      (if-let route-params (match-route route path)
-                         [route-params resource] nil)))]
-    (some matches? *resources*)))
-
 (def #^{:doc
   "A set of bindings available to each resource. This can be extended
   by plugins, if required."}
@@ -139,34 +122,50 @@
     param    #(. request (getParameter %))
     header   #(. request (getHeader %))))
 
-(defn resource-servlet
+(defmacro resource-servlet
   "Create a pseudo-servlet from a resource. It's not quite a real
   servlet because it's just a function that takes in a request and
   a response object as arguments."
-  [[route-params resource]]
-  (eval
-   `(fn ~'[request response]
-      (let
-        ~(apply vector
-           'route route-params
-           *resource-bindings*)
-        (update-response ~'response (do ~@resource))))))
+  [resource]
+  `(fn ~'[route request response]
+     (let ~(apply vector *resource-bindings*)
+       (update-response ~'response (do ~@resource)))))
+
+(defn add-resource
+  "Add a resource to the global *resources*."
+  [method route resource]
+  (def *resources*
+    (cons [method (parse-route route) resource]
+          *resources*)))
+
+(defn do-resource
+  "Find the first resource that matches the HttpServletRequest"
+  [#^HttpServletRequest request response]
+  (let [method    (. request (getMethod))
+        path      (. request (getPathInfo))
+        matches?  (fn [[meth route resource]]
+                    (if (= meth method)
+                      (if-let route-params (match-route route path)
+                        (partial resource route-params) nil)))
+        resource  (some matches? *resources*)]
+    (if resource
+      (resource request response))))
 
 (defmacro GET "Creates a GET resource."
   [route & body]
-  `(add-resource "GET" ~route '~body))
+  `(add-resource "GET" ~route (resource-servlet ~body)))
 
 (defmacro PUT "Creates a PUT resource."
   [route & body]
-  `(add-resource "POST" ~route '~body))
+  `(add-resource "POST" ~route (resource-servlet body)))
 
 (defmacro POST "Creates a POST resource."
   [route & body]
-  `(add-resource "PUT" ~route '~body))
+  `(add-resource "PUT" ~route (resource-servlet body)))
 
 (defmacro DELETE "Creates a DELE resource."
   [route & body]
-  `(add-resource "DELETE" ~route '~body))
+  `(add-resource "DELETE" ~route (resource-servlet body)))
 
 (defn load-file-pattern
   "Load all files matching a regular expression."

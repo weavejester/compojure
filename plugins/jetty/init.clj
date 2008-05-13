@@ -11,8 +11,8 @@
 (. *server* (setHandler
   (proxy [AbstractHandler] []
     (handle [target request response dispatch]
-      (let [servlet (resource-servlet (find-resource request))]
-        (if servlet (servlet request response)))
+      (def last-used [request response])
+      (do-resource request response)
       (. request (setHandled true))))))
 
 (defmacro server [action]
