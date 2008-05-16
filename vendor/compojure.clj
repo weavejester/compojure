@@ -1,7 +1,9 @@
 (in-ns 'compojure)
 (clojure/refer 'clojure)
 (import '(java.io File FileInputStream))
-(import '(javax.servlet.http HttpServletRequest HttpServletResponse))
+(import '(javax.servlet.http HttpServlet
+                             HttpServletRequest
+                             HttpServletResponse))
 
 (defn includes?
   "Returns true if x is contained in coll, else false."
@@ -18,13 +20,6 @@
   "Filters a seq by a regular expression."
   [re coll]
   (filter #(re-matches re %) coll))
-
-(defmacro override
-  "Redefine an existing definition, rebinding the original to 'super'.
-  e.g. (def x 10)
-       (override x (+ 2 super))"
-  [name body]
-  `(let [~'super ~name] (def ~name ~body)))
 
 (def sep (. File separator))
 
@@ -83,7 +78,7 @@
 
   e.g (update-response response \"Foo\")       ; write 'Foo' to response body
       (update-response response [200 \"Bar\"]) ; set status 200, write 'Bar'"
-  [#^HttpServletResponse response update]
+  [context #^HttpServletResponse response update]
   (cond 
     (vector? update)
       (doseq d update
@@ -106,11 +101,12 @@
 
 (def #^{:doc
   "A global list of all registered resources. A resource is a vector
-  consisting of a HTTP method, a parsed route, and a list of evaluatable
-  actions.
+  consisting of a HTTP method, a parsed route, function that takes in
+  a context, request and response object.
   e.g.
-  [\"GET\" (parse-route \"/welcome/:name\")
-   '((str \"Hello \" (path :name))]"}
+  [\"GET\"
+   (parse-route \"/welcome/:name\") 
+   (fn [context request response] ...)]"}
   *resources* '())
 
 (def #^{:doc
@@ -122,14 +118,13 @@
     param    #(. request (getParameter %))
     header   #(. request (getHeader %))))
 
-(defmacro resource-servlet
+(defmacro pseudo-servlet
   "Create a pseudo-servlet from a resource. It's not quite a real
-  servlet because it's just a function that takes in a request and
-  a response object as arguments."
+  servlet because it's a function, rather than an HttpServlet object."
   [resource]
-  `(fn ~'[route request response]
+  `(fn ~'[route context request response]
      (let ~(apply vector *resource-bindings*)
-       (update-response ~'response (do ~@resource)))))
+       (update-response ~'context ~'response (do ~@resource)))))
 
 (defn add-resource
   "Add a resource to the global *resources*."
@@ -138,7 +133,7 @@
     (cons [method (parse-route route) resource]
           *resources*)))
 
-(defn do-resource
+(defn find-resource
   "Find the first resource that matches the HttpServletRequest"
   [#^HttpServletRequest request response]
   (let [method    (. request (getMethod))
@@ -146,26 +141,34 @@
         matches?  (fn [[meth route resource]]
                     (if (= meth method)
                       (if-let route-params (match-route route path)
-                        (partial resource route-params) nil)))
-        resource  (some matches? *resources*)]
-    (if resource
-      (resource request response))))
+                        (partial resource route-params) nil)))]
+    (some matches? *resources*)))
 
 (defmacro GET "Creates a GET resource."
   [route & body]
-  `(add-resource "GET" ~route (resource-servlet ~body)))
+  `(add-resource "GET" ~route (pseudo-servlet ~body)))
 
 (defmacro PUT "Creates a PUT resource."
   [route & body]
-  `(add-resource "POST" ~route (resource-servlet body)))
+  `(add-resource "POST" ~route (pseudo-servlet ~body)))
 
 (defmacro POST "Creates a POST resource."
   [route & body]
-  `(add-resource "PUT" ~route (resource-servlet body)))
+  `(add-resource "PUT" ~route (pseudo-servlet ~body)))
 
-(defmacro DELETE "Creates a DELE resource."
+(defmacro DELETE "Creates a DELETE resource."
   [route & body]
-  `(add-resource "DELETE" ~route (resource-servlet body)))
+  `(add-resource "DELETE" ~route (pseudo-servlet ~body)))
+
+(def #^{:doc 
+  "A servlet that handles all requests into Compojure. Suitable for
+  integrating with the web server of your choice."}
+  compojure-servlet
+    (proxy [HttpServlet] []
+      (service [request response]
+        (let [context  (. this (getServletContext))
+              resource (find-resource request response)]
+          (resource context request response)))))
 
 (defn load-file-pattern
   "Load all files matching a regular expression."

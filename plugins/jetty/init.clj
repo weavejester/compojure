@@ -3,17 +3,13 @@
 (clojure/refer 'compojure)
 
 (import '(org.mortbay.jetty Server)
-        '(org.mortbay.jetty.handler AbstractHandler)
-        '(javax.servlet.http HttpServletRequest HttpServletResponse))
+        '(org.mortbay.jetty.servlet Context ServletHolder))
 
 (def *server* (new Server 8080))
 
-(. *server* (setHandler
-  (proxy [AbstractHandler] []
-    (handle [target request response dispatch]
-      (def last-used [request response])
-      (do-resource request response)
-      (. request (setHandled true))))))
+(let [context (new Context *server* "/" (. Context SESSIONS))
+      holder  (new ServletHolder compojure-servlet)]
+  (. context (addServlet holder "/*")))
 
 (defmacro server [action]
   (cond
