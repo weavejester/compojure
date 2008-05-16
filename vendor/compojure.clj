@@ -38,6 +38,14 @@
           (. out (write buffer 0 len))
           (recur (. in (read buffer))))))))
 
+(def *default-mimetype* "application/octet-stream")
+
+(defn context-mimetype
+  "Get the mimetype of a filename using the ServletContext."
+  [context filename]
+  (or (. context (getMimeType filename))
+      *default-mimetype*))
+
 (defn re-escape
   "Escape all special regex chars in a string s."
   [s]
@@ -97,6 +105,8 @@
     (instance? java.io.File update)
       (let [out (. response (getOutputStream))
             in  (new FileInputStream update)]
+        (. response (setHeader
+          "Content-Type" (context-mimetype context (str update))))
         (pipe-stream in out))))
 
 (def #^{:doc
@@ -116,12 +126,13 @@
   '(method    (. request (getMethod))
     full-path (. request (getPathInfo))
     param    #(. request (getParameter %))
-    header   #(. request (getHeader %))))
+    header   #(. request (getHeader %))
+    mime     #(context-mimetype (str %))))
 
 (defmacro pseudo-servlet
   "Create a pseudo-servlet from a resource. It's not quite a real
   servlet because it's a function, rather than an HttpServlet object."
-  [resource]
+  [& resource]
   `(fn ~'[route context request response]
      (let ~(apply vector *resource-bindings*)
        (update-response ~'context ~'response (do ~@resource)))))
@@ -133,6 +144,10 @@
     (cons [method (parse-route route) resource]
           *resources*)))
 
+(def *default-resource*
+  (pseudo-servlet 
+    (str "Path: " full-path)))
+
 (defn find-resource
   "Find the first resource that matches the HttpServletRequest"
   [#^HttpServletRequest request response]
@@ -142,23 +157,25 @@
                     (if (= meth method)
                       (if-let route-params (match-route route path)
                         (partial resource route-params) nil)))]
-    (some matches? *resources*)))
+    (or
+      (some matches? *resources*)
+      (partial *default-resource* {}))))
 
 (defmacro GET "Creates a GET resource."
   [route & body]
-  `(add-resource "GET" ~route (pseudo-servlet ~body)))
+  `(add-resource "GET" ~route (pseudo-servlet ~@body)))
 
 (defmacro PUT "Creates a PUT resource."
   [route & body]
-  `(add-resource "POST" ~route (pseudo-servlet ~body)))
+  `(add-resource "POST" ~route (pseudo-servlet ~@body)))
 
 (defmacro POST "Creates a POST resource."
   [route & body]
-  `(add-resource "PUT" ~route (pseudo-servlet ~body)))
+  `(add-resource "PUT" ~route (pseudo-servlet ~@body)))
 
 (defmacro DELETE "Creates a DELETE resource."
   [route & body]
-  `(add-resource "DELETE" ~route (pseudo-servlet ~body)))
+  `(add-resource "DELETE" ~route (pseudo-servlet ~@body)))
 
 (def #^{:doc 
   "A servlet that handles all requests into Compojure. Suitable for
