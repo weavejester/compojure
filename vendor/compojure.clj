@@ -4,6 +4,9 @@
 (import '(javax.servlet.http HttpServlet
                              HttpServletRequest
                              HttpServletResponse))
+
+;;;; General-purpose functions ;;;;
+
 (defn includes?
   "Returns true if x is contained in coll, else false."
   [x coll]
@@ -20,12 +23,23 @@
   [re coll]
   (filter #(re-matches re %) coll))
 
-(def sep (. File separator))
+(defn re-escape
+  "Escape all special regex chars in a string s."
+  [s]
+  (escape "\\.*+|?()[]{}$^" s))
 
-(defn file
+(defn re-find-all
+  "Repeat re-find for matcher m until nil, and return the seq of results."
+  [m]
+  (doall (take-while identity
+    (map re-find (repeat m)))))
+
+;;;; File handling ;;;;
+
+(defmacro file
   "Returns an instance of java.io.File."
-  [path]
-  (new File path))
+  [& args]
+  `(new File ~@args))
 
 (defn pipe-stream
   "Pipe the contents of an InputStream into an OutputStream."
@@ -37,6 +51,32 @@
           (. out (write buffer 0 len))
           (recur (. in (read buffer))))))))
 
+(defn glob->regex
+  "Turns a shallow file glob into a regular expression."
+  [s]
+  (re-pattern
+    (.. (escape "\\.+|()[]{}$^" s)
+        (replaceAll "\\*" ".*")
+        (replaceAll "\\?" "."))))
+
+(defn split-path
+  "Splits a path up into its parts."
+  [path]
+  (loop [parts (list) path (file path)]
+    (let [parts (cons (. path (getName)) parts)]
+      (if-let parent (. path (getParent))
+        (recur parts (file parent))
+        parts))))
+ 
+(defn load-file-pattern
+  "Load all files matching a regular expression."
+  [re]
+  (doseq
+    file (grep re (map str (file-seq (file "."))))
+    (load-file file)))
+
+;;;; Mimetypes ;;;;
+
 (def *default-mimetype* "application/octet-stream")
 
 (defn context-mimetype
@@ -45,18 +85,9 @@
   (or (. context (getMimeType filename))
       *default-mimetype*))
 
-(defn re-escape
-  "Escape all special regex chars in a string s."
-  [s]
-  (escape "\\.*+|?()[]{}$^" s))
+;;;; Routes ;;;;
 
 (def symbol-regex (re-pattern ":([a-z_]+)"))
-
-(defn re-find-all
-  "Repeat re-find for matcher m until nil, and return the seq of results."
-  [m]
-  (doall (take-while identity
-    (map re-find (repeat m)))))
 
 (defn parse-route
   "Turn a route string into a regex and seq of symbols."
@@ -75,6 +106,25 @@
     (if (. matcher (matches))
       (apply hash-map
         (interleave symbols (rest (re-groups matcher)))))))
+
+(def #^{:doc
+  "A global list of all registered resources. A resource is a vector
+  consisting of a HTTP method, a parsed route, function that takes in
+  a context, request and response object.
+  e.g.
+  [\"GET\"
+   (parse-route \"/welcome/:name\") 
+   (fn [context request response] ...)]"}
+  *resources* '())
+
+(defn assoc-route
+  "Associate a HTTP method and route with a resource."
+  [method route resource]
+  (def *resources*
+    (cons [method (parse-route route) resource]
+          *resources*)))
+
+;;;; Response ;;;;
 
 (defn update-response
   "Destructively update a HttpServletResponse via a Clojure datatype.
@@ -108,15 +158,7 @@
           "Content-Type" (context-mimetype context (str update))))
         (pipe-stream in out))))
 
-(def #^{:doc
-  "A global list of all registered resources. A resource is a vector
-  consisting of a HTTP method, a parsed route, function that takes in
-  a context, request and response object.
-  e.g.
-  [\"GET\"
-   (parse-route \"/welcome/:name\") 
-   (fn [context request response] ...)]"}
-  *resources* '())
+;;;; Resource ;;;;
 
 (def #^{:doc
   "A set of bindings available to each resource. This can be extended
@@ -128,24 +170,17 @@
     header   #(. request (getHeader %))
     mime     #(context-mimetype (str %))))
 
-(defmacro pseudo-servlet
+(defmacro resource
   "Create a pseudo-servlet from a resource. It's not quite a real
   servlet because it's a function, rather than an HttpServlet object."
-  [& resource]
+  [& body]
   `(fn ~'[route context request response]
      (let ~(apply vector *resource-bindings*)
-       (update-response ~'response ~'context (do ~@resource)))))
-
-(defn add-resource
-  "Add a resource to the global *resources*."
-  [method route resource]
-  (def *resources*
-    (cons [method (parse-route route) resource]
-          *resources*)))
+       (update-response ~'response ~'context (do ~@body)))))
 
 (def *default-resource*
-  (pseudo-servlet
-    (let [static-file (file (str "public" sep full-path))]
+  (resource
+    (let [static-file (file "public" full-path)]
       (if (. static-file (isFile))
         static-file
         [404 "Cannot find file"]))))
@@ -165,19 +200,21 @@
 
 (defmacro GET "Creates a GET resource."
   [route & body]
-  `(add-resource "GET" ~route (pseudo-servlet ~@body)))
+  `(assoc-route "GET" ~route (resource ~@body)))
 
 (defmacro PUT "Creates a PUT resource."
   [route & body]
-  `(add-resource "POST" ~route (pseudo-servlet ~@body)))
+  `(assoc-route "POST" ~route (resource ~@body)))
 
 (defmacro POST "Creates a POST resource."
   [route & body]
-  `(add-resource "PUT" ~route (pseudo-servlet ~@body)))
+  `(assoc-route "PUT" ~route (resource ~@body)))
 
 (defmacro DELETE "Creates a DELETE resource."
   [route & body]
-  `(add-resource "DELETE" ~route (pseudo-servlet ~@body)))
+  `(assoc-route "DELETE" ~route (resource ~@body)))
+
+;;;; Servlet
 
 (def #^{:doc 
   "A servlet that handles all requests into Compojure. Suitable for
@@ -188,10 +225,3 @@
         (let [context  (. this (getServletContext))
               resource (find-resource request response)]
           (resource context request response)))))
-
-(defn load-file-pattern
-  "Load all files matching a regular expression."
-  [re]
-  (doseq
-    file (grep re (map str (file-seq (file "."))))
-    (load-file file)))
