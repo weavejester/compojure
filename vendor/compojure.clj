@@ -4,7 +4,6 @@
 (import '(javax.servlet.http HttpServlet
                              HttpServletRequest
                              HttpServletResponse))
-
 (defn includes?
   "Returns true if x is contained in coll, else false."
   [x coll]
@@ -84,13 +83,13 @@
      * string or seq - updates body
   Additionally, multiple updates can be chained through a vector.
 
-  e.g (update-response response \"Foo\")       ; write 'Foo' to response body
-      (update-response response [200 \"Bar\"]) ; set status 200, write 'Bar'"
-  [context #^HttpServletResponse response update]
+  e.g (update-response resp ctx \"Foo\")       ; write 'Foo' to response body
+      (update-response resp ctx [200 \"Bar\"]) ; set status 200, write 'Bar'"
+  [#^HttpServletResponse response context update]
   (cond 
     (vector? update)
       (doseq d update
-        (update-response response d))
+        (update-response response context d))
     (string? update)
       (.. response (getWriter) (print update))
     (seq? update)
@@ -135,7 +134,7 @@
   [& resource]
   `(fn ~'[route context request response]
      (let ~(apply vector *resource-bindings*)
-       (update-response ~'context ~'response (do ~@resource)))))
+       (update-response ~'response ~'context (do ~@resource)))))
 
 (defn add-resource
   "Add a resource to the global *resources*."
@@ -145,8 +144,11 @@
           *resources*)))
 
 (def *default-resource*
-  (pseudo-servlet 
-    (str "Path: " full-path)))
+  (pseudo-servlet
+    (let [static-file (file (str "public" sep full-path))]
+      (if (. static-file (isFile))
+        static-file
+        [404 "Cannot find file"]))))
 
 (defn find-resource
   "Find the first resource that matches the HttpServletRequest"
