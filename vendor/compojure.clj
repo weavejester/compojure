@@ -51,14 +51,6 @@
           (. out (write buffer 0 len))
           (recur (. in (read buffer))))))))
 
-(defn glob->regex
-  "Turns a shallow file glob into a regular expression."
-  [s]
-  (re-pattern
-    (.. (escape "\\.+|()[]{}$^" s)
-        (replaceAll "\\*" ".*")
-        (replaceAll "\\?" "."))))
-
 (defn split-path
   "Splits a path up into its parts."
   [path]
@@ -67,7 +59,31 @@
       (if-let parent (. path (getParent))
         (recur parts (file parent))
         parts))))
- 
+
+(defn- glob->regex
+  "Turns a shallow file glob into a regular expression."
+  [s]
+  (re-pattern
+    (.. (escape "\\.+|()[]{}$^" s)
+        (replaceAll "\\*" ".*")
+        (replaceAll "\\?" "."))))
+
+(defn- glob-parts
+  [parts path]
+  (if parts
+    (if (. path (isDirectory))
+      (mapcat
+       #(glob-parts (rest parts) (file path %))
+        (grep (glob->regex (first parts)) (. path (list)))))
+    (list path)))
+
+(defn glob
+  "Find all files in a directory matching a glob."
+  ([pattern]
+    (glob pattern "."))
+  ([pattern path]
+    (glob-parts (split-path pattern) (file path))))
+       
 (defn load-file-pattern
   "Load all files matching a regular expression."
   [re]
