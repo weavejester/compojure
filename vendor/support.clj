@@ -28,10 +28,10 @@
   (doall (take-while identity
     (map re-find (repeat m)))))
 
-(defmacro file
+(defn file
   "Returns an instance of java.io.File."
-  [& args]
-  `(new java.io.File ~@args))
+  ([name]        (new java.io.File name))
+  ([parent name] (new java.io.File parent name)))
 
 (defn pipe-stream
   "Pipe the contents of an InputStream into an OutputStream."
