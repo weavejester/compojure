@@ -68,13 +68,23 @@
         (replaceAll "\\*" ".*")
         (replaceAll "\\?" "."))))
 
+(defn- recursive-glob?
+  [glob]
+  (re-find (re-pattern "\\*\\*") glob))
+
 (defn- glob-parts
   [parts path]
   (if parts
     (if (. path (isDirectory))
       (mapcat
-       #(glob-parts (rest parts) (file path %))
-        (grep (glob->regex (first parts)) (. path (list)))))
+       #(glob-parts (rest parts) %)
+        (filter
+         #(re-matches
+            (glob->regex (first parts))
+            (. % (getName)))
+          (if (recursive-glob? (first parts))
+            (file-seq path)
+            (. path (listFiles))))))
     (list path)))
 
 (defn glob
@@ -83,13 +93,11 @@
     (glob pattern "."))
   ([pattern path]
     (glob-parts (split-path pattern) (file path))))
-       
-(defn load-file-pattern
-  "Load all files matching a regular expression."
-  [re]
-  (doseq
-    file (grep re (map str (file-seq (file "."))))
-    (load-file file)))
+
+(defn load-glob
+  "Load all files matching a glob."
+  [g]
+  (doseq f (glob g) (load-file (str f))))
 
 ;;;; Mimetypes ;;;;
 
