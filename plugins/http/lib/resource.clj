@@ -1,11 +1,9 @@
-(load-file "vendor/support.clj")
-
-(in-ns 'compojure)
+(in-ns 'compojure/resource)
 (clojure/refer 'clojure)
+
 (import '(java.io FileInputStream))
-(import '(javax.servlet.http HttpServlet
-                             HttpServletRequest
-                             HttpServletResponse))
+(import '(javax.servlet.http HttpServletRequest HttpServletResponse))
+
 ;;;; Mimetypes ;;;;
 
 (def *default-mimetype* "application/octet-stream")
@@ -128,19 +126,3 @@
     (or
       (some matches? *resources*)
       (partial *default-resource* {}))))
-
-(defmacro GET "Creates a GET resource."
-  [route & body]
-  `(assoc-route "GET" ~route (new-resource ~@body)))
-
-(defmacro PUT "Creates a PUT resource."
-  [route & body]
-  `(assoc-route "POST" ~route (new-resource ~@body)))
-
-(defmacro POST "Creates a POST resource."
-  [route & body]
-  `(assoc-route "PUT" ~route (new-resource ~@body)))
-
-(defmacro DELETE "Creates a DELETE resource."
-  [route & body]
-  `(assoc-route "DELETE" ~route (new-resource ~@body)))

@@ -1,6 +1,10 @@
 (in-ns 'compojure)
 (clojure/refer 'clojure)
 
+(import '(javax.servlet.http HttpServlet))
+
+;;;;; General-use functions ;;;;;
+
 (defn includes?
   "Returns true if x is contained in coll, else false."
   [x coll]
@@ -12,11 +16,6 @@
   (apply str
     (mapcat #(if (includes? % chars) [\\ %] [%]) s)))
 
-(defn grep
-  "Filters a seq by a regular expression."
-  [re coll]
-  (filter #(re-matches re %) coll))
-
 (defn re-escape
   "Escape all special regex chars in a string s."
   [s]
@@ -27,6 +26,8 @@
   [m]
   (doall (take-while identity
     (map re-find (repeat m)))))
+
+;;;;; File and stream functions ;;;;;
 
 (defn file
   "Returns an instance of java.io.File."
@@ -51,6 +52,8 @@
       (if-let parent (. path (getParent))
         (recur parts (file parent))
         parts))))
+
+;;;;; Globbing functions ;;;;;
 
 (defn- glob->regex
   "Turns a shallow file glob into a regular expression."
@@ -89,4 +92,15 @@
 (defn load-glob
   "Load all files matching a glob."
   [g]
-  (doseq f (glob g) (load-file (str f))))
+  (doseq f (glob g)
+    (load-file (str f))))
+
+;;;;; Servlet functions ;;;;;
+
+(defn new-servlet
+  "Create a new servlet from a function that takes three arguments of types
+  HttpServletContext, HttpServletRequest, HttpServletResponse."
+  [func] 
+  (proxy [HttpServlet] []
+    (service [request response]
+      (func (. this (getServletContext)) request response))))
