@@ -1,10 +1,10 @@
 (load-file "lib/compojure.clj")
 (refer 'compojure)
 
-(def #^{:doc "The root Compojure servlet"} *servlet*)
-
 ; Load up all plugins
-(load-glob "plugins/*/init.clj")
+(load-glob "plugins/*/main.clj")
+
+(def *server* (new-server *servlet*))
 
 ; Load up application
 (load-glob "app/**/*.clj")

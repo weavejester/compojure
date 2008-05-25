@@ -27,6 +27,13 @@
   (doall (take-while identity
     (map re-find (repeat m)))))
 
+(defn name-str
+  "Finds the name for named objects, otherwise uses str."
+  [x]
+  (if (instance? clojure.lang.Named x)
+    (name x)
+    (str x)))
+
 ;;;;; File and stream functions ;;;;;
 
 (defn file
@@ -47,7 +54,7 @@
 (defn split-path
   "Splits a path up into its parts."
   [path]
-  (loop [parts (list) path (file path)]
+  (loop [parts nil, path (file path)]
     (let [parts (cons (. path (getName)) parts)]
       (if-let parent (. path (getParent))
         (recur parts (file parent))

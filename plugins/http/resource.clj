@@ -1,5 +1,6 @@
-(in-ns 'compojure/resource)
+(in-ns 'compojure-resource)
 (clojure/refer 'clojure)
+(clojure/refer 'compojure)
 
 (import '(java.io FileInputStream))
 (import '(javax.servlet.http HttpServletRequest HttpServletResponse))
