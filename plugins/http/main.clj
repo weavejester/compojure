@@ -7,11 +7,11 @@
 
 (defmacro PUT "Creates a PUT resource."
   [route & body]
-  `(assoc-route "POST" ~route (new-resource ~@body)))
+  `(assoc-route "PUT" ~route (new-resource ~@body)))
 
 (defmacro POST "Creates a POST resource."
   [route & body]
-  `(assoc-route "PUT" ~route (new-resource ~@body)))
+  `(assoc-route "POST" ~route (new-resource ~@body)))
 
 (defmacro DELETE "Creates a DELETE resource."
   [route & body]
