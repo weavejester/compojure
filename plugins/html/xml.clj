@@ -14,24 +14,38 @@
   "Turn a map into a string of XML attributes."
   [attrs]
   (apply str
-    (map
-      (fn [[k v]]
-        (str " " (name-str k) "=\"" (quote-special v) "\""))
+    (map (fn [[k v]]
+           (str " " (name-str k) "=\""
+                (quote-special v) "\""))
       attrs)))
 
 (defn- make-tag
   "Create an XML tag given a name, attribute map, and seq of contents."
   [name attrs & contents]
-  (str "<" name (make-attrs attrs) ">"
-       (apply str contents)
-       "</" name ">"))
+  (let [name (name-str name)]
+    (str "<" name (make-attrs attrs) ">"
+         (apply str contents)
+         "</" name ">")))
 
 (defn tag
   "Generate an XML tag.
   e.g.
-    (tag 'em \"text\")
+    (tag :em \"text\")
     (tag 'a {:href \"#top\"} \"Back to top\")"
   [name & contents]
   (if (map? (first contents))
     (apply make-tag name contents)
     (apply make-tag name {} contents)))
+
+(defmacro xml 
+  "Any forms starting with a keyword in the body of this macro get an implicit
+  tag function.
+  e.g.
+    (xml (:body (:p \"Hello World\")))"
+  [body]
+  (if (keyword? (first body))
+    (list* 'tag (first body)
+      (map
+        #(if (seq? %) (list 'xml %) %)
+        (rest body)))
+    body))
