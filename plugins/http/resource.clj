@@ -2,8 +2,9 @@
 (clojure/refer 'clojure)
 (clojure/refer 'compojure)
 
-(import '(java.io FileInputStream))
+(import '(java.io File FileInputStream))
 (import '(javax.servlet.http HttpServletRequest HttpServletResponse))
+(import '(clojure.lang FixNum))
 
 ;;;; Mimetypes ;;;;
 
@@ -79,9 +80,9 @@
     (map? update)
       (doseq [k v] update
         (. response (setHeader k v)))
-    (instance? clojure.lang.FixNum update)
+    (instance? FixNum update)
       (. response (setStatus update))
-    (instance? java.io.File update)
+    (instance? File update)
       (let [out (. response (getOutputStream))
             in  (new FileInputStream update)]
         (. response (setHeader
