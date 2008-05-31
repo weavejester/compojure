@@ -2,7 +2,7 @@
 (refer 'compojure)
 
 ; Load up all plugins
-(load-glob "plugins/*/main.clj")
+(load-glob "plugins/*/init.clj")
 
 (def *server* (new-server *servlet*))
 
