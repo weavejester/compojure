@@ -39,6 +39,16 @@
   ([coll]     (join-str coll ""))
   ([coll sep] (reduce (fn [a x] (str a sep x)) coll)))
 
+(defn chunks
+  "Group n consecutive items in a sequence together.
+  e.g. (chucks 3 [1 2 3 4 5]) -> ((1 2 3) (4 5))"
+  [n coll]
+  (if coll
+    (lazy-cons (take n coll)
+               (chunks n (drop n coll)))))
+
+(def otherwise true)
+
 ;;;;; File and stream functions ;;;;;
 
 (defn file
