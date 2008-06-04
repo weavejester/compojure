@@ -1,8 +1,8 @@
 (load-file "lib/compojure.clj")
 (refer 'compojure)
 
-; Load up all plugins
-(load-glob "plugins/*/init.clj")
+; Load up all modules
+(load-glob "modules/*/init.clj")
 
 (def *server* (new-server *servlet*))
 

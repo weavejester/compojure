@@ -2,7 +2,7 @@
 for file in jars/*.jar; do
     jars=$jars:$file
 done
-for file in plugins/**/jars/*.jar; do
+for file in modules/**/jars/*.jar; do
     jars=$jars:$file
 done
 java -cp $jars jline.ConsoleRunner clojure.lang.Repl config/boot.clj

@@ -1,4 +1,4 @@
-(load-file "plugins/html/xml.clj")
+(load-file "modules/html/xml.clj")
 (refer 'compojure-xml)
 
 ; Currently XML and HTML are treated the same. In future they'll be some HTML
