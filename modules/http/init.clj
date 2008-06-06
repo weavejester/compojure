@@ -1,5 +1,5 @@
-(load-file "modules/http/resource.clj")
-(refer 'compojure-resource)
+(require "modules/http/resource.clj")
+(refer 'http-resource)
 
 (defmacro GET "Creates a GET resource."
   [route & body]

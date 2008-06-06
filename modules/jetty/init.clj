@@ -1,4 +1,5 @@
 (load-file "modules/jetty/server.clj")
+(refer 'jetty-server)
 
 (def *server*)
 

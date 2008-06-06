@@ -1,7 +1,4 @@
-(in-ns 'compojure-resource)
-(clojure/refer 'clojure)
-(clojure/refer 'compojure)
-
+(in-ns* 'http-resource)
 (import '(java.io File FileInputStream))
 (import '(javax.servlet.http HttpServletRequest HttpServletResponse))
 (import '(clojure.lang FixNum))
@@ -100,6 +97,12 @@
     param    #(. request (getParameter %))
     header   #(. request (getHeader %))
     mime     #(context-mimetype (str %))))
+
+(defn add-resource-binding
+  "Add a binding to the set of default bindings assigned to a resource."
+  [name binding]
+  (def *resource-bindings*
+    (list* name binding *resource-bindings*)))
 
 (defmacro new-resource
   "Create a pseudo-servlet from a resource. It's not quite a real

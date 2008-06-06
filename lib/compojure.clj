@@ -47,14 +47,32 @@
     (lazy-cons (take n coll)
                (chunks n (drop n coll)))))
 
-(def otherwise true)
+(def otherwise true)   ; Useful for cond
+
+(defmacro in-ns*
+  "Changes namespace and refers the clojure and compojure namespaces."
+  [& body]
+  `(do (in-ns ~@body)
+       (refer '~'clojure)
+       (refer '~'compojure)))
+
+(def #^{:private true} *loaded-files* '())
+
+(defn require
+  "Load the file if and only if it has not been loaded previously."
+  [file]
+  (when-not (includes? file *loaded-files*)
+    (def *loaded-files*
+      (cons file *loaded-files*))
+    (load-file file)))
 
 ;;;;; File and stream functions ;;;;;
 
 (defn file
   "Returns an instance of java.io.File."
-  ([name]        (new java.io.File name))
-  ([parent name] (new java.io.File parent name)))
+  ([name]          (new java.io.File name))
+  ([parent name]   (new java.io.File parent name))
+  ([p q & parents] (reduce file (file p q) parents)))
 
 (defn pipe-stream
   "Pipe the contents of an InputStream into an OutputStream."
@@ -117,7 +135,13 @@
   (doseq f (glob g)
     (load-file (str f))))
 
-;;;;; Servlet functions ;;;;;
+(defn require-glob
+  "Require all files matching a glob."
+  [g]
+  (doseq f (glob g)
+    (require (str f))))
+
+;;;;; Framework functions ;;;;;
 
 (defn new-servlet
   "Create a new servlet from a function that takes three arguments of types
@@ -126,3 +150,13 @@
   (proxy [HttpServlet] []
     (service [request response]
       (func (. this (getServletContext)) request response))))
+
+(defn require-module
+  "Require a set of modules. Allows you to write:
+    (require-module 'http 'html)
+  Instead of:
+    (require \"modules/http/init.clj\")
+    (require \"modules/html/init.clj\")"
+  [& modules]
+  (doseq m modules
+    (require (str (file "./modules" (str m) "init.clj")))))

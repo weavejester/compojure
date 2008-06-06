@@ -1,1 +1,1 @@
-(load-file "modules/javascript/json.clj")
+(require "modules/javascript/json.clj")

@@ -2,9 +2,9 @@
 (refer 'compojure)
 
 ; Load up all modules
-(load-glob "modules/*/init.clj")
+(require-glob "modules/*/init.clj")
 
 (def *server* (http-server *servlet*))
 
 ; Load up application
-(load-glob "app/**/*.clj")
+(require-glob "app/**/*.clj")
