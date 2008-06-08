@@ -64,7 +64,8 @@
   (when-not (includes? file *loaded-files*)
     (def *loaded-files*
       (cons file *loaded-files*))
-    (load-file file)))
+    (load-file file)
+    true))
 
 ;;;;; File and stream functions ;;;;;
 

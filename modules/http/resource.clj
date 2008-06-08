@@ -54,20 +54,15 @@
 
 ;;;; Response ;;;;
 
-(defn update-response
-  "Destructively update a HttpServletResponse via a Clojure datatype.
-     * FixNum        - updates status code
-     * map           - updates headers
-     * string or seq - updates body
-  Additionally, multiple updates can be chained through a vector.
-
-  e.g (update-response resp ctx \"Foo\")       ; write 'Foo' to response body
-      (update-response resp ctx [200 \"Bar\"]) ; set status 200, write 'Bar'"
+(defn base-responder
+  "Basic Compojure responder. Handles the following datatypes:
+    string - Adds to the response body
+    seq    - Adds all containing elements to the response body
+    map    - Updates the HTTP headers
+    FixNum - Updates the status code
+    File   - Updates the response body via a file stream"
   [#^HttpServletResponse response context update]
   (cond 
-    (vector? update)
-      (doseq d update
-        (update-response response context d))
     (string? update)
       (.. response (getWriter) (print update))
     (seq? update)
@@ -86,6 +81,22 @@
           "Content-Type" (context-mimetype context (str update))))
         (pipe-stream in out))))
 
+(def *responders*
+  (list base-responder))
+
+(defn add-responder [func]
+  (def *responders*
+    (cons func *responders*)))
+
+(defn update-response
+  "Destructively update a HttpServletResponse via a Clojure datatype. Vectors
+  can be used to string different values together."
+  [#^HttpServletResponse response context update]
+  (if (vector? update)
+    (doseq d update
+      (update-response response context d))
+    (some #(% response context update) *responders*)))
+
 ;;;; Resource ;;;;
 
 (def #^{:doc
@@ -96,7 +107,7 @@
     full-path (. request (getPathInfo))
     param    #(. request (getParameter %))
     header   #(. request (getHeader %))
-    mime     #(context-mimetype (str %))))
+    mime     #(http-resource/context-mimetype (str %))))
 
 (defn add-resource-binding
   "Add a binding to the set of default bindings assigned to a resource."
