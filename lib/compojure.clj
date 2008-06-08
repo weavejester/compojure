@@ -67,6 +67,12 @@
     (load-file file)
     true))
 
+(defmacro return
+  "A do block that will always return the argument x."
+  [x & body]
+  `(let [x# ~x]
+     (do ~@body x#)))
+
 ;;;;; File and stream functions ;;;;;
 
 (defn file

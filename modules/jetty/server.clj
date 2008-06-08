@@ -5,15 +5,30 @@
         '(org.mortbay.jetty.servlet Context ServletHolder)
         '(org.mortbay.util.ajax ContinuationSupport))
 
-(def *default-timeout* 30000)   ; 5 minute timeout
+(def *default-timeout* 300000)   ; 5 minute timeout
+
+(def *continuations*
+  (ref {}))
+
+(defn get-continuation
+  [request]
+  (. ContinuationSupport (getContinuation request request)))
 
 (defn suspend-request
-  ([request]
-    (suspend-request *default-timeout*))
-  ([request timeout]
-    (.
-      (. ContinuationSupport (getContinuation request request))
-      (suspend timeout))))
+  ([request key]
+    (suspend-request key *default-timeout*))
+  ([request key timeout]
+    (let [cc (get-continuation request)]
+      (dosync
+        (alter *continuations* #(assoc % key cc)))
+      (. cc (suspend timeout)))))
+
+(defn resume-request
+  [key]
+  (let [cc (@*continuations* key)]
+    (dosync
+      (alter *continuations* #(dissoc % key)))
+    (. cc (resume))))
 
 (add-resource-binding
   'suspend-request
