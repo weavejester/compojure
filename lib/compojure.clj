@@ -36,8 +36,13 @@
 
 (defn join-str
   "Join a sequence of strings together with an optional separator string."
-  ([coll]     (join-str coll ""))
-  ([coll sep] (reduce (fn [a x] (str a sep x)) coll)))
+  ([coll]
+    (apply str coll))
+  ([coll sep]
+    (reduce
+      (fn [a b] (str a sep b))
+      (str (first coll))
+      (rest coll))))
 
 (defn chunks
   "Group n consecutive items in a sequence together.
