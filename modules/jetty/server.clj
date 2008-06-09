@@ -16,19 +16,21 @@
 
 (defn suspend-request
   ([request key]
-    (suspend-request key *default-timeout*))
+    (suspend-request request key *default-timeout*))
   ([request key timeout]
     (let [cc (get-continuation request)]
       (dosync
-        (alter *continuations* #(assoc % key cc)))
+        (let [cset (*continuations* key)]
+          (alter *continuations*
+            #(assoc % key (set (conj cset cc))))))
       (. cc (suspend timeout)))))
 
 (defn resume-request
   [key]
-  (let [cc (@*continuations* key)]
-    (dosync
-      (alter *continuations* #(dissoc % key)))
-    (. cc (resume))))
+  (doseq continuation
+    (dosync (return (*continuations* key)
+              (alter *continuations* #(dissoc % key))))
+    (. continuation (resume))))
 
 (add-resource-binding
   'suspend-request
