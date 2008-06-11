@@ -78,6 +78,11 @@
   `(let [x# ~x]
      (do ~@body x#)))
 
+(defn str-map
+  "Map a function to a collection, then concatenate the results into a string."
+  [func coll]
+  (apply str (map func coll)))
+
 ;;;;; File and stream functions ;;;;;
 
 (defn file
