@@ -27,6 +27,11 @@
   (doall (take-while identity
     (map re-find (repeat m)))))
 
+(defn re-split
+  "Splits a string by a regex."
+  [re s]
+  (seq (. re (split s))))
+
 (defn name-str
   "Finds the name for named objects, otherwise uses str."
   [x]

@@ -2,6 +2,13 @@
 (clojure/refer 'clojure)
 (clojure/refer 'compojure)
 
+(defn- indent
+  "Indent a string of text."
+  [s]
+  (str-map
+    #(str "  " % "\n")
+    (re-split (re-pattern "\n") s)))
+
 (defn- quote-special
   "Change special characters into HTML character entities."
   [s]
@@ -13,19 +20,19 @@
 (defn- make-attrs
   "Turn a map into a string of XML attributes."
   [attrs]
-  (apply str
-    (map (fn [[k v]]
-           (str " " (name-str k) "=\""
-                (quote-special v) "\""))
-      attrs)))
+  (str-map
+    (fn [[k v]]
+      (str " " (name-str k) "=\""
+               (quote-special v) "\""))
+    attrs))
 
 (defn- make-tag
   "Create an XML tag given a name, attribute map, and seq of contents."
   [name attrs & contents]
   (let [name (name-str name)]
-    (str "<" name (make-attrs attrs) ">"
-         (apply str contents)
-         "</" name ">")))
+    (str "<" name (make-attrs attrs) ">\n"
+         (indent (apply str contents))
+         "</" name ">\n")))
 
 (defn tag
   "Generate an XML tag.
