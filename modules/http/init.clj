@@ -1,21 +1,21 @@
 (require "modules/http/resource.clj")
-(refer 'http-resource)
+(refer 'compojure-http)
 
 (defmacro GET "Creates a GET resource."
   [route & body]
-  `(assoc-route "GET" ~route (new-resource ~@body)))
+  `(assoc-route "GET" ~route (http-resource ~@body)))
 
 (defmacro PUT "Creates a PUT resource."
   [route & body]
-  `(assoc-route "PUT" ~route (new-resource ~@body)))
+  `(assoc-route "PUT" ~route (http-resource ~@body)))
 
 (defmacro POST "Creates a POST resource."
   [route & body]
-  `(assoc-route "POST" ~route (new-resource ~@body)))
+  `(assoc-route "POST" ~route (http-resource ~@body)))
 
 (defmacro DELETE "Creates a DELETE resource."
   [route & body]
-  `(assoc-route "DELETE" ~route (new-resource ~@body)))
+  `(assoc-route "DELETE" ~route (http-resource ~@body)))
 
 (def *servlet* 
   (new-servlet

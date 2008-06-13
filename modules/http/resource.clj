@@ -1,4 +1,4 @@
-(in-ns* 'http-resource)
+(in-ns* 'compojure-http)
 (import '(java.io File FileInputStream))
 (import '(javax.servlet.http HttpServletRequest HttpServletResponse))
 (import '(clojure.lang FixNum))
@@ -99,6 +99,15 @@
 
 ;;;; Resource ;;;;
 
+(defn get-session
+  "Pulls a Clojure-friendly session (a map reference) from a HttpRequest."
+  [#^HttpServletRequest request]
+  (let [session (. request (getSession))]
+    (or (. session (getAttribute "clj-session"))
+        (let [clj-session (ref {})]
+          (. session (setAttribute "clj-session" clj-session))
+          clj-session))))
+
 (def #^{:doc
   "A set of bindings available to each resource. This can be extended
   by plugins, if required."}
@@ -107,7 +116,8 @@
     full-path (. request (getPathInfo))
     param    #(. request (getParameter %))
     header   #(. request (getHeader %))
-    mime     #(http-resource/context-mimetype (str %))))
+    mime     #(compojure-http/context-mimetype (str %))
+    session   (compojure-http/get-session request)))
 
 (defn add-resource-binding
   "Add a binding to the set of default bindings assigned to a resource."
@@ -115,7 +125,7 @@
   (def *resource-bindings*
     (list* name binding *resource-bindings*)))
 
-(defmacro new-resource
+(defmacro http-resource
   "Create a pseudo-servlet from a resource. It's not quite a real
   servlet because it's a function, rather than an HttpServlet object."
   [& body]
@@ -124,7 +134,7 @@
        (update-response ~'response ~'context (do ~@body)))))
 
 (def *default-resource*
-  (new-resource
+  (http-resource
     (let [static-file (file "public" full-path)]
       (if (. static-file (isFile))
         static-file
