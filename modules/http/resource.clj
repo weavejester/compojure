@@ -37,7 +37,7 @@
 
 (def #^{:doc
   "A global list of all registered resources. A resource is a vector
-  consisting of a HTTP method, a parsed route, function that takes in
+  consisting of a HTTP method, a parsed route and function that takes in
   a context, request and response object.
   e.g.
   [\"GET\"
@@ -46,7 +46,7 @@
   *resources* '())
 
 (defn assoc-route
-  "Associate a HTTP method and route with a resource."
+  "Associate a HTTP method and route with a resource function."
   [method route resource]
   (def *resources*
     (cons [method (parse-route route) resource]

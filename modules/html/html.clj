@@ -17,3 +17,12 @@
          :type "text/javascript"
          :src  (str "javascript/" % ".js")}))
     files))
+
+(defmacro htmldoc
+  [title & body]
+  `(html
+     (:html
+       (:head
+         (:title ~title)
+       (:body
+         ~@body)))))
