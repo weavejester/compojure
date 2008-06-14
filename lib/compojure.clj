@@ -124,7 +124,7 @@
         reader (new FileReader (file filename))
         stream (new PushbackReader reader)]
     (take-while
-      #(not= % eof)
+      #(not (identical? % eof))
        (repeatedly #(read stream false eof)))))
 
 ;;;;; Globbing functions ;;;;;
@@ -139,7 +139,7 @@
 
 (defn- recursive-glob?
   [glob]
-  (re-find (re-pattern "\\*\\*") glob))
+  (re-find #"\\*\\*" glob))
 
 (defn- glob-parts
   [parts path]

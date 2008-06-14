@@ -7,7 +7,7 @@
   [s]
   (str-map
     #(str "  " % "\n")
-    (re-split (re-pattern "\n") s)))
+    (re-split #"\n" s)))
 
 (defn- quote-special
   "Change special characters into HTML character entities."
@@ -44,7 +44,7 @@
     (apply make-tag name contents)
     (apply make-tag name {} contents)))
 
-(defmacro xml 
+(defmacro xml
   "Any forms starting with a keyword in the body of this macro get an implicit
   tag function.
   e.g.

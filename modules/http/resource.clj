@@ -14,13 +14,11 @@
 
 ;;;; Routes ;;;;
 
-(def symbol-regex (re-pattern ":([a-z_]+)"))
-
 (defn parse-route
   "Turn a route string into a regex and seq of symbols."
   [route]
   (let [segment  "([^/.,;?]+)"
-        matcher  (re-matcher symbol-regex (re-escape route))
+        matcher  (re-matcher #":([a-z_]+)" (re-escape route))
         symbols  (re-find-all matcher)
         regex    (. matcher (replaceAll segment))]
     [(re-pattern regex) (map second symbols)]))
