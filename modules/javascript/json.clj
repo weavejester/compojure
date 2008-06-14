@@ -2,13 +2,13 @@
 
 (defn- json-array
   [coll]
-  (str "[" (join-str (map write-json coll) ", ") "]"))
+  (str "[" (str-join (map write-json coll) ", ") "]"))
 
 (defn- json-object
   [hash]
   (let [pair (fn [[k v]]
                (str (write-json k) ": " (write-json v)))]
-    (str "{" (join-str (map pair hash) ", ") "}")))
+    (str "{" (str-join (map pair hash) ", ") "}")))
 
 (defn write-json
   [x]

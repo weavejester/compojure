@@ -2,6 +2,7 @@
 (clojure/refer 'clojure)
 
 (import '(javax.servlet.http HttpServlet))
+(import '(java.io FileReader PushbackReader))
 
 ;;;;; General-use functions ;;;;;
 
@@ -39,7 +40,7 @@
     (name x)
     (str x)))
 
-(defn join-str
+(defn str-join
   "Join a sequence of strings together with an optional separator string."
   ([coll]
     (apply str coll))
@@ -115,6 +116,16 @@
       (if-let parent (. path (getParent))
         (recur parts (file parent))
         parts))))
+
+(defn read-file
+  "Repeatedly read from a file and return the sequence of results."
+  [filename]
+  (let [eof    (new Object)
+        reader (new FileReader (file filename))
+        stream (new PushbackReader reader)]
+    (take-while
+      #(not= % eof)
+       (repeatedly #(read stream false eof)))))
 
 ;;;;; Globbing functions ;;;;;
 
