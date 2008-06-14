@@ -72,7 +72,7 @@
     (map? update)
       (doseq [k v] update
         (. response (setHeader k v)))
-    (instance? FixNum update)
+    (instance? Number update)
       (. response (setStatus update))
     (instance? File update)
       (let [out (. response (getOutputStream))
