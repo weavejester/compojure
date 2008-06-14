@@ -66,7 +66,8 @@
        (refer '~'clojure)
        (refer '~'compojure)))
 
-(def #^{:private true} *loaded-files* '())
+(def #^{:private true}
+  *loaded-files* nil)
 
 (defn require
   "Load the file if and only if it has not been loaded previously."

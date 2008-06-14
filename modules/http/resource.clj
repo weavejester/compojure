@@ -1,7 +1,6 @@
 (in-ns* 'compojure-http)
 (import '(java.io File FileInputStream))
 (import '(javax.servlet.http HttpServletRequest HttpServletResponse))
-(import '(clojure.lang FixNum))
 
 ;;;; Mimetypes ;;;;
 
@@ -43,7 +42,7 @@
   [\"GET\"
    (parse-route \"/welcome/:name\") 
    (fn [context request response] ...)]"}
-  *resources* '())
+  *resources* nil)
 
 (defn assoc-route
   "Associate a HTTP method and route with a resource function."
@@ -59,7 +58,7 @@
     string - Adds to the response body
     seq    - Adds all containing elements to the response body
     map    - Updates the HTTP headers
-    FixNum - Updates the status code
+    Number - Updates the status code
     File   - Updates the response body via a file stream"
   [#^HttpServletResponse response context update]
   (cond 
