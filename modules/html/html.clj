@@ -8,21 +8,26 @@
 (defmacro html [sexpr]
   `(xml ~sexpr))
 
-(defn include-javascript
-  "Include external javascript tag"
-  [& files]
+(defn javascript-tag
+  "A javascript HTML tag."
+  [script]
+  (tag :script {:type "text/javascript"} script))
+
+(defn javascript-sources
+  "Include external javascript sources."
+  [sources]
   (str-map
-    #(html
-      (:script {
-         :type "text/javascript"
-         :src  (str "javascript/" % ".js")}))
-    files))
+    #(tag :script {:type "text/javascript" :src (str %)})
+    sources))
 
 (defmacro htmldoc
-  [title & body]
+  [options & body]
   `(html
      (:html
        (:head
-         (:title ~title)
+         (:title ~(options :title))
+         (javascript-sources
+           '~(map #(str "/javascript/" % ".js") 
+                   (options :javascript))))
        (:body
-         ~@body)))))
+         ~@body))))

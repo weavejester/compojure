@@ -187,7 +187,7 @@
 (defn glob
   "Find all files in a directory matching a glob."
   ([pattern]
-    (glob "." pattern))
+    (glob-parts (split-path pattern) (file ".")))
   ([path pattern]
     (map
       #(relative-path path %)
