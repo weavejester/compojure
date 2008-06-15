@@ -1,16 +1,16 @@
-(def write-json)
+(def json)
 
 (defn- json-array
   [coll]
-  (str "[" (str-join (map write-json coll) ", ") "]"))
+  (str "[" (str-join (map json coll) ", ") "]"))
 
 (defn- json-object
   [hash]
   (let [pair (fn [[k v]]
-               (str (write-json k) ": " (write-json v)))]
+               (str (json k) ": " (json v)))]
     (str "{" (str-join (map pair hash) ", ") "}")))
 
-(defn write-json
+(defn json
   [x]
   (cond
     (nil? x)             "null"
