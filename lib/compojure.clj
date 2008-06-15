@@ -70,26 +70,26 @@
 (def #^{:private true}
   *loaded-paths* #{})
 
-(defn require
-  "Load the file if and only if it has not been loaded previously."
-  [file]
-  (let [path (. (new File file) (getCanonicalPath))]
-    (when-not (contains? *loaded-paths* path)
-      (def *loaded-paths*
-        (conj *loaded-paths* path))
-      (load-file path)
-      true)))
-
 (defmacro return
   "A do block that will always return the argument x."
   [x & body]
   `(let [x# ~x]
      (do ~@body x#)))
 
+(defmacro defconj
+  "Short for (def name (conj name value))"
+  [name value]
+  `(def ~name (conj ~name ~value)))
+
 (defn str-map
   "Map a function to a collection, then concatenate the results into a string."
   [func coll]
   (apply str (map func coll)))
+
+(defn rmap
+  "Reverse map"
+  [func coll]
+  (reverse (map func coll)))
 
 ;;;;; File and stream functions ;;;;;
 
@@ -109,14 +109,32 @@
           (. out (write buffer 0 len))
           (recur (. in (read buffer))))))))
 
+(defn file-parents
+  "Lazily iterate through all of the parents of a file."
+  [file]
+  (take-while identity
+    (iterate (memfn getParentFile) file)))
+
 (defn split-path
   "Splits a path up into its parts."
   [path]
-  (loop [parts nil, path (file path)]
-    (let [parts (cons (. path (getName)) parts)]
-      (if-let parent (. path (getParent))
-        (recur parts (file parent))
-        parts))))
+  (rmap
+    (memfn getName)
+    (file-parents (file path))))
+
+(defn canonical
+  "Alias for .getCanonicalFile"
+  [file]
+  (. file (getCanonicalFile)))
+
+(defn relative-path
+  "Find the path relative to another, if possible."
+  [base path]
+  (apply file
+    (rmap (memfn getName)
+          (take-while
+            (partial not= (canonical (file base)))
+            (file-parents (canonical path))))))
 
 (defn read-file
   "Repeatedly read from a file and return the sequence of results."
@@ -127,6 +145,15 @@
     (take-while
       #(not (identical? % eof))
        (repeatedly #(read stream false eof)))))
+
+(defn require
+  "Load the file if and only if it has not been loaded previously."
+  [filepath]
+  (let [path (canonical (file filepath))]
+    (when-not (contains? *loaded-paths* path)
+      (defconj *loaded-paths* path)
+      (load-file (str path))
+      true)))
 
 ;;;;; Globbing functions ;;;;;
 
@@ -159,8 +186,12 @@
 
 (defn glob
   "Find all files in a directory matching a glob."
-  [pattern]
-  (glob-parts (split-path pattern) (file ".")))
+  ([pattern]
+    (glob "." pattern))
+  ([path pattern]
+    (map
+      #(relative-path path %)
+       (glob-parts (split-path pattern) (file path)))))
 
 (defn load-glob
   "Load all files matching a glob."

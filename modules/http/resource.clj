@@ -45,9 +45,8 @@
 (defn assoc-route
   "Associate a HTTP method and route with a resource function."
   [method route resource]
-  (def *resources*
-    (cons [method (parse-route route) resource]
-          *resources*)))
+  (defconj *resources*
+    [method (parse-route route) resource]))
 
 ;;;; Response ;;;;
 
@@ -82,8 +81,7 @@
   (list base-responder))
 
 (defn add-responder [func]
-  (def *responders*
-    (cons func *responders*)))
+  (defconj *responders* func))
 
 (defn update-response
   "Destructively update a HttpServletResponse via a Clojure datatype. Vectors
