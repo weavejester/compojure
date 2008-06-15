@@ -2,7 +2,7 @@
 (clojure/refer 'clojure)
 
 (import '(javax.servlet.http HttpServlet))
-(import '(java.io FileReader PushbackReader))
+(import '(java.io File FileReader PushbackReader))
 
 ;;;;; General-use functions ;;;;;
 
@@ -68,16 +68,17 @@
        (refer '~'compojure)))
 
 (def #^{:private true}
-  *loaded-files* nil)
+  *loaded-paths* #{})
 
 (defn require
   "Load the file if and only if it has not been loaded previously."
   [file]
-  (when-not (includes? file *loaded-files*)
-    (def *loaded-files*
-      (cons file *loaded-files*))
-    (load-file file)
-    true))
+  (let [path (. (new File file) (getCanonicalPath))]
+    (when-not (contains? *loaded-paths* path)
+      (def *loaded-paths*
+        (conj *loaded-paths* path))
+      (load-file path)
+      true)))
 
 (defmacro return
   "A do block that will always return the argument x."
@@ -94,8 +95,8 @@
 
 (defn file
   "Returns an instance of java.io.File."
-  ([name]          (new java.io.File name))
-  ([parent name]   (new java.io.File parent name))
+  ([name]          (new File name))
+  ([parent name]   (new File parent name))
   ([p q & parents] (reduce file (file p q) parents)))
 
 (defn pipe-stream
@@ -158,10 +159,8 @@
 
 (defn glob
   "Find all files in a directory matching a glob."
-  ([pattern]
-    (glob pattern "."))
-  ([pattern path]
-    (glob-parts (split-path pattern) (file path))))
+  [pattern]
+  (glob-parts (split-path pattern) (file ".")))
 
 (defn load-glob
   "Load all files matching a glob."
@@ -193,4 +192,4 @@
     (require \"modules/html/init.clj\")"
   [& modules]
   (doseq m modules
-    (require (str (file "./modules" (str m) "init.clj")))))
+    (require (str (file "modules" (str m) "init.clj")))))
