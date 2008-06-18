@@ -1,5 +1,5 @@
 Compojure is a modular web framework for the Clojure programming language. It's
-only requirement is a Java VM, as it comes with jar files for Compojure and the
+only requirement is a Java VM, as it comes with jar files for Clojure and the
 HTTP server, Jetty.
 
 Note that Compojure is still in active development.
