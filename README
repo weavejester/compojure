@@ -19,7 +19,7 @@ Quickstart
 
 3. Add a basic "Hello World" HTTP resource:
 
-   user=> (GET "/" (htmldoc "Example" (:h1 "Hello World")))
+   user=> (GET "/" (htmldoc {:title "Example"} (:h1 "Hello World")))
 
 4. Start the inbuilt Jetty HTTP server:
 
