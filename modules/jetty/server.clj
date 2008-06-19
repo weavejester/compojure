@@ -5,6 +5,21 @@
         '(org.mortbay.jetty.servlet Context ServletHolder)
         '(org.mortbay.util.ajax ContinuationSupport))
 
+;;;;; HTTP server ;;;;
+
+(defn http-server
+  "Create a new Jetty HTTP server with the supplied servlet."
+  [servlet & options]
+  (let [options (apply hash-map options)
+        port    (or (options :port) 8080)
+        server  (new Server port)
+        context (new Context server "/" (. Context SESSIONS))
+        holder  (new ServletHolder servlet)]
+    (. context (addServlet holder "/*"))
+    server))
+
+;;;;; Comet helpers ;;;;;
+
 (def *default-timeout* 300000)   ; 5 minute timeout
 
 (def *continuations*
@@ -31,29 +46,35 @@
           (alter *continuations* assoc key cset+cc)))
       (. cc (suspend timeout)))))
 
+(defn comet-listener
+  "A convenience function for creating Comet listener resources from
+  suspend-request. The predicate pred denotes whether to suspend the request,
+  and the action denotes what to do after."
+  ([request key pred action]
+    (comet-listener request key pred action *default-timeout*))
+  ([request key pred action timeout]
+    (locking request
+      (when-not (pred key)
+        (suspend-request request key timeout)))
+    (action key)))
+      
 (defn resume-requests
   "Resumes a group of suspended requests by key. See: suspend-request."
   [key]
-  (let [cset (dosync (return (*continuations* key)
-                       (alter *continuations* dissoc key)))]
+  (let [cset (dosync
+               (return (*continuations* key)
+                 (alter *continuations* dissoc key)))]
     (doseq cc cset
       (. cc (resume)))))
 
 (def resume-request resume-requests) ; An alias for resume-requests
 
-; Bind suspend-request to all resource calls, so you don't have to manually
-; specify the request object each time.
+; Bind the functions that need the request object, so we don't have to
+; keep passing in the request object manually when in a resource.
 (add-resource-binding
   'suspend-request
   `(partial suspend-request ~'request))
 
-(defn http-server
-  "Create a new Jetty HTTP server with the supplied servlet."
-  [servlet & options]
-  (let [options (apply hash-map options)
-        port    (or (options :port) 8080)
-        server  (new Server port)
-        context (new Context server "/" (. Context SESSIONS))
-        holder  (new ServletHolder servlet)]
-    (. context (addServlet holder "/*"))
-    server))
+(add-resource-binding
+  'comet-listener
+  `(partial comet-listener ~'request))

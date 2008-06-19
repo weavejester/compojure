@@ -17,6 +17,11 @@
   (apply str
     (mapcat #(if (includes? % chars) [\\ %] [%]) s)))
 
+(defn parse-int
+  "Parse a integer contained in a string s."
+  [s]
+  (. Integer (parseInt s)))
+
 (defn re-escape
   "Escape all special regex chars in a string s."
   [s]
