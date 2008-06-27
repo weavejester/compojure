@@ -22,17 +22,15 @@
   [attrs]
   (str-map
     (fn [[k v]]
-      (str " " (name-str k) "=\""
-               (quote-special v) "\""))
+      (str* " " k "=\"" (quote-special v) "\""))
     attrs))
 
 (defn- make-tag
   "Create an XML tag given a name, attribute map, and seq of contents."
   [name attrs & contents]
-  (let [name (name-str name)]
-    (str "<" name (make-attrs attrs) ">\n"
-         (indent (apply str contents))
-         "</" name ">\n")))
+  (str* "<" name (make-attrs attrs) ">\n"
+        (indent (apply str contents))
+        "</" name ">\n"))
 
 (defn tag
   "Generate an XML tag.

@@ -21,7 +21,8 @@
         matcher  (re-matcher #":([a-z_]+)" (re-escape route))
         symbols  (re-find-all matcher)
         regex    (. matcher (replaceAll segment))]
-    [(re-pattern regex) (map second symbols)]))
+    [(re-pattern regex)
+     (map (comp keyword second) symbols)]))
 
 (defn match-route 
   "Match a path against a parsed route. Returns a map of keywords and their
@@ -109,9 +110,9 @@
   *resource-bindings*
   '(method    (. request (getMethod))
     full-path (. request (getPathInfo))
-    param    #(. request (getParameter %))
-    header   #(. request (getHeader %))
-    mime     #(compojure-http/context-mimetype (str %))
+    param    #(. request (getParameter (str* %)))
+    header   #(. request (getHeader (str* %)))
+    mimetype #(compojure-http/context-mimetype (str %))
     session   (compojure-http/get-session request)))
 
 (defn add-resource-binding

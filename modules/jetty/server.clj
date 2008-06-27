@@ -18,7 +18,7 @@
     (. context (addServlet holder "/*"))
     server))
 
-;;;;; Comet helpers ;;;;;
+;;;;; Asynchronous response (Comet) helpers ;;;;;
 
 (def *default-timeout* 300000)   ; 5 minute timeout
 
@@ -46,12 +46,12 @@
           (alter *continuations* assoc key cset+cc)))
       (. cc (suspend timeout)))))
 
-(defn comet-listener
-  "A convenience function for creating Comet listener resources from
+(defn async-response
+  "A convenience function for creating a potentially delayed HTTP response via
   suspend-request. The predicate pred denotes whether to suspend the request,
   and the action denotes what to do after."
   ([request key pred action]
-    (comet-listener request key pred action *default-timeout*))
+    (async-response request key pred action *default-timeout*))
   ([request key pred action timeout]
     (locking request
       (when-not (pred key)
@@ -76,5 +76,5 @@
   `(partial suspend-request ~'request))
 
 (add-resource-binding
-  'comet-listener
-  `(partial comet-listener ~'request))
+  'async-response
+  `(partial async-response ~'request))

@@ -1,8 +1,9 @@
 (in-ns 'compojure)
 (clojure/refer 'clojure)
 
-(import '(javax.servlet.http HttpServlet))
-(import '(java.io File FileReader PushbackReader))
+(import '(clojure.lang Named)
+        '(javax.servlet.http HttpServlet)
+        '(java.io File FileReader PushbackReader))
 
 ;;;;; General-use functions ;;;;;
 
@@ -38,12 +39,17 @@
   [re s]
   (seq (. re (split s))))
 
-(defn name-str
-  "Finds the name for named objects, otherwise uses str."
-  [x]
-  (if (instance? clojure.lang.Named x)
-    (name x)
-    (str x)))
+(defn str-map
+  "Map a function to a collection, then concatenate the results into a string."
+  [func coll]
+  (apply str (map func coll)))
+
+(defn str*
+  "A version of str that prefers the names of Named objects."
+  [& args] 
+  (str-map 
+    #(if (instance? Named %) (name %) (str %))
+    args))
 
 (defn str-join
   "Join a sequence of strings together with an optional separator string."
@@ -59,7 +65,7 @@
   "Group n consecutive items in a sequence together.
   e.g. (chucks 3 [1 2 3 4 5]) -> ((1 2 3) (4 5))"
   [n coll]
-  (if coll
+  (if (seq coll)
     (lazy-cons (take n coll)
                (chunks n (drop n coll)))))
 
@@ -72,9 +78,6 @@
        (refer '~'clojure)
        (refer '~'compojure)))
 
-(def #^{:private true}
-  *loaded-paths* #{})
-
 (defmacro return
   "A do block that will always return the argument x."
   [x & body]
@@ -85,11 +88,6 @@
   "Short for (def name (conj name value))"
   [name value]
   `(def ~name (conj ~name ~value)))
-
-(defn str-map
-  "Map a function to a collection, then concatenate the results into a string."
-  [func coll]
-  (apply str (map func coll)))
 
 (defn rmap
   "Reverse map"
@@ -150,6 +148,9 @@
     (take-while
       #(not (identical? % eof))
        (repeatedly #(read stream false eof)))))
+
+(def #^{:private true}
+  *loaded-paths* #{})
 
 (defn require
   "Load the file if and only if it has not been loaded previously."
