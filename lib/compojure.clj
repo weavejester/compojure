@@ -12,16 +12,81 @@
   [x coll]
   (some (partial = x) coll))
 
+(defn parse-int
+  "Parse a integer contained in a string s."
+  [s]
+  (. Integer (parseInt s)))
+
+(def otherwise true)   ; Useful for cond
+
+(defn kwargs
+  "Adds any value preceeded by a keyword to a hash map, and returns the map
+  and a sequence of remaining values.
+  e.g. (kwargs [:baz 5 \"foo\" 10 :bar 20])
+       => [{:baz 5 :bar 20} (\"foo\" 10)]"
+  [coll]
+  (loop [options {}, args nil, coll (seq coll)]
+    (if coll
+      (let [key (first coll)]
+        (if (keyword? key)
+          (recur (assoc options key (second coll)) args (rrest coll))
+          (recur options (cons key args) (rest coll))))
+      [options (reverse args)])))
+
+(defmacro return
+  "A do block that will always return the argument x."
+  [x & body]
+  `(let [x# ~x]
+     (do ~@body x#)))
+
+(defmacro defconj
+  "Short for (def name (conj name value))"
+  [name value]
+  `(def ~name (conj ~name ~value)))
+
+(defn rmap
+  "Reverse map."
+  [func coll]
+  (reverse (map func coll)))
+
+(defn default
+  "Change a function so that it returns a default value instead of nil"
+  [func default]
+  (fn [& args]
+    (let [value (apply func args)]
+      (if (nil? value) default value))))
+
+;;;;; String functions ;;;;;
+
+(defn str-map
+  "Map a function to a collection, then concatenate the results into a string."
+  [func coll]
+  (apply str (map func coll)))
+
+(defn str*
+  "A version of str that prefers the names of Named objects.
+  e.g (str \"Hello \" :World)  => \"Hello :World\"
+      (str* \"Hello \" :World) => \"Hello World\""
+  [& args] 
+  (str-map 
+    #(if (instance? Named %) (name %) (str %))
+    args))
+
+(defn str-join
+  "Join a sequence of strings together with an optional separator string."
+  ([coll]
+    (apply str coll))
+  ([coll sep]
+    (reduce
+      (fn [a b] (str a sep b))
+      (str (first coll))
+      (rest coll))))
+
 (defn escape
   "Escape a set of special characters chars in a string s."
   [chars s]
   (apply str
     (mapcat #(if (includes? % chars) [\\ %] [%]) s)))
-
-(defn parse-int
-  "Parse a integer contained in a string s."
-  [s]
-  (. Integer (parseInt s)))
 
 (defn re-escape
   "Escape all special regex chars in a string s."
@@ -39,60 +104,15 @@
   [re s]
   (seq (. re (split s))))
 
-(defn str-map
-  "Map a function to a collection, then concatenate the results into a string."
-  [func coll]
-  (apply str (map func coll)))
-
-(defn str*
-  "A version of str that prefers the names of Named objects."
-  [& args] 
-  (str-map 
-    #(if (instance? Named %) (name %) (str %))
-    args))
-
-(defn str-join
-  "Join a sequence of strings together with an optional separator string."
-  ([coll]
-    (apply str coll))
-  ([coll sep]
-    (reduce
-      (fn [a b] (str a sep b))
-      (str (first coll))
-      (rest coll))))
-
-(defn chunks
-  "Group n consecutive items in a sequence together.
-  e.g. (chucks 3 [1 2 3 4 5]) -> ((1 2 3) (4 5))"
-  [n coll]
-  (if (seq coll)
-    (lazy-cons (take n coll)
-               (chunks n (drop n coll)))))
-
-(def otherwise true)   ; Useful for cond
-
-(defmacro in-ns*
-  "Changes namespace and refers the clojure and compojure namespaces."
-  [& body]
-  `(do (in-ns ~@body)
-       (refer '~'clojure)
-       (refer '~'compojure)))
-
-(defmacro return
-  "A do block that will always return the argument x."
-  [x & body]
-  `(let [x# ~x]
-     (do ~@body x#)))
-
-(defmacro defconj
-  "Short for (def name (conj name value))"
-  [name value]
-  `(def ~name (conj ~name ~value)))
-
-(defn rmap
-  "Reverse map"
-  [func coll]
-  (reverse (map func coll)))
+(defn indent
+  "Indent each line in a string of text. Defaults to an indentation of two
+  spaces."
+  ([text]
+    (indent text "  "))
+  ([text spacer]
+    (str-map
+      #(str spacer % "\n")
+      (re-split #"\n" text))))
 
 ;;;;; File and stream functions ;;;;;
 
@@ -125,10 +145,8 @@
     (memfn getName)
     (file-parents (file path))))
 
-(defn canonical
-  "Alias for .getCanonicalFile"
-  [file]
-  (. file (getCanonicalFile)))
+(def canonical
+  (memfn getCanonicalFile))
 
 (defn relative-path
   "Find the path relative to another, if possible."
@@ -212,6 +230,13 @@
     (require (str f))))
 
 ;;;;; Framework functions ;;;;;
+
+(defmacro in-ns*
+  "Changes namespace and refers the clojure and compojure namespaces."
+  [& body]
+  `(do (in-ns ~@body)
+       (refer '~'clojure)
+       (refer '~'compojure)))
 
 (defn new-servlet
   "Create a new servlet from a function that takes three arguments of types
