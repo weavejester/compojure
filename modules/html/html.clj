@@ -52,7 +52,7 @@
 (defmacro html
   "Like the xml macro, but evaluates multiple expressions."
   [& exprs]
-  (str-map #(list html/xml %) exprs))
+  `(str ~@(map #(list 'html/xml %) exprs)))
 
 ;;;;; Useful functions for generating HTML tags ;;;;;
 

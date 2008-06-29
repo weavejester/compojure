@@ -3,5 +3,5 @@
 
 (defmacro server [action]
  `(cond
-    (= ~action 'start) (. *server* (start))
-    (= ~action 'stop)  (. *server* (stop))))
+    (= '~action '~'start) (. *server* (start))
+    (= '~action '~'stop)  (. *server* (stop))))

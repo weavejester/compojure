@@ -19,20 +19,6 @@
 
 (def otherwise true)   ; Useful for cond
 
-(defn kwargs
-  "Adds any value preceeded by a keyword to a hash map, and returns the map
-  and a sequence of remaining values.
-  e.g. (kwargs [:baz 5 \"foo\" 10 :bar 20])
-       => [{:baz 5 :bar 20} (\"foo\" 10)]"
-  [coll]
-  (loop [options {}, args nil, coll (seq coll)]
-    (if coll
-      (let [key (first coll)]
-        (if (keyword? key)
-          (recur (assoc options key (second coll)) args (rrest coll))
-          (recur options (cons key args) (rest coll))))
-      [options (reverse args)])))
-
 (defmacro return
   "A do block that will always return the argument x."
   [x & body]
@@ -55,6 +41,20 @@
   (fn [& args]
     (let [value (apply func args)]
       (if (nil? value) default value))))
+
+(defn kwargs
+  "Adds any value preceeded by a keyword to a hash map, and returns the map
+  and a sequence of remaining values.
+  e.g. (kwargs [:baz 5 \"foo\" 10 :bar 20])
+       => [{:baz 5 :bar 20} (\"foo\" 10)]"
+  [coll]
+  (loop [options {}, args nil, coll (seq coll)]
+    (if coll
+      (let [key (first coll)]
+        (if (keyword? key)
+          (recur (assoc options key (second coll)) args (rrest coll))
+          (recur options (cons key args) (rest coll))))
+      [options (reverse args)])))
 
 ;;;;; String functions ;;;;;
 
