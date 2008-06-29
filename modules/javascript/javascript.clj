@@ -30,4 +30,6 @@
   "Generates javascript code from an sexpr. Currently only handles functions.
   e.g. (js alert \"Hello World\") => \"alert(\"Hello World\");\""
   [name & args]
-  `(str '~name "(" (json-list (list ~@args)) ");"))
+  (if (= name 'return)
+    `(str "return " (js ~@args))
+    `(str '~name "(" (json-list (list ~@args)) ");")))
