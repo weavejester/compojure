@@ -1,5 +1,6 @@
-(in-ns* 'jetty-server)
 (require-module 'http)
+(in-ns* 'jetty)
+(refer 'http)
 
 (import '(org.mortbay.jetty Server)
         '(org.mortbay.jetty.servlet Context ServletHolder)

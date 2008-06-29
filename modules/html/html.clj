@@ -1,19 +1,21 @@
-(in-ns* 'compojure-html)
+(in-ns* 'html)
 
-(defn- quote-str
+;;;;; HTML/XML domain specific language ;;;;;
+
+(defn escape-html
   "Change special characters into HTML character entities."
   [s]
-  (.. (str s) (replaceAll "\"" "&quot;")
+  (.. (str s) (replaceAll "&"  "&amp;")
               (replaceAll "<"  "&lt;")
               (replaceAll ">"  "&gt;")
-              (replaceAll "&"  "&amp;")))
+              (replaceAll "\"" "&quot;")))
 
 (defn- make-attrs
   "Turn a map into a string of XML attributes."
   [attrs]
   (str-map
     (fn [[k v]]
-      (str* " " k "=\"" (quote-str v) "\""))
+      (str* " " k "=\"" (escape-html v) "\""))
     attrs))
 
 (defn- make-tag
@@ -47,12 +49,14 @@
         (rest body)))
     body))
 
-; Currently XML and HTML are treated the same.
-(defmacro html [sexpr]
-  `(xml ~sexpr))
+(defmacro html
+  "Like the xml macro, but evaluates multiple expressions."
+  [& exprs]
+  (str-map #(list html/xml %) exprs))
 
-(defn javascript-tag
-  "A javascript HTML tag."
+;;;;; Useful functions for generating HTML tags ;;;;;
+
+(defn javascript-tag "A javascript HTML tag."
   [script]
   (tag :script :type "text/javascript" script))
 
@@ -60,13 +64,15 @@
   "Include external javascript sources."
   [sources]
   (str-map
-    #(tag :script :type "text/javascript" :src (str %))
+    #(tag :script :type "text/javascript" :src % "")
     sources))
 
 (defmacro htmldoc
-  [options & body]
+  [& body]
   (let [[options body] (kwargs body)]
    `(html
+      "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"
+      \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">"
       (:html
         (:head
           (:title ~(options :title))

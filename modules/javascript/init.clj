@@ -1,1 +1,2 @@
-(require "modules/javascript/json.clj")
+(require "modules/javascript/javascript.clj")
+(refer 'javascript)

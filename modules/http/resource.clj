@@ -1,6 +1,6 @@
-(in-ns* 'compojure-http)
-(import '(java.io File FileInputStream))
-(import '(javax.servlet.http HttpServletRequest HttpServletResponse))
+(in-ns* 'http)
+(import '(java.io File FileInputStream)
+        '(javax.servlet.http HttpServletRequest HttpServletResponse))
 
 ;;;; Mimetypes ;;;;
 
@@ -112,8 +112,8 @@
     full-path (. request (getPathInfo))
     param    #(. request (getParameter (str* %)))
     header   #(. request (getHeader (str* %)))
-    mimetype #(compojure-http/context-mimetype (str %))
-    session   (compojure-http/get-session request)))
+    mimetype #(http/context-mimetype (str %))
+    session   (http/get-session request)))
 
 (defn add-resource-binding
   "Add a binding to the set of default bindings assigned to a resource."
@@ -148,3 +148,19 @@
     (or
       (some matches? *resources*)
       (partial *default-resource* {}))))
+
+(defmacro GET "Creates a GET resource."
+  [route & body]
+  `(assoc-route "GET" ~route (http-resource ~@body)))
+
+(defmacro PUT "Creates a PUT resource."
+  [route & body]
+  `(assoc-route "PUT" ~route (http-resource ~@body)))
+
+(defmacro POST "Creates a POST resource."
+  [route & body]
+  `(assoc-route "POST" ~route (http-resource ~@body)))
+
+(defmacro DELETE "Creates a DELETE resource."
+  [route & body]
+  `(assoc-route "DELETE" ~route (http-resource ~@body)))

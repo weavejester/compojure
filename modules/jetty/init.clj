@@ -1,9 +1,7 @@
 (load-file "modules/jetty/server.clj")
-(refer 'jetty-server)
-
-(def *server*)
+(refer 'jetty)
 
 (defmacro server [action]
-  (cond
-    (= action 'start) (. *server* (start))
-    (= action 'stop)  (. *server* (stop))))
+ `(cond
+    (= ~action 'start) (. *server* (start))
+    (= ~action 'stop)  (. *server* (stop))))
