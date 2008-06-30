@@ -19,7 +19,7 @@ Quickstart
 
 3. Add a basic "Hello World" HTTP resource:
 
-   user=> (GET "/" (htmldoc {:title "Example"} (:h1 "Hello World")))
+   user=> (GET "/" (htmldoc :title "Example" (:h1 "Hello World")))
 
 4. Start the inbuilt Jetty HTTP server:
 
@@ -85,7 +85,7 @@ The route can be fixed, or embedded with parameters. These parameters can be
 accessed via the 'route' map:
 
   (GET "/greet/:name"
-    (str "Hello " (route "name")))
+    (str "Hello " (route :name)))
 
 Along with 'route', there are several other bindings available by default in
 all resource declarations:
@@ -110,7 +110,7 @@ For example:
 
 (POST "/form"
   (dosync
-    (alter session #(assoc % :name (param "name")))
+    (alter session assoc :name (param :name))
     (str "Your name was changed to " (@session :name))))
 
 

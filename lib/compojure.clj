@@ -31,9 +31,26 @@
   `(def ~name (conj ~name ~value)))
 
 (defn rmap
-  "Reverse map."
+  "Reversed map."
   [func coll]
   (reverse (map func coll)))
+
+(defn assoc*
+  "Recursive assoc that can take multiple keys.
+  e.g. (assoc* {:a {:b 2}} :a :b 3) => {:a {:b 3}}"
+  ([map key val]
+    (assoc map key val))
+  ([map key val & keys]
+    (assoc map key
+      (apply assoc* (map key) val keys))))
+
+(defn modify
+  "Modify a value in a map using a function."
+  [map key func & args]
+  (let [keys (if (vector? key) key (vector key))
+        old  (reduce get map keys)
+        new  (apply func old args)]
+    (apply assoc* map (conj keys new))))
 
 (defn default
   "Change a function so that it returns a default value instead of nil"
