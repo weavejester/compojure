@@ -134,7 +134,7 @@
     (let [static-file (file "public" full-path)]
       (if (. static-file (isFile))
         static-file
-        [404 "Cannot find file"]))))
+        [404 (file "public/404.html")]))))
 
 (defn find-resource
   "Find the first resource that matches the HttpServletRequest"
