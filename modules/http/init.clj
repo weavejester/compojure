@@ -1,4 +1,4 @@
-(require "modules/http/resource.clj")
+(require "modules/http/http.clj")
 (refer 'http)
 
 (def *servlet* 

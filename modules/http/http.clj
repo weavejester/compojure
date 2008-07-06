@@ -81,7 +81,7 @@
 (def *responders*
   (list base-responder))
 
-(defn add-responder [func]
+(defn add-resource-responder [func]
   (defconj *responders* func))
 
 (defn update-response
@@ -119,7 +119,7 @@
   "Add a binding to the set of default bindings assigned to a resource."
   [name binding]
   (def *resource-bindings*
-    (list* name binding *resource-bindings*)))
+    (concat *resource-bindings* [name binding])))
 
 (defmacro http-resource
   "Create a pseudo-servlet from a resource. It's not quite a real
