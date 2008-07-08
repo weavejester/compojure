@@ -2,6 +2,7 @@
 (clojure/refer 'clojure)
 
 (import '(clojure.lang Named)
+        '(java.lang IllegalArgumentException)
         '(javax.servlet.http HttpServlet)
         '(java.io File FileReader PushbackReader))
 
@@ -35,23 +36,6 @@
   [func coll]
   (reverse (map func coll)))
 
-(defn assoc*
-  "Recursive assoc that can take multiple keys.
-  e.g. (assoc* {:a {:b 2}} :a :b 3) => {:a {:b 3}}"
-  ([map key val]
-    (assoc map key val))
-  ([map key val & keys]
-    (assoc map key
-      (apply assoc* (map key) val keys))))
-
-(defn modify
-  "Modify a value in a map using a function."
-  [map key func & args]
-  (let [keys (if (vector? key) key (vector key))
-        old  (reduce get map keys)
-        new  (apply func old args)]
-    (apply assoc* map (conj keys new))))
-
 (defn default
   "Change a function so that it returns a default value instead of nil"
   [func default]
@@ -73,6 +57,30 @@
           (recur options (cons key args) (rest coll))))
       [options (reverse args)])))
 
+(defn tree-map
+  "Map a function on each sub-sequence of a tree of sequences."
+  [func tree]
+  (func (map
+          #(if (seq? %) (tree-map func %) %)
+          tree)))
+
+(defn try-seq
+  "Try out (seq x), and return nil if it throws an exception."
+  [x]
+  (try (seq x)
+       (catch IllegalArgumentException e
+         nil)))
+
+(defn flatten
+  "Flatten a collection into a one-dimensional sequence."
+  [coll]
+  (if (seq coll)
+    (let [[x & xs] coll]
+      (if (try-seq x)
+        (lazy-cat (flatten x) (flatten xs))
+        (lazy-cons x (flatten xs))))
+    coll))
+  
 ;;;;; String functions ;;;;;
 
 (defn str-map
@@ -98,6 +106,11 @@
       (fn [a b] (str a sep b))
       (str (first coll))
       (rest coll))))
+
+(defn lines
+  "Concatenate a sequence of strings into lines of a single string."
+  [coll]
+  (str-join coll "\n"))
 
 (defn escape
   "Escape a set of special characters chars in a string s."
@@ -130,6 +143,11 @@
     (str-map
       #(str spacer % "\n")
       (re-split #"\n" text))))
+
+(defn wrout
+  "Write a string to *out*."
+  [s]
+  (. *out* (write s)))
 
 ;;;;; File and stream functions ;;;;;
 
