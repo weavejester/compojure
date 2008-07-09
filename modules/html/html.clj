@@ -36,6 +36,17 @@
   (let [[attrs contents] (kwargs contents)]
     (make-tag name attrs (flatten contents))))
 
+(defn- add-tag-symbol
+  "Add the `tag symbol to each list beginning with a keyword."
+  [tree]
+  (if (seq? tree)
+    (tree-map
+      #(if (keyword? (first %))
+         (cons `tag %)
+         %)
+      tree)
+    tree))
+
 (defmacro xml
   "Any forms starting with a keyword in the body of this macro get an implicit
   tag function.
@@ -43,13 +54,7 @@
     (xml (:body (:p \"Hello World\")))"
   [& body]
   `(lines
-     (list
-       ~@(map
-           (partial tree-map
-             #(if (keyword? (first %))
-                (cons `tag %)
-                %))
-          body))))
+     (list ~@(map add-tag-symbol body))))
 
 (defmacro html
   "An alias for the xml macro."
