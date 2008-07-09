@@ -210,22 +210,23 @@ Compojure offers a shortcut. The `xml` and `html` macros will automatically add
 the 'tag symbol to any list that begins with a keyword.
 
 e.g.
-     (html
-       (:div :id "content"
-         (:p "Hello World")))
 
-     => <div id="content">
-          <p>
-            Hello World"
-          </p>
-        </div>
+    (html
+      (:div :id "content"
+        (:p "Hello World")))
+
+    => <div id="content">
+         <p>
+           Hello World"
+         </p>
+       </div>
 
 
-     (html
-       (:ul :class "users"
-         (map
-           (fn [user] (:li (user :name)))
-           users)))
+    (html
+      (:ul :class "users"
+        (map
+          (fn [user] (:li (user :name)))
+          users)))
 
      => <ul class="users">
           <li>
@@ -233,6 +234,6 @@ e.g.
           </li>
           <li>
             Joe
-          </li>
-          ...
-        </ul>
+           </li>
+           ...
+         </ul>
