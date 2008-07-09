@@ -33,25 +33,24 @@ File Structure
 Like Ruby on Rails, Merb, and other similar frameworks, Compojure uses a fixed
 directory layout.
 
-    .
-    |- app             - Your web application code
+    +- app             - Your web application code
     |
-    |- config
-    |  `- boot.clj     - The script that sets up Compojure
+    +- config
+    |  +- boot.clj     - The script that sets up Compojure
     |
-    |- jars            - The jar files used by the application
+    +- jars            - The jar files used by the application
     |
-    |- lib             - Global libraries for Compojure
+    +- lib             - Global libraries for Compojure
     |
-    |- modules         - Contains all the Compojure modules
-    |  `- *
-    |     |- init.clj  - Each module has an init.clj to initiate it
-    |     `- jars      - And may also have a directory for jar files
+    +- modules         - Contains all the Compojure modules
+    |  +- *
+    |     +- init.clj  - Each module has an init.clj to initiate it
+    |     +- jars      - And may also have a directory for jar files
     |
-    |- public          - Static files that are served if no route is found
+    +- public          - Static files that are served if no route is found
     |
-    `- script
-       `- repl         - The sh script that starts the Compojure REPL
+    +- script
+       +- repl         - The sh script that starts the Compojure REPL
 
 
 By default, the boot.clj file will load in any .clj file in the app directory,
@@ -140,3 +139,100 @@ These modifications can be chained together using a standard Clojure vector:
 
     (GET "/download"
       (file "public/compojure.tar.gz"))   ; 'file' is an alias to 'new java.io.File'
+
+
+HTML
+----
+
+The HTML module provides a way of defining HTML or XML through S-expressions.
+This module has a very similar syntax to the HTML generation library of
+AllegroServe.
+
+Note that this module is less complete than the HTTP module.
+
+The basic way of producing HTML is via the `tag` function:
+
+    (tag 'p "Hello")
+    => <p>
+         Hello
+       </p>
+
+    (tag :div "World")
+    => <div>
+         World
+       </div>
+
+Attributes can be added by preceeding an argument by a keyword:
+
+    (tag 'div :class "chapter"
+      "Hello World")
+
+    => <div class="chapter">
+         Hello World
+       </div>
+
+    (tag 'a :href "test.html" :class "link"
+       "Go to test.html")
+
+    => <a href="test.html" class="link">
+         Go to test.html
+       </a>
+
+Tags can also be nested:
+
+    (tag 'p
+      (tag 'em "Hello World"))
+
+    => <p>
+         <em>
+           Hello World
+         </em>
+       </p>
+
+And any collection in a tag's body is automatically expanded:
+
+    (tag 'ul
+      (map
+        (fn [user] (tag 'li user))
+        ["Alice" "Carol"))
+
+    => <ul>
+         <li>
+           Alice
+         </li>
+         <li>
+           Carol
+         </li>
+       </ul>
+
+However, putting `tag` at the beginning all the time is rather repetitious, so
+Compojure offers a shortcut. The `xml` and `html` macros will automatically add
+the 'tag symbol to any list that begins with a keyword.
+
+e.g.
+     (html
+       (:div :id "content"
+         (:p "Hello World")))
+
+     => <div id="content">
+          <p>
+            Hello World"
+          </p>
+        </div>
+
+
+     (html
+       (:ul :class "users"
+         (map
+           (fn [user] (:li (user :name)))
+           users)))
+
+     => <ul class="users">
+          <li>
+            Fred
+          </li>
+          <li>
+            Joe
+          </li>
+          ...
+        </ul>
