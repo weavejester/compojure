@@ -9,21 +9,21 @@ Quickstart
 
 1. Grab Compojure from github:
 
-    $ git clone git://github.com/weavejester/compojure.git
+        $ git clone git://github.com/weavejester/compojure.git
 
 2. Run the inbuilt REPL script. This automatically includes all the relevant
    jars and Compojure libraries. A bourne-compatible shell is required (at
    least until someone creates an equivalent batch script).
 
-    $ script/repl
+        $ script/repl
 
 3. Add a basic "Hello World" HTTP resource:
 
-    user=> (GET "/" (htmldoc :title "Example" (:h1 "Hello World")))
+        user=> (GET "/" (htmldoc :title "Example" (:h1 "Hello World")))
 
 4. Start the inbuilt Jetty HTTP server:
 
-    user=> (server start)
+        user=> (server start)
 
 5. Your page should be up and running at: http://localhost:8080/
 
