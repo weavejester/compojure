@@ -1,0 +1,19 @@
+* HTML tags need to be formatted in different ways, depending on whether the
+  element is a block, or a span, and whether or not it has to have an ending
+  tag.
+
+  e.g.
+
+    (:em "foo")
+    => <em>foo</em>
+
+    (:div "foo")
+    => <div>
+         foo
+       </div>
+
+    (:input :type "text" :name "foo")
+    => <input type="text" name="foo" />
+
+    (:script :src "foo.js")
+    => <script src="foo.js"></script>
