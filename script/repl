@@ -5,4 +5,12 @@ done
 for file in modules/**/jars/*.jar; do
     jars=$jars:$file
 done
-java -cp $jars jline.ConsoleRunner clojure.lang.Repl config/boot.clj
+
+classpath=$jars:lib:modules
+
+if which rlwrap > /dev/null
+then
+    rlwrap java -cp $classpath clojure.lang.Repl config/boot.clj
+else
+    java -cp $classpath jline.ConsoleRunner clojure.lang.Repl config/boot.clj
+fi
