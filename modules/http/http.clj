@@ -1,4 +1,6 @@
-(in-ns* 'http)
+(compojure/module http)
+(use file-utils)
+
 (import '(java.io File FileInputStream)
         '(javax.servlet.http HttpServletRequest HttpServletResponse))
 
@@ -41,13 +43,14 @@
   [\"GET\"
    (parse-route \"/welcome/:name\") 
    (fn [context request response] ...)]"}
-  *resources* nil)
+  *resources* (ref '()))
 
 (defn assoc-route
   "Associate a HTTP method and route with a resource function."
   [method route resource]
-  (defconj *resources*
-    [method (parse-route route) resource]))
+  (dosync
+    (commute *resources* conj
+      [method (parse-route route) resource])))
 
 ;;;; Response ;;;;
 
@@ -79,10 +82,11 @@
         (pipe-stream in out))))
 
 (def *responders*
-  (list base-responder))
+  (ref (list base-responder)))
 
 (defn add-resource-responder [func]
-  (defconj *responders* func))
+  (dosync
+    (commute *responders* conj func)))
 
 (defn update-response
   "Destructively update a HttpServletResponse via a Clojure datatype. Vectors
@@ -91,7 +95,7 @@
   (if (vector? update)
     (doseq d update
       (update-response response context d))
-    (some #(% response context update) *responders*)))
+    (some #(% response context update) @*responders*)))
 
 ;;;; Resource ;;;;
 
@@ -108,25 +112,25 @@
   "A set of bindings available to each resource. This can be extended
   by plugins, if required."}
   *resource-bindings*
-  '(method    (. request (getMethod))
-    full-path (. request (getPathInfo))
-    param    #(. request (getParameter (str* %)))
-    header   #(. request (getHeader (str* %)))
-    mimetype #(http/context-mimetype (str %))
-    session   (http/get-session request)))
+  (ref '(method    (. request (getMethod))
+         full-path (. request (getPathInfo))
+         param    #(. request (getParameter (str* %)))
+         header   #(. request (getHeader (str* %)))
+         mimetype #(http/context-mimetype (str %))
+         session   (http/get-session request))))
 
 (defn add-resource-binding
   "Add a binding to the set of default bindings assigned to a resource."
   [name binding]
-  (def *resource-bindings*
-    (concat *resource-bindings* [name binding])))
+  (dosync
+    (commute *resource-bindings* concat [name binding])))
 
 (defmacro http-resource
   "Create a pseudo-servlet from a resource. It's not quite a real
   servlet because it's a function, rather than an HttpServlet object."
   [& body]
   `(fn ~'[route context request response]
-     (let ~(apply vector *resource-bindings*)
+     (let ~(apply vector @*resource-bindings*)
        (update-response ~'response ~'context (do ~@body)))))
 
 (def *default-resource*
@@ -146,7 +150,7 @@
                       (if-let route-params (match-route route path)
                         (partial resource route-params) nil)))]
     (or
-      (some matches? *resources*)
+      (some matches? @*resources*)
       (partial *default-resource* {}))))
 
 (defmacro GET "Creates a GET resource."
@@ -164,3 +168,9 @@
 (defmacro DELETE "Creates a DELETE resource."
   [route & body]
   `(assoc-route "DELETE" ~route (http-resource ~@body)))
+
+(def resource-servlet
+  (new-servlet
+    (fn [context request response]
+      (let [resource (find-resource request response)]
+        (resource context request response)))))

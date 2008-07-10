@@ -1,6 +1,5 @@
-(require-module 'http)
-(in-ns* 'jetty)
-(refer 'http)
+(compojure/module jetty)
+(use (http :in "http"))
 
 (import '(org.mortbay.jetty Server)
         '(org.mortbay.jetty.servlet Context ServletHolder)
@@ -44,7 +43,7 @@
       (dosync
         (let [cset    (*continuations* key)
               cset+cc (conj (set cset) cc)]
-          (alter *continuations* assoc key cset+cc)))
+          (commute *continuations* assoc key cset+cc)))
       (. cc (suspend timeout)))))
 
 (defn async-response
@@ -64,7 +63,7 @@
   [key]
   (let [cset (dosync
                (return (*continuations* key)
-                 (alter *continuations* dissoc key)))]
+                 (commute *continuations* dissoc key)))]
     (doseq cc cset
       (. cc (resume)))))
 
