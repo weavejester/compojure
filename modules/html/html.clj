@@ -17,12 +17,14 @@
       (str* " " k "=\"" (escape-html v) "\""))
     attrs))
 
+(def xml)
+
 (defn- make-tag
   "Create an XML tag given a name, attribute map, and seq of contents."
   [name attrs contents]
   (if contents
     (str* "<" name (make-attrs attrs) ">"
-          (apply str contents)
+          (str-map xml contents)
           "</" name ">")
     (str* "<" name (make-attrs attrs) " />")))
 
@@ -31,9 +33,8 @@
   [tree]
   (if (vector? tree)
     (if-let tag (first tree)
-      (apply make-tag (str* tag)
-        (if (map? (second tree))
-          [(second tree) (xml (rrest tree))]
-          [{} (xml (rest tree))]))
+      (if (map? (second tree))
+        (make-tag (str* tag) (second tree) (rrest tree))
+        (make-tag (str* tag) {} (rest tree)))
       "")
     (str tree)))
