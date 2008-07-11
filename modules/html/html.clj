@@ -56,32 +56,48 @@
          (make-tag tag attrs ""))
        "\n"))
 
+(defn expand-seqs
+  "Expand out all the sequences in a collection."
+  [coll]
+  (mapcat #(if (seq? %) % (list %)) coll))
+
 (defn xml
-  "Turns a tree of vectors into a string of XML."
+  "Turns a tree of vectors into a string of XML. Any sequences in the
+  tree are expanded out."
   ([tree]
     (xml basic-xml-formatter tree))
   ([format tree]
-    (if (instance? Sequential tree)
-      (if-let tag (first tree)
-        (if (map? (second tree))
-          (format format tag (second tree) (rrest tree))
-          (format format tag {} (rest tree)))
-        "")
+    (if (vector? tree)
+      (let [tree (expand-seqs tree)]
+        (if-let tag (first tree)
+          (if (map? (second tree))
+            (format format tag (second tree) (rrest tree))
+            (format format tag {} (rest tree)))
+          ""))
       (str tree))))
 
 (def #^{:private true
         :doc "A set of HTML tags that should be rendered as blocks"}
   html-block-tags
-  #{:blockquote :body :div :dl :fieldset :form :head :html
-    :ol :p :pre :table :tbody :thead :tr :script :ul})
+  #{:blockquote :body :div :dl :fieldset :form :head :html :ol
+    :p :pre :table :tbody :tfoot :thead :tr :script :select :ul})
+
+(def #^{:private true
+        :doc "HTML tags that should be rendered on their own line"}
+  html-line-tags
+  #{:br :dd :dt :h1 :h2 :h3 :h4 :h5 :h6 :hr :li :link
+    :option :td :textarea :title})
 
 (defn html-formatter
   "Format HTML in a readable fashion."
   [next-format tag attrs body]
-  ((if (contains? html-block-tags tag)
-     block-xml-formatter
-     basic-xml-formatter)
-   html-formatter tag attrs body))
+  (let [format  (if (contains? html-block-tags tag)
+                  block-xml-formatter
+                  basic-xml-formatter)
+        content (format html-formatter tag attrs body)]
+    (if (contains? html-line-tags tag)
+      (str content "\n")
+      content)))
 
 (defn html
   "Nicely formats a tree of vectors into HTML."

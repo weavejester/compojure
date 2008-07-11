@@ -17,6 +17,11 @@
   `(let [x# ~x]
      (do ~@body x#)))
 
+(defmacro domap
+  "Similar to doseq, but collects the results into a sequence, like map."
+  [item list & body]
+  `(map (fn [~item] ~@body) ~list))
+
 (defn str-map
   "Map a function to a collection, then concatenate the results into a
   string."
