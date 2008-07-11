@@ -6,7 +6,7 @@ for file in modules/**/jars/*.jar; do
     jars=$jars:$file
 done
 
-classpath=$jars:lib:modules
+classpath=app:$jars:lib:modules
 
 if which rlwrap > /dev/null
 then
