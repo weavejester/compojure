@@ -144,96 +144,43 @@ These modifications can be chained together using a standard Clojure vector:
 HTML
 ----
 
-The HTML module provides a way of defining HTML or XML through S-expressions.
-This module has a very similar syntax to the HTML generation library of
-AllegroServe.
+The HTML module provides a way of defining HTML or XML through a tree of
+vectors.
 
-Note that this module is less complete than the HTTP module.
-
-The basic way of producing HTML is via the `tag` function:
-
-    (tag 'p "Hello")
-    => <p>
-         Hello
-       </p>
-
-    (tag :div "World")
-    => <div>
-         World
-       </div>
-
-Attributes can be added by preceeding an argument by a keyword:
-
-    (tag 'div :class "chapter"
-      "Hello World")
-
-    => <div class="chapter">
-         Hello World
-       </div>
-
-    (tag 'a :href "test.html" :class "link"
-       "Go to test.html")
-
-    => <a href="test.html" class="link">
-         Go to test.html
-       </a>
-
-Tags can also be nested:
-
-    (tag 'p
-      (tag 'em "Hello World"))
+    (html [:p [:em "Hello World"]])
 
     => <p>
-         <em>
-           Hello World
-         </em>
+         <em>Hello World</em>
        </p>
 
-And any collection in a tag's body is automatically expanded:
+The tag is taken from the first item of the vector, and can be a string,
+symbol or keyword. You can optionally specify attributes for the tag by
+providing a hash map as the secord item of the vector:
 
-    (tag 'ul
-      (map
-        (fn [user] (tag 'li user))
-        ["Alice" "Carol"))
+    (html [:div {:class "footer"} "Page 1"])
+
+    => <div class="footer">
+         Page 1
+       </div>
+
+Any sequences will be expanded out into the containing vector:
+
+    (html [:em '("foo" "bar")])
+
+    => <em>foobar</em>
+
+    (html [:ul
+      (map (fn [x] [:li x])
+           [1 2 3])])
 
     => <ul>
-         <li>
-           Alice
-         </li>
-         <li>
-           Carol
-         </li>
+         <li>1</li>
+         <li>2</li>
+         <li>3</li>
        </ul>
 
-However, putting `tag` at the beginning all the time is rather repetitious, so
-Compojure offers a shortcut. The `xml` and `html` macros will automatically add
-the 'tag symbol to any list that begins with a keyword.
+The `html` function not only renders valid HTML, it also formats it as best it
+can in a human readable format. Block elements like `<p>` and `<div>` are
+indented, whilst span elements like `<em>` are rendered inline.
 
-e.g.
-
-    (html
-      (:div :id "content"
-        (:p "Hello World")))
-
-    => <div id="content">
-         <p>
-           Hello World"
-         </p>
-       </div>
-
-
-    (html
-      (:ul :class "users"
-        (map
-          (fn [user] (:li (user :name)))
-          users)))
-
-     => <ul class="users">
-          <li>
-            Fred
-          </li>
-          <li>
-            Joe
-           </li>
-           ...
-         </ul>
+Conversely, the `xml` function has no special formatting.
