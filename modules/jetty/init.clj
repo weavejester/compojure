@@ -1,5 +1,10 @@
-(load-file "modules/jetty/server.clj")
+(refer 'lib)
+(require jetty/jetty)
+(require http/init)
 (refer 'jetty)
+
+(def *server*
+  (http-server *servlet*))
 
 (defmacro server [action]
  `(cond

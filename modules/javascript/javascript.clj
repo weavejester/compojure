@@ -1,4 +1,6 @@
-(in-ns* 'javascript)
+(module javascript)
+(use str-utils)
+
 (def json)
 
 (defn json-list
@@ -11,9 +13,9 @@
 
 (defn- json-object
   [hash]
-  (let [pair (fn [[k v]]
-               (str (json k) ": " (json v)))]
-    (str "{" (str-join (map pair hash) ", ") "}")))
+  (let [pair (fn [[key val]]
+               (str (json key) ": " (json val)))]
+    (str "{" (str-join ", " (map pair hash)) "}")))
 
 (defn json
   "Parse a Clojure datatype into a portable JSON format."

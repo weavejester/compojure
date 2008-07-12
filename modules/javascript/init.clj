@@ -1,2 +1,3 @@
-(require "modules/javascript/javascript.clj")
+(refer 'lib)
+(require javascript/javascript)
 (refer 'javascript)

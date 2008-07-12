@@ -1,8 +1,7 @@
-(require "modules/http/http.clj")
+(refer 'lib)
+(require http/http)
 (refer 'http)
 
-(def *servlet* 
-  (new-servlet
-    (fn [context request response]
-      (let [resource (find-resource request response)]
-        (resource context request response)))))
+; Use the resources defined using the http module as the root servlet
+(def *servlet*
+  resource-servlet)

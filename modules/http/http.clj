@@ -97,6 +97,11 @@
       (update-response response context d))
     (some #(% response context update) @*responders*)))
 
+(defn redirect-to
+  "A handy shortcut for a '302 Moved' HTTP redirect."
+  [location]
+  [302 {"Location" location}])
+
 ;;;; Resource ;;;;
 
 (defn get-session
@@ -169,7 +174,8 @@
   [route & body]
   `(assoc-route "DELETE" ~route (http-resource ~@body)))
 
-(def resource-servlet
+(def #^{:doc "A servlet that handles all the defined resources."}
+  resource-servlet
   (new-servlet
     (fn [context request response]
       (let [resource (find-resource request response)]

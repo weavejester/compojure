@@ -1,2 +1,4 @@
-(require "modules/html/html.clj")
+(refer 'lib)
+(require html/html)
+(require html/helpers)
 (refer 'html)
