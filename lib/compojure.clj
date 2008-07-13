@@ -1,7 +1,9 @@
 (clojure/in-ns 'compojure)
 (clojure/refer 'clojure)
 
-(lib/use str-utils seq-utils file-utils)
+(lib/use str-utils
+         seq-utils
+         file-utils)
 
 (import '(clojure.lang Named)
         '(javax.servlet.http HttpServlet))
