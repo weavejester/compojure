@@ -21,7 +21,7 @@ Quickstart
 
         user=> (GET "/" (html [:h1 "Hello World"]))
 
-5. Your page should be up and running at: <http://localhost:8080/>
+4. Your page should be up and running at: <http://localhost:8080/>
 
 File Structure
 ==============
