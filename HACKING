@@ -1,74 +1,80 @@
+Hacking Compojure
+=================
+
+The HTTP Library
+----------------
+
 Compojure handles HTTP requests using an concise syntax inspired by the Ruby
 web framework, Sinatra. It works by defining resources, which are a path
 combined with an expression that generates a response when evaluated:
-
-(GET "/user/:name"
-  (str "Hello World" (route :name)))
-
+ 
+    (GET "/user/:name"
+      (str "Hello World" (route :name)))
+ 
 Behind the scenes, this simple syntax is transformed into a part of a
 HttpServlet object. First, the 'GET' macro is expanded out:
-
-(assoc-route "GET" "/user/:name"
-  (http-resource
-    (str "Hello World" (route :name))))
-
+ 
+    (assoc-route "GET" "/user/:name"
+      (http-resource
+        (str "Hello World" (route :name))))
+ 
 assoc-route associates a method and route with a resource. http-resource,
 unsurprisingly, creates a HTTP resource from an expression. Let's first
 expand out the assoc-route function:
-
-(def *resources*
-  (conj
-    *resources*
-    ["GET",
-     (parse-route "/user/:name")
-     (http-resource
-       (str "Hello World" (route :name)))]))
-
+ 
+    (def *resources*
+      (conj
+        *resources*
+        ["GET",
+         (parse-route "/user/:name")
+         (http-resource
+           (str "Hello World" (route :name)))]))
+ 
 A vector containing the HTTP method, the route, and the resource is appended
 to the *resources* variable. In case you were wondering what the parse-route
 function does:
-
-(parse-route "/user/:name")
-=> [#"/user/([^/.,;?]+)", '(:name)] 
-
+ 
+    (parse-route "/user/:name")
+     => [#"/user/([^/.,;?]+)", '(:name)]
+ 
 It turns the human-readable route into a not-so-readable regular expression.
 Each matching group from the regex is assigned to a hash with the
 corresponding key. In the above case, group 1 is assigned the key :name.
-
+ 
 Next, lets expand out the http-resource macro:
-
- (fn [route context request response]
-   (let (vector *resource-bindings*)
-     (update-response response context
-       (do (str "Hello World" (route :name))))))
-
+ 
+    (fn [route context request response]
+      (let (vector *resource-bindings*)
+        (update-response response context
+         (do (str "Hello World" (route :name))))))
+ 
 The resulting function takes arguments for a hash map of information from
 the route, a HttpServletContext object, a HttpServletRequest object and a
 HttpServletResponse object.
-
-It uses these objects to generate more useful  bindings, via the
+ 
+It uses these objects to generate more useful bindings, via the
 *resource-bindings* list. For example:
-
-(http-resource (param :foo))
-
+ 
+    (http-resource (param :foo))
+ 
 Is just a shortcut for:
-
-(http-resource (. request (getParameter "foo")))
-
+ 
+    (http-resource (. request (getParameter "foo")))
+ 
 Once it has generated the response, it uses the update-response function
 to update the HttpServletResponse object, dependant on the return type of
 the 'do' block. For instance, if the return value is a string, it adds it
 to the body of the response.
-
+ 
 Compojure supplies two functions for customizing the behaviour of
 http-response:
-
+ 
 * add-resource-binding
 * add-resource-responder
-
+ 
 The add-resource-binding function allows developers to add their own bindings
 to resources. The add-resource-responder function allows them to add their
 own function to update-response.
-
+ 
 For example, the Jetty module adds resource bindings for handling
 asynchronous HTTP requests.

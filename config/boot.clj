@@ -1,12 +1,18 @@
-(load-file "lib/lib.clj")
-(lib/use compojure)
-(lib/use glob)
+(load-file "lib/contrib/lib.clj")
 
-; Load up all the modules
-(doseq module (glob "modules/*")
-  (lib/load-libs :require
-    (symbol (str module "/init"))))
+; Load all the Compojure libraries
+(lib/use compojure
+         html
+         html-helpers
+         http
+         jetty
+         json
+         persist
+         lib)
 
-; Load up any .clj file in the app directory
-(doseq file (glob "app/**.clj")
-  (load-file (str file)))
+; Create a new Jetty HTTP Server on port 8080
+(def *server*
+  (http-server resource-servlet :port 8080))
+
+; Start the server
+(start *server*)

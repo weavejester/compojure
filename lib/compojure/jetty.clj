@@ -1,5 +1,9 @@
-(compojure/module jetty)
-(use (http :in "http"))
+;; jetty.clj -- Jetty interface for Compojure
+
+(clojure/in-ns 'jetty)
+(clojure/refer 'clojure)
+
+(lib/use compojure http)
 
 (import '(org.mortbay.jetty Server)
         '(org.mortbay.jetty.servlet Context ServletHolder)
@@ -17,6 +21,14 @@
         holder  (new ServletHolder servlet)]
     (. context (addServlet holder "/*"))
     server))
+
+(defn start "Start a HTTP server."
+  [server]
+  (.start server))
+
+(defn stop  "Stop a HTTP server."
+  [server]
+  (.stop server))
 
 ;;;;; Asynchronous response (Comet) helpers ;;;;;
 

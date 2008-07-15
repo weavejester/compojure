@@ -1,11 +1,15 @@
-(module javascript)
-(use str-utils)
+;; json.clj -- JSON generator library for Compojure
+
+(clojure/in-ns 'json)
+(clojure/refer 'clojure)
+
+(lib/use compojure str-utils)
 
 (def json)
 
 (defn json-list
   [coll]
-  (str-join (map json coll) ", "))
+  (str-join ", " (map json coll)))
 
 (defn- json-array
   [coll]
@@ -27,11 +31,3 @@
     (string? x)          (pr-str x)
     (keyword? x)         (pr-str (name x))
     (instance? Number x) (pr-str x)))
-
-(defmacro js
-  "Generates javascript code from an sexpr. Currently only handles functions.
-  e.g. (js alert \"Hello World\") => \"alert(\"Hello World\");\""
-  [name & args]
-  (if (= name 'return)
-    `(str "return " (js ~@args))
-    `(str '~name "(" (json-list (list ~@args)) ");")))

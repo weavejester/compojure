@@ -1,5 +1,10 @@
-(compojure/module html)
-(use seq-utils)
+;; html.clj -- HTML generator library for Compojure
+
+(clojure/in-ns 'html)
+(clojure/refer 'clojure)
+
+(lib/use compojure seq-utils)
+
 (import '(clojure.lang Sequential))
 
 (defn escape-html

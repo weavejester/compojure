@@ -1,5 +1,9 @@
-(compojure/module http)
-(use file-utils)
+;; http.clj -- HTTP resource library for Compojure
+
+(clojure/in-ns 'http)
+(clojure/refer 'clojure)
+
+(lib/use compojure file-utils)
 
 (import '(java.io File FileInputStream)
         '(javax.servlet.http HttpServletRequest HttpServletResponse))
@@ -119,8 +123,8 @@
   *resource-bindings*
   (ref '(method    (. request (getMethod))
          full-path (. request (getPathInfo))
-         param    #(. request (getParameter (str* %)))
-         header   #(. request (getHeader (str* %)))
+         param    #(. request (getParameter (compojure/str* %)))
+         header   #(. request (getHeader (compojure/str* %)))
          mimetype #(http/context-mimetype (str %))
          session   (http/get-session request))))
 

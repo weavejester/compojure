@@ -1,4 +1,9 @@
-(compojure/module html)
+;; html-helpers.clj -- Helper functions for generating HTML
+
+(clojure/in-ns 'html-helpers)
+(clojure/refer 'clojure)
+
+(lib/use compojure)
 
 (def doctype
   {"html4" "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01//EN\"
