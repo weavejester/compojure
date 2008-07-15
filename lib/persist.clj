@@ -20,7 +20,7 @@
       (. appender
         (write (prn-str `(let ~bindings ~@exprs)))))))
 
-(defmacro eval-bindings
+(defmacro quote-binding-names
   "Evaluate the expressions in a binding vector."
   [bindings]
   (apply vector
@@ -40,4 +40,4 @@
   [filename bindings & body]
   `(dosync
      (let ~bindings ~@body)
-     (save-exprs ~filename (eval-bindings ~bindings) '~body)))
+     (save-exprs ~filename (quote-binding-names ~bindings) '~body)))
