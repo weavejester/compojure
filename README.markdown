@@ -21,10 +21,6 @@ Quickstart
 
         user=> (GET "/" (html [:h1 "Hello World"]))
 
-4. Start the inbuilt Jetty HTTP server:
-
-        user=> (server start)
-
 5. Your page should be up and running at: <http://localhost:8080/>
 
 File Structure
@@ -36,25 +32,20 @@ directory layout.
     +- app             - Your web application code
     |
     +- config
-    |  +- boot.clj     - The script that sets up Compojure
+    |  +- boot.clj     - The script that initializes Compojure
     |
     +- jars            - The jar files used by the application
     |
-    +- lib             - Global libraries for Compojure
-    |
-    +- modules         - Contains all the Compojure modules
-    |  +- *
-    |     +- init.clj  - Each module has an init.clj to initiate it
-    |     +- jars      - And may also have a directory for jar files
+    +- lib
+    |  +- compojure    - The Compojure libraries
+    |  +- contrib      - Libraries from Clojure Contrib
     |
     +- public          - Static files that are served if no route is found
     |
     +- script
-       +- repl         - The sh script that starts the Compojure REPL
+       +- repl         - Starts an interactive REPL
+       +- run          - Runs non-interactively
 
-
-By default, the boot.clj file will load in any .clj file in the app directory,
-including in subdirectories.
 
 
 Core Modules
