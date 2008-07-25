@@ -149,10 +149,17 @@
         static-file
         [404 (file "public/404.html")]))))
 
+(defn find-method
+  "Returns the HTTP method, or the value of the '_method' parameter, if it
+  exists."
+  [request]
+  (or (. request (getParameter "_method"))
+      (. request (getMethod))))
+
 (defn find-resource
   "Find the first resource that matches the HttpServletRequest"
   [#^HttpServletRequest request response]
-  (let [method    (. request (getMethod))
+  (let [method    (find-method request)
         path      (. request (getPathInfo))
         matches?  (fn [[meth route resource]]
                     (if (= meth method)
