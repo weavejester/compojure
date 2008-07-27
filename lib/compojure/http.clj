@@ -20,23 +20,27 @@
 
 ;;;; Routes ;;;;
 
+(defn- part->regex
+  [[value match?]]
+  (if match?
+    (if (= value "*")
+      "(.*?)"
+      "([^/.,;?]+)")
+    (re-escape value)))
+
+(defn- part->keyword
+  [[value _]]
+  (if (= value "*")
+    :*
+    (keyword (.substring value 1))))
+  
 (defn parse-route
   "Turn a route string into a regex and seq of symbols."
   [route]
-  (let [parts       (re-parts #":\\w+|\\*" route)
-        part->regex (fn [[s m?]]
-                      (if m?
-                        (if (= s "*")
-                           "(.*?)"
-                           "([^/.,;?]+)")
-                        (re-escape s)))
-        part->key   (fn [[s _]]
-                      (if (= s "*")
-                        :*
-                        (keyword (.substring s 1))))]
+  (let [parts (re-parts #":\\w+|\\*" route)]
     [(re-pattern
        (str-map part->regex parts))
-     (map part->key
+     (map part->keyword
           (filter second parts))]))
 
 (defn match-route 
@@ -158,12 +162,18 @@
      (let ~(apply vector @*resource-bindings*)
        (update-response ~'response ~'context (do ~@body)))))
 
-(def *default-resource*
-  (http-resource
-    (let [static-file (file "public" full-path)]
+(defn serve-file
+  "Serve up a static file from a directory. A 404 is returned if the file
+  does not exist."
+  ([path]
+    (serve-file "public" path))
+  ([root path]
+    (serve-file root path "404.html"))
+  ([root path not-found]
+    (let [static-file (file root path)]
       (if (. static-file (isFile))
         static-file
-        [404 (file "public/404.html")]))))
+        [404 (file root not-found)]))))
 
 (defn find-method
   "Returns the HTTP method, or the value of the '_method' parameter, if it
@@ -181,9 +191,7 @@
                     (if (= meth method)
                       (if-let route-params (match-route route path)
                         (partial resource route-params) nil)))]
-    (or
-      (some matches? @*resources*)
-      (partial *default-resource* {}))))
+    (some matches? @*resources*)))
 
 (defmacro GET "Creates a GET resource."
   [route & body]
