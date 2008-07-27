@@ -54,13 +54,25 @@
       #(str spacer % "\n")
       (re-split #"\n" text))))
 
-(defn re-find-all
-  "Repeat re-find for matcher m until nil, and return the seq of
-  results."
-  [m]
-  (doall (take-while identity
-    (map re-find (repeat m)))))
+(defn blank?
+  "True if s = \"\" or nil"
+  [s]
+  (or (nil? s) (= s "")))
 
+(defn re-parts
+  "Divide a string up at the boundaries matched by a regex."
+  [re s]
+  (let [m (re-matcher re s)
+        f (fn [f i]
+            (if-let group (re-find m)
+              (let [parts  (lazy-cons [group true] (f f (.end m)))
+                    before (.substring s i (.start m))]
+                (if (blank? before)
+                  parts
+                  (lazy-cons [before false] parts)))
+              (list [(.substring s i) false])))]
+    (f f 0)))
+                         
 (defn str*
   "A version of str that prefers the names of Named objects.
   e.g (str \"Hello \" :World)  => \"Hello :World\"

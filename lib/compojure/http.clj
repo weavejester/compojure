@@ -23,12 +23,21 @@
 (defn parse-route
   "Turn a route string into a regex and seq of symbols."
   [route]
-  (let [segment  "([^/.,;?]+)"
-        matcher  (re-matcher #":([a-z_]+)" (re-escape route))
-        symbols  (re-find-all matcher)
-        regex    (. matcher (replaceAll segment))]
-    [(re-pattern regex)
-     (map (comp keyword second) symbols)]))
+  (let [parts       (re-parts #":\\w+|\\*" route)
+        part->regex (fn [[s m?]]
+                      (if m?
+                        (if (= s "*")
+                           "(.*?)"
+                           "([^/.,;?]+)")
+                        (re-escape s)))
+        part->key   (fn [[s _]]
+                      (if (= s "*")
+                        :*
+                        (keyword (.substring s 1))))]
+    [(re-pattern
+       (str-map part->regex parts))
+     (map part->key
+          (filter second parts))]))
 
 (defn match-route 
   "Match a path against a parsed route. Returns a map of keywords and their
@@ -36,8 +45,15 @@
   [[regex symbols] path]
   (let [matcher (re-matcher regex path)]
     (if (. matcher (matches))
-      (apply hash-map
-        (interleave symbols (rest (re-groups matcher)))))))
+      (reduce
+        (fn [map [key val]]
+          (if-let cur (map key)
+            (if (vector? cur)
+              (assoc map key (conj cur val))
+              (assoc map key [cur val]))
+            (assoc map key val)))
+        {}
+        (map vector symbols (rest (re-groups matcher)))))))
 
 (def #^{:doc
   "A global list of all registered resources. A resource is a vector
