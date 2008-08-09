@@ -8,6 +8,14 @@
 (import '(clojure.lang Named)
         '(javax.servlet.http HttpServlet))
 
+(defn assoc-on
+  "Returns a new map of the same type with key mapped to val conjoined with the
+  existing value at that key. If existing value does not exist, it uses base."
+  [map base key val]
+  (if (contains? map key)
+    (merge-with conj map {key val})
+    (assoc map key (conj base val))))
+
 (defn parse-int
   "Parse a integer contained in 'string'."
   [string]
