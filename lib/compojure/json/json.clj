@@ -1,9 +1,10 @@
-;; json.clj -- JSON generator library for Compojure
+;; compojure.json -- JSON generator library for Compojure
 
-(clojure/in-ns 'json)
+(clojure/in-ns 'compojure.json)
 (clojure/refer 'clojure)
+(clojure/refer 'clojure.contrib.lib)
 
-(lib/use compojure str-utils)
+(use '(clojure.contrib str-utils))
 
 (def json)
 

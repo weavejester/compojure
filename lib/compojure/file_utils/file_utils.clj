@@ -1,9 +1,10 @@
-;; file-utils.clj -- file utilities for Clojure
+;; compojure.file-utils -- File utilities for Compojure
 
-(clojure/in-ns 'file-utils)
+(clojure/in-ns 'compojure.file-utils)
 (clojure/refer 'clojure)
 
-(import '(java.io File FileReader PushbackReader
+(import '(java.io File FileReader
+                  PushbackReader
                   InputStream OutputStream))
 
 (defn file

@@ -1,14 +1,8 @@
-(load-file "lib/contrib/lib.clj")
+(load-file "lib/clojure/contrib/lib/lib.clj")
+(refer 'clojure.contrib.lib)
 
 ; Load all the Compojure libraries
-(lib/use compojure
-         html
-         html-helpers
-         http
-         jetty
-         json
-         persist
-         lib)
+(use '(compojure html http jetty json persist))
 
 ; Create a new Jetty HTTP Server on port 8080
 (def *server*

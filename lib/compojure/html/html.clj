@@ -1,11 +1,15 @@
-;; html.clj -- HTML generator library for Compojure
+;; compojure.html -- HTML generator library for Compojure
 
-(clojure/in-ns 'html)
+(clojure/in-ns 'compojure.html)
 (clojure/refer 'clojure)
+(clojure/refer 'clojure.contrib.lib)
 
-(lib/use compojure seq-utils)
+(use '(compojure str-utils)
+     '(clojure.contrib seq-utils))
 
 (import '(clojure.lang Sequential))
+
+(load-libs '(compojure.html html-helpers))
 
 (defn escape-html
   "Change special characters into HTML character entities."

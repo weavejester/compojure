@@ -1,6 +1,6 @@
-;; persist.clj -- lightweight persistence for Clojure data structures
+;; compojure.persist -- lightweight persistence for Clojure data structures
 
-(clojure/in-ns 'persist)
+(clojure/in-ns 'compojure.persist)
 (clojure/refer 'clojure)
 
 (import '(java.io File FileWriter BufferedWriter))

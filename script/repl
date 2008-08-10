@@ -3,7 +3,7 @@ for file in jars/*.jar; do
     jars=$jars:$file
 done
 
-classpath=app:$jars:lib/contrib:lib/compojure
+classpath=app:$jars:lib
 
 if which rlwrap > /dev/null
 then
