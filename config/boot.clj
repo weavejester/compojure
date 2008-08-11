@@ -1,4 +1,4 @@
-(load-file "lib/clojure/contrib/lib/lib.clj")
+(.loadResourceScript clojure.lang.RT "clojure/contrib/lib/lib.clj") 
 (refer 'clojure.contrib.lib)
 
 ; Load all the Compojure libraries
