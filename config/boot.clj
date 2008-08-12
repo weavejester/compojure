@@ -8,9 +8,8 @@
 (def *server*
   (http-server resource-servlet :port 8080))
 
-; Add in a static file handler
-(GET "/*"
-  (serve-file (route :*)))
+(ANY "/*" (not-found))              ; Add in default 404 route
+(GET "/*" (serve-file (route :*)))  ; Add in a static file handler
 
 ; Start the server
 (start *server*)

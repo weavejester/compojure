@@ -7,19 +7,19 @@
 (use '(compojure str-utils file-utils))
 
 (import '(java.io File FileInputStream)
+        '(javax.servlet ServletContext)
         '(javax.servlet.http HttpServlet
                              HttpServletRequest
                              HttpServletResponse))
 
 ;;;; Mimetypes ;;;;
 
-(def *default-mimetype* "application/octet-stream")
-
 (defn context-mimetype
-  "Get the mimetype of a filename using the ServletContext."
-  [context filename]
-  (or (. context (getMimeType filename))
-      *default-mimetype*))
+  "Guess the mimetype of a filename. Defaults to 'application/octet-stream'
+  if the mimetype is unknown."
+  [#^ServletContext context filename]
+  (or (.getMimeType context filename)
+      "application/octet-stream"))
 
 ;;;; Routes ;;;;
 
@@ -81,121 +81,109 @@
 
 ;;;; Response ;;;;
 
-(defn base-responder
-  "Basic Compojure responder. Handles the following datatypes:
-   string - Adds to the response body
-   seq    - Adds all containing elements to the response body
-   map    - Updates the HTTP headers
-   Number - Updates the status code
-   File   - Updates the response body via a file stream"
+(defn update-response
+  "Destructively update a HttpServletResponse using a Clojure datatype:
+    string - Adds to the response body
+    seq    - Adds all containing elements to the response body
+    map    - Updates the HTTP headers
+    Number - Updates the status code
+    File   - Updates the response body via a file stream
+    vector - Iterates through its contents, successively updating the response
+             with each value"
    [#^HttpServletResponse response context update]
    (cond 
+     (vector? update)
+       (doseq u update
+         (update-response response context u))
      (string? update)
-     (.. response (getWriter) (print update))
+       (.. response (getWriter) (print update))
      (seq? update)
-     (let [writer (. response (getWriter))]
-       (doseq d update
-              (. writer (print d))))
+       (let [writer (.getWriter response)]
+         (doseq d update
+           (.print writer d)))
      (map? update)
-     (doseq [k v] update
-            (. response (setHeader k v)))
+       (doseq [k v] update
+         (.setHeader response k v))
      (instance? Number update)
-     (. response (setStatus update))
+       (.setStatus response update)
      (instance? File update)
-     (let [out (. response (getOutputStream))
-               in  (new FileInputStream update)]
-       (. response (setHeader
-                     "Content-Type" (context-mimetype context (str update))))
+       (let [out (.getOutputStream response)
+             in  (new FileInputStream update)]
+         (.setHeader response
+            "Content-Type" (context-mimetype context (str update)))
        (pipe-stream in out))))
 
-(def *responders*
-  (ref (list base-responder)))
-
-(defn add-resource-responder [func]
-  (dosync
-    (commute *responders* conj func)))
-
-(defn update-response
-  "Destructively update a HttpServletResponse via a Clojure datatype. Vectors
-   can be used to string different values together."
-  [#^HttpServletResponse response context update]
-  (if (vector? update)
-    (doseq d update
-      (update-response response context d))
-    (some #(% response context update) @*responders*)))
-
 (defn redirect-to
-  "A handy shortcut for a '302 Moved' HTTP redirect."
+  "A shortcut for a '302 Moved' HTTP redirect."
   [location]
   [302 {"Location" location}])
+
+(defn not-found
+  "A shortcut to create a '404 Not Found' HTTP response."
+  ([] (not-found "public/404.html"))
+  ([filename] [404 (file filename)]))
 
 ;;;; Resource ;;;;
 
 (defn get-session
-  "Pulls a Clojure-friendly session (a map reference) from a HttpRequest."
+  "Returns a ref to a hash-map that acts as a HTTP session that can be updated
+  within a Clojure STM transaction."
   [#^HttpServletRequest request]
-  (let [session (. request (getSession))]
-    (or (. session (getAttribute "clj-session"))
+  (let [session (.getSession request)]
+    (or (.getAttribute session "clj-session")
         (let [clj-session (ref {})]
-          (. session (setAttribute "clj-session" clj-session))
+          (.setAttribute session "clj-session" clj-session)
           clj-session))))
 
-(def #^{:doc
-  "A set of bindings available to each resource. This can be extended
-  by plugins, if required."}
-  *resource-bindings*
-  (ref '(method    (. request (getMethod))
-         full-path (. request (getPathInfo))
-         param    #(. request (getParameter (compojure.str-utils/str* %)))
-         header   #(. request (getHeader    (compojure.str-utils/str* %)))
-         mimetype #(compojure.http/context-mimetype (str %))
-         session   (compojure.http/get-session request))))
-
-(defn add-resource-binding
-  "Add a binding to the set of default bindings assigned to a resource."
-  [name binding]
-  (dosync
-    (commute *resource-bindings* concat [name binding])))
-
 (defmacro http-resource
-  "Create a pseudo-servlet from a resource. It's not quite a real
-  servlet because it's a function, rather than an HttpServlet object."
+  "Macro that wraps the body of a resource up in a standalone function."
   [& body]
-  `(fn ~'[route context request response]
-       (let ~(apply vector @*resource-bindings*)
-         (update-response ~'response ~'context (do ~@body)))))
+  `(fn ~'[route context request]
+     (let ~'[method    (.getMethod    request)
+             full-path (.getPathInfo  request)
+             param    #(.getParameter request (compojure.str-utils/str* %))
+             header   #(.getHeader    request (compojure.str-utils/str* %))
+             mimetype #(compojure.http/context-mimetype (str %))
+             session   (compojure.http/get-session request)]
+       (do ~@body))))
 
 (defn serve-file
-   "Serve up a static file from a directory. A 404 is returned if the file
-   does not exist."
-   ([path]
+  "Serve up a static file from a directory. A 404 is returned if the file
+  does not exist."
+  ([path]
     (serve-file "public" path))
-   ([root path]
-    (serve-file root path "404.html"))
-   ([root path not-found]
+  ([root path]
     (let [static-file (file root path)]
-      (if (. static-file (isFile))
+      (if (.isFile static-file)
         static-file
-        [404 (file root not-found)]))))
+        :next))))
 
 (defn find-method
-  "Returns the HTTP method, or the value of the '_method' parameter, if it
-   exists."
-   [request]
-   (or (. request (getParameter "_method"))
-       (. request (getMethod))))
+  "Returns either the value of the '_method' HTTP parameter, or the method
+  of the HTTP request."
+  [#^HttpServletRequest request]
+  (or (.getParameter request "_method")
+      (.getMethod request)))
 
-(defn find-http-resource
-  "Find the first resource that matches the HttpServletRequest"
-  [#^HttpServletRequest request response]
+(defn apply-http-resource
+  "Finds and evaluates the resource that matches the HttpServletRequest. If the
+  resource returns :next, the next matching resource is evaluated."
+  [context request response]
   (let [method    (find-method request)
-        path      (. request (getPathInfo))
-        matches?  (fn [[meth route resource]]
-                    (if (= meth method)
-                      (if-let route-params (match-route route path)
-                        (partial resource route-params) nil)))]
-    (some matches? @*resources*)))
-
+        path      (.getPathInfo request)
+        route?    (fn [meth route]
+                    (if (or (nil? meth) (= meth method))
+                      (match-route route path)))
+        response? (fn [[meth route resource]]
+                    (if-let route-params (route? meth route)
+                      (let [resp (resource route-params
+                                           context
+                                           request)]
+                        (if (not= :next resp)
+                          (or resp [])))))]
+    (update-response response context
+      (some response? @*resources*))))
+            
 (defmacro GET "Creates a GET resource."
   [route & body]
   `(assoc-route "GET" ~route (http-resource ~@body)))
@@ -212,17 +200,22 @@
   [route & body]
   `(assoc-route "DELETE" ~route (http-resource ~@body)))
 
+(defmacro HEAD "Creates a HEAD resource."
+  [route & body]
+  `(assoc-route "HEAD" ~route (http-resource ~@body)))
+
+(defmacro ANY "Creates a resource that responds to any HTTP method."
+  [route & body]
+  `(assoc-route nil ~route (http-resource ~@body)))
+
 (defn new-servlet
   "Create a new servlet from a function that takes three arguments of types
   HttpServletContext, HttpServletRequest, HttpServletResponse."
   [func] 
   (proxy [HttpServlet] []
     (service [request response]
-      (func (. this (getServletContext)) request response))))
+      (func (.getServletContext this) request response))))
 
 (def #^{:doc "A servlet that handles all the defined resources."}
   resource-servlet
-  (new-servlet
-    (fn [context request response]
-      (let [resource (find-http-resource request response)]
-        (resource context request response)))))
+  (new-servlet apply-http-resource))
