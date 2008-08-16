@@ -1,17 +1,17 @@
 ;; compojure.http -- HTTP resource library for Compojure
 
-(clojure/in-ns 'compojure.http)
-(clojure/refer 'clojure)
-(clojure/refer 'clojure.contrib.lib)
+(init-ns 'compojure.http)
 
-(use '(compojure str-utils file-utils))
+(use '(compojure control
+                 file-utils
+                 parser
+                 str-utils))
 
 (import '(java.io File FileInputStream)
         '(javax.servlet ServletContext)
         '(javax.servlet.http HttpServlet
                              HttpServletRequest
                              HttpServletResponse))
-
 ;;;; Mimetypes ;;;;
 
 (defn context-mimetype
@@ -23,44 +23,37 @@
 
 ;;;; Routes ;;;;
 
-(defn- part->regex
-  [[value match?]]
-  (if match?
-    (if (= value "*")
-      "(.*?)"
-      "([^/.,;?]+)")
-    (re-escape value)))
-
-(defn- part->keyword
-  [[value _]]
-  (if (= value "*")
-    :*
-    (keyword (.substring value 1))))
-  
 (defn parse-route
   "Turn a route string into a regex and seq of symbols."
   [route]
-  (let [parts (re-parts #":\\w+|\\*" route)]
+  (let [splat #"\\*"
+        word  #":(\\w+)"
+        path  #"[^:*]+"]
     [(re-pattern
-       (str-map part->regex parts))
-     (map part->keyword
-          (filter second parts))]))
+       (apply str
+         (parse route
+           splat "(.*?)"
+           word  "([^/.,;?]+)"
+           path  #(re-escape (.group %)))))
+     (filter (complement nil?)
+       (parse route
+         splat :*
+         word  #(keyword (.group % 1))
+         path  nil))]))
 
 (defn match-route 
   "Match a path against a parsed route. Returns a map of keywords and their
   matching path values."
   [[regex symbols] path]
   (let [matcher (re-matcher regex path)]
-    (if (. matcher (matches))
+    (if (.matches matcher)
       (reduce
-        (fn [map [key val]]
-          (if-let cur (map key)
-            (if (vector? cur)
-              (assoc map key (conj cur val))
-              (assoc map key [cur val]))
-            (assoc map key val)))
+        (partial merge-with
+          #(conj (ifn vector? vector %1) %2))
         {}
-        (map vector symbols (rest (re-groups matcher)))))))
+        (map hash-map
+          symbols
+          (rest (re-groups matcher)))))))
 
 (def #^{:doc
   "A global list of all registered resources. A resource is a vector
@@ -207,6 +200,8 @@
 (defmacro ANY "Creates a resource that responds to any HTTP method."
   [route & body]
   `(assoc-route nil ~route (http-resource ~@body)))
+
+;;;; Servlet ;;;;
 
 (defn new-servlet
   "Create a new servlet from a function that takes three arguments of types

@@ -1,10 +1,8 @@
 ;; html_helpers.clj -- Helper functions for generating HTML
 
-(clojure/in-ns 'compojure.html)
-(clojure/refer 'clojure)
-(clojure/refer 'clojure.contrib.lib)
+(in-ns 'compojure.html)
 
-(use '(compojure macros str-utils)
+(use '(compojure control str-utils)
      '(clojure.contrib seq-utils))
 
 (def #^{:private true}

@@ -1,7 +1,11 @@
-;; compojure.macros -- convinient macros for Compojure
+;; compojure.control -- Control structures for Compojure
 
-(clojure/in-ns 'compojure.macros)
-(clojure/refer 'clojure)
+(init-ns 'compojure.control)
+
+(defn ifn
+  "Equivalent to: (if (pred x) x (func x))"
+  [pred func x]
+  (if (pred x) x (func x)))
 
 (defmacro return
   "A do block that will always return the argument 'x'."

@@ -1,8 +1,6 @@
 ;; compojure.html -- HTML generator library for Compojure
 
-(clojure/in-ns 'compojure.html)
-(clojure/refer 'clojure)
-(clojure/refer 'clojure.contrib.lib)
+(init-ns 'compojure.html)
 
 (use '(compojure str-utils)
      '(clojure.contrib seq-utils))
