@@ -1,7 +1,5 @@
-;; compojure.persist -- lightweight persistence for Clojure data structures
-
-(clojure/in-ns 'compojure.persist)
-(clojure/refer 'clojure)
+;; Lightweight persistence for Clojure data structures
+(init-ns 'compojure.persist)
 
 (import '(java.io File FileWriter BufferedWriter))
 

@@ -1,12 +1,9 @@
-;; compojure.file-utils -- File utilities for Compojure
-
-(clojure/in-ns 'compojure.file-utils)
-(clojure/refer 'clojure)
+;; Various utility functions for handling files
+(init-ns 'compojure.file-utils)
 
 (import '(java.io File FileReader
                   PushbackReader
                   InputStream OutputStream))
-
 (defn file
   "Returns an instance of java.io.File."
   ([name]          (new File name))

@@ -1,5 +1,4 @@
-;; compojure.html -- HTML generator library for Compojure
-
+;; Generate HTML or XML output from a tree of vectors
 (init-ns 'compojure.html)
 
 (use '(compojure str-utils)

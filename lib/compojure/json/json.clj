@@ -1,8 +1,5 @@
-;; compojure.json -- JSON generator library for Compojure
-
-(clojure/in-ns 'compojure.json)
-(clojure/refer 'clojure)
-(clojure/refer 'clojure.contrib.lib)
+;; Turn Clojure datatypes into a JSON string
+(init-ns 'compojure.json)
 
 (use '(clojure.contrib str-utils))
 

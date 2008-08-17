@@ -1,7 +1,5 @@
-;; compojure.jetty -- Jetty interface for Compojure
-
-(clojure/in-ns 'compojure.jetty)
-(clojure/refer 'clojure)
+;; Jetty interface for Compojure
+(init-ns 'compojure.jetty)
 
 (import '(org.mortbay.jetty Server)
         '(org.mortbay.jetty.servlet Context ServletHolder)

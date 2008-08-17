@@ -1,16 +1,14 @@
-;; compojure.parser -- Simple parser library
+;; Simple parser library
 (init-ns 'compojure.parser)
-
-(import '(clojure.lang IFn))
 
 (defn- apply-action
   [action matcher]
-  (if (and (instance? IFn action)
+  (if (and (instance? clojure.lang.IFn action)
            (not (keyword? action)))
     (action matcher)
     action))
 
-(defn parse-1
+(defn- parse-1
   [src & clauses]
   (some
     (fn [[re action]]
@@ -21,6 +19,8 @@
     (partition 2 clauses)))
 
 (defn parse
+  "Parse a string into tokens by matching against regexs and evaluating
+   the matching associated function."
   [src & clauses]
   (loop [src     src
          results []

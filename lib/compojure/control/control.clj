@@ -1,5 +1,4 @@
-;; compojure.control -- Control structures for Compojure
-
+;; Macros and functions for controling program flow
 (init-ns 'compojure.control)
 
 (defn ifn
@@ -14,6 +13,6 @@
      (do ~@body x#)))
 
 (defmacro domap
-  "Similar to doseq, but collects the results into a sequence, like map."
+  "Similar to doseq, but collects the results into a sequence."
   [item list & body]
   `(map (fn [~item] ~@body) ~list))

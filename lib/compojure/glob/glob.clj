@@ -1,10 +1,8 @@
-;; compojure.glob -- globbing support for Compojure
+;; Functionality for globbing a directory
+(init-ns 'compojure.glob)
 
-(clojure/in-ns 'compojure.glob)
-(clojure/refer 'clojure)
-(clojure/refer 'clojure.contrib.lib)
-
-(use '(compojure file-utils str-utils))
+(use '(compojure file-utils
+                 str-utils))
 
 (defn- glob->regex
   "Turns a shallow file glob into a regular expression."

@@ -1,5 +1,4 @@
-;; html_helpers.clj -- Helper functions for generating HTML
-
+;; Helper functions for generating common HTML elements
 (in-ns 'compojure.html)
 
 (use '(compojure control str-utils)

@@ -1,10 +1,9 @@
-;; compojure.str-utils -- string utilities for Compojure
+;; Utility functions for manipulating strings
+(init-ns 'compojure.str-utils)
 
-(clojure/in-ns 'compojure.str-utils)
-(clojure/refer 'clojure)
-(clojure/refer 'clojure.contrib.lib)
+(use '(clojure.contrib seq-utils
+                       str-utils))
 
-(use '(clojure.contrib seq-utils str-utils))
 (import '(clojure.lang Named))
 
 (defn escape
