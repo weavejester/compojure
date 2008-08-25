@@ -56,20 +56,22 @@
 
 (def #^{:doc
   "A global list of all registered resources. A resource is a vector
-  consisting of a HTTP method, a parsed route and function that takes in
-  a context, request and response object.
-  e.g.
-  [\"GET\"
-   (parse-route \"/welcome/:name\") 
-   (fn [context request response] ...)]"}
-  *resources* (ref '()))
+  consisting of a HTTP method, a parsed route and function that takes in a
+  context, request and response object. Resources are grouped together by
+  user-defined keys."}
+  *http-resources* (ref {}))
 
 (defn assoc-route
-  "Associate a HTTP method and route with a resource function."
-  [method route resource]
+  "Associate a HTTP method and route with a resource function within a named
+  group of resources. Typically, the group name is equal to the namespace the
+  resource is defined in."
+  [group method route resource]
   (dosync
-    (commute *resources* conj
-      [method (parse-route route) resource])))
+    (commute *http-resources*
+      #(assoc %
+         group
+         (conj (% group)
+           [method (parse-route route) resource])))))
 
 ;;;; Response ;;;;
 
@@ -160,7 +162,7 @@
 (defn apply-http-resource
   "Finds and evaluates the resource that matches the HttpServletRequest. If the
   resource returns :next, the next matching resource is evaluated."
-  [context request response]
+  [resource-list context request response]
   (let [method    (find-method request)
         path      (.getPathInfo request)
         route?    (fn [meth route]
@@ -174,31 +176,39 @@
                         (if (not= :next resp)
                           (or resp [])))))]
     (update-response response context
-      (some response? @*resources*))))
+      (some response? resource-list))))
             
-(defmacro GET "Creates a GET resource."
+(defmacro GET "Creates a GET resource in the current namespace."
   [route & body]
-  `(assoc-route "GET" ~route (http-resource ~@body)))
+  `(assoc-route (ns-name *ns*)
+     "GET" ~route (http-resource ~@body)))
 
-(defmacro PUT "Creates a PUT resource."
+(defmacro PUT "Creates a PUT resource in the current namespace."
   [route & body]
-  `(assoc-route "PUT" ~route (http-resource ~@body)))
+  `(assoc-route (ns-name *ns*)
+     "PUT" ~route (http-resource ~@body)))
 
-(defmacro POST "Creates a POST resource."
+(defmacro POST "Creates a POST resource in the current namespace."
   [route & body]
-  `(assoc-route "POST" ~route (http-resource ~@body)))
+  `(assoc-route (ns-name *ns*)
+     "POST" ~route (http-resource ~@body)))
 
-(defmacro DELETE "Creates a DELETE resource."
+(defmacro DELETE "Creates a DELETE resource in the current namespace."
   [route & body]
-  `(assoc-route "DELETE" ~route (http-resource ~@body)))
+  `(assoc-route (ns-name *ns*)
+     "DELETE" ~route (http-resource ~@body)))
 
-(defmacro HEAD "Creates a HEAD resource."
+(defmacro HEAD "Creates a HEAD resource in the current namespace."
   [route & body]
-  `(assoc-route "HEAD" ~route (http-resource ~@body)))
+  `(assoc-route (ns-name *ns*)
+      "HEAD" ~route (http-resource ~@body)))
 
-(defmacro ANY "Creates a resource that responds to any HTTP method."
+(defmacro ANY
+  "Creates a resource in the current namespace that responds to any
+  HTTP method."
   [route & body]
-  `(assoc-route nil ~route (http-resource ~@body)))
+  `(assoc-route (ns-name *ns*)
+      nil ~route (http-resource ~@body)))
 
 ;;;; Servlet ;;;;
 
@@ -210,6 +220,10 @@
     (service [request response]
       (func (.getServletContext this) request response))))
 
-(def #^{:doc "A servlet that handles all the defined resources."}
-  resource-servlet
-  (new-servlet apply-http-resource))
+(defn resource-servlet
+  "A servlet that handles all the defined resources."
+  [group]
+  (new-servlet
+    (fn [context request response]
+      (let [resources (@*http-resources* group)]
+        (apply-http-resource resources context request response)))))

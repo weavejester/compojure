@@ -50,20 +50,6 @@
   [s]
   (or (nil? s) (= s "")))
 
-(defn re-parts
-  "Divide a string up at the boundaries matched by a regex."
-  [re s]
-  (let [m (re-matcher re s)
-        f (fn [f i]
-            (if-let group (re-find m)
-              (let [parts  (lazy-cons [group true] (f f (.end m)))
-                    before (.substring s i (.start m))]
-                (if (blank? before)
-                  parts
-                  (lazy-cons [before false] parts)))
-              (list [(.substring s i) false])))]
-    (f f 0)))
-
 (defn lines
   "Concatenate a sequence of strings into lines of a single string."
   [coll]

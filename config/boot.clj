@@ -8,8 +8,8 @@
 (def *server*
   (http-server
     :port     8080
-    :servlets { "/cometd/*" cometd-servlet
-                "/*"        resource-servlet }))
+    :servlets {"/cometd/*" cometd-servlet
+               "/*"        (resource-servlet 'user)}))
 
 (ANY "/*" (not-found))              ; Add in default 404 route
 (GET "/*" (serve-file (route :*)))  ; Add in a static file handler
