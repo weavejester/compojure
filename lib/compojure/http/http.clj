@@ -22,56 +22,42 @@
 
 ;;;; Routes ;;;;
 
-(defn parse-route
+(defstruct route
+  :regex
+  :keywords)
+
+(defn compile-route
   "Turn a route string into a regex and seq of symbols."
-  [route]
+  [route-str]
   (let [splat #"\\*"
         word  #":(\\w+)"
         path  #"[^:*]+"]
-    [(re-pattern
-       (apply str
-         (parse route
-           splat "(.*?)"
-           word  "([^/.,;?]+)"
-           path  #(re-escape (.group %)))))
-     (filter (complement nil?)
-       (parse route
-         splat :*
-         word  #(keyword (.group % 1))
-         path  nil))]))
+    (struct route
+      (re-pattern
+        (apply str
+          (parse route-str
+            splat "(.*?)"
+            word  "([^/.,;?]+)"
+            path  #(re-escape (.group %)))))
+      (filter (complement nil?)
+        (parse route-str
+          splat :*
+          word  #(keyword (.group % 1))
+          path  nil)))))
 
 (defn match-route 
   "Match a path against a parsed route. Returns a map of keywords and their
   matching path values."
-  [[regex symbols] path]
-  (let [matcher (re-matcher regex path)]
+  [route path]
+  (let [matcher (re-matcher (route :regex) path)]
     (if (.matches matcher)
       (reduce
         (partial merge-with
           #(conj (ifn vector? vector %1) %2))
         {}
         (map hash-map
-          symbols
+          (route :keywords)
           (rest (re-groups matcher)))))))
-
-(def #^{:doc
-  "A global list of all registered resources. A resource is a vector
-  consisting of a HTTP method, a parsed route and function that takes in a
-  context, request and response object. Resources are grouped together by
-  user-defined keys."}
-  *http-resources* (ref {}))
-
-(defn assoc-route
-  "Associate a HTTP method and route with a resource function within a named
-  group of resources. Typically, the group name is equal to the namespace the
-  resource is defined in."
-  [group method route resource]
-  (dosync
-    (commute *http-resources*
-      #(assoc %
-         group
-         (conj (% group)
-           [method (parse-route route) resource])))))
 
 ;;;; Response ;;;;
 
@@ -119,6 +105,11 @@
 
 ;;;; Resource ;;;;
 
+(defstruct http-resource
+  :method
+  :route
+  :function)
+
 (defn get-session
   "Returns a ref to a hash-map that acts as a HTTP session that can be updated
   within a Clojure STM transaction."
@@ -129,7 +120,7 @@
           (.setAttribute session "clj-session" clj-session)
           clj-session))))
 
-(defmacro http-resource
+(defmacro resource-fn
   "Macro that wraps the body of a resource up in a standalone function."
   [& body]
   `(fn ~'[route context request]
@@ -162,68 +153,63 @@
 (defn apply-http-resource
   "Finds and evaluates the resource that matches the HttpServletRequest. If the
   resource returns :next, the next matching resource is evaluated."
-  [resource-list context request response]
+  [resources context request response]
   (let [method    (find-method request)
         path      (.getPathInfo request)
-        route?    (fn [meth route]
-                    (if (or (nil? meth) (= meth method))
-                      (match-route route path)))
-        response? (fn [[meth route resource]]
-                    (if-let route-params (route? meth route)
-                      (let [resp (resource route-params
-                                           context
-                                           request)]
+        method=  #(or (nil? %) (= method %))
+
+        route?    (fn [resource]
+                    (if (method= (resource :method))
+                      (match-route (resource :route) path)))
+
+        response? (fn [resource]
+                    (if-let route-params (route? resource)
+                      (let [func (resource :function)
+                            resp (func route-params
+                                       context
+                                       request)]
                         (if (not= :next resp)
                           (or resp [])))))]
     (update-response response context
-      (some response? resource-list))))
+      (some response? resources))))
             
-(defmacro GET "Creates a GET resource in the current namespace."
+(defmacro GET "Creates a GET resource."
   [route & body]
-  `(assoc-route (ns-name *ns*)
-     "GET" ~route (http-resource ~@body)))
+  `(struct http-resource "GET" (compile-route ~route) (resource-fn ~@body)))
 
-(defmacro PUT "Creates a PUT resource in the current namespace."
+(defmacro PUT "Creates a PUT resource."
   [route & body]
-  `(assoc-route (ns-name *ns*)
-     "PUT" ~route (http-resource ~@body)))
+  `(struct http-resource "PUT" (compile-route ~route) (resource-fn ~@body)))
 
-(defmacro POST "Creates a POST resource in the current namespace."
+(defmacro POST "Creates a POST resource."
   [route & body]
-  `(assoc-route (ns-name *ns*)
-     "POST" ~route (http-resource ~@body)))
+  `(struct http-resource "POST" (compile-route ~route) (resource-fn ~@body)))
 
-(defmacro DELETE "Creates a DELETE resource in the current namespace."
+(defmacro DELETE "Creates a DELETE resource."
   [route & body]
-  `(assoc-route (ns-name *ns*)
-     "DELETE" ~route (http-resource ~@body)))
+  `(struct http-resource "DELETE" (compile-route ~route) (resource-fn ~@body)))
 
-(defmacro HEAD "Creates a HEAD resource in the current namespace."
+(defmacro HEAD "Creates a HEAD resource."
   [route & body]
-  `(assoc-route (ns-name *ns*)
-      "HEAD" ~route (http-resource ~@body)))
+  `(struct http-resource "HEAD" (compile-route ~route) (resource-fn ~@body)))
 
-(defmacro ANY
-  "Creates a resource in the current namespace that responds to any
-  HTTP method."
+(defmacro ANY "Creates a resource that responds to any HTTP method."
   [route & body]
-  `(assoc-route (ns-name *ns*)
-      nil ~route (http-resource ~@body)))
+  `(struct http-resource nil (compile-route ~route) (resource-fn ~@body)))
 
 ;;;; Servlet ;;;;
 
-(defn new-servlet
-  "Create a new servlet from a function that takes three arguments of types
-  HttpServletContext, HttpServletRequest, HttpServletResponse."
-  [func] 
+(defn servlet
+  "Create a servlet from a list of resources."
+  [& resources]
   (proxy [HttpServlet] []
     (service [request response]
-      (func (.getServletContext this) request response))))
+      (apply-http-resource resources
+                           (.getServletContext this)
+                           request
+                           response))))
 
-(defn resource-servlet
-  "A servlet that handles all the defined resources."
-  [group]
-  (new-servlet
-    (fn [context request response]
-      (let [resources (@*http-resources* group)]
-        (apply-http-resource resources context request response)))))
+(defmacro defservlet
+  "Shortcut for (def name (servlet resources))"
+  [name & resources]
+  `(def ~name (servlet ~@resources)))
