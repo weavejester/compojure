@@ -25,7 +25,7 @@
 (def server
   (http-server
     :port     8080
-    :servlets {"/*" hello-world}))
+    :servlets ["/*" hello-world]))
 
 ; Start the server
 (start server)

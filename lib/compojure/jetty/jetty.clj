@@ -10,11 +10,12 @@
 (defn http-server
   "Create a new Jetty HTTP server with the supplied servlet."
   [& options]
-  (let [options (apply hash-map options)
-        port    (or (options :port) 8080)
-        server  (new Server port)
-        context (new Context server "/" (. Context SESSIONS))]
-    (doseq [path servlet] (options :servlets)
+  (let [options  (apply hash-map options)
+        port     (or (options :port) 8080)
+        server   (new Server port)
+        context  (new Context server "/" (. Context SESSIONS))
+        servlets (partition 2 (options :servlets))]
+    (doseq [path servlet] servlets
       (.addServlet context (new ServletHolder servlet) path))
     server))
 
