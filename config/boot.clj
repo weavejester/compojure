@@ -1,6 +1,3 @@
-(.loadResourceScript clojure.lang.RT "clojure/contrib/lib/lib.clj") 
-(refer 'clojure.contrib.lib)
-
 ; Load all the Compojure libraries
 (use '(compojure cometd html http jetty json persist))
 

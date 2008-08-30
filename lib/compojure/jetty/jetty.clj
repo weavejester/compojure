@@ -1,5 +1,5 @@
 ;; Jetty interface for Compojure
-(init-ns 'compojure.jetty)
+(ns compojure.jetty)
 
 (import '(org.mortbay.jetty Server)
         '(org.mortbay.jetty.servlet Context ServletHolder)

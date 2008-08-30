@@ -1,5 +1,5 @@
 ;; An interface to Jetty's cometd implementation
-(init-ns 'compojure.cometd)
+(ns compojure.cometd)
 
 (import '(org.mortbay.cometd.continuation ContinuationCometdServlet))
 

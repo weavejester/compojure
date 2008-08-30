@@ -1,5 +1,5 @@
 ;; Macros and functions for controling program flow
-(init-ns 'compojure.control)
+(ns compojure.control)
 
 (defn ifn
   "Equivalent to: (if (pred x) x (func x))"

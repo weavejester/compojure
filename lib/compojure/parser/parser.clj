@@ -1,5 +1,5 @@
 ;; Simple parser library
-(init-ns 'compojure.parser)
+(ns compojure.parser)
 
 (defn- apply-action
   [action matcher]

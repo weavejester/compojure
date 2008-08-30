@@ -1,5 +1,5 @@
 ;; Turn Clojure datatypes into a JSON string
-(init-ns 'compojure.json)
+(ns compojure.json)
 
 (use '(clojure.contrib str-utils))
 
