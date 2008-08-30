@@ -199,7 +199,7 @@
 
 ;;;; Servlet ;;;;
 
-(defn servlet
+(defn http-servlet
   "Create a servlet from a list of resources."
   [& resources]
   (proxy [HttpServlet] []
@@ -212,4 +212,4 @@
 (defmacro defservlet
   "Shortcut for (def name (servlet resources))"
   [name & resources]
-  `(def ~name (servlet ~@resources)))
+  `(def ~name (http-servlet ~@resources)))
