@@ -1,5 +1,5 @@
 ;; Various utility functions for handling files
-(init-ns 'compojure.file-utils)
+(ns compojure.file-utils)
 
 (import '(java.io File FileReader
                   PushbackReader

@@ -1,5 +1,5 @@
 ;; Utility functions for manipulating strings
-(init-ns 'compojure.str-utils)
+(ns compojure.str-utils)
 
 (use '(clojure.contrib seq-utils
                        str-utils))

@@ -1,12 +1,12 @@
 ;; Generate HTML or XML output from a tree of vectors
-(init-ns 'compojure.html)
+(ns compojure.html)
 
 (use '(compojure str-utils)
      '(clojure.contrib seq-utils))
 
 (import '(clojure.lang Sequential))
 
-(load-libs '(compojure.html html-helpers))
+(load-resources "html_helpers.clj")
 
 (defn escape-html
   "Change special characters into HTML character entities."

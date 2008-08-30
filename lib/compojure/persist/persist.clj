@@ -1,5 +1,5 @@
 ;; Lightweight persistence for Clojure data structures
-(init-ns 'compojure.persist)
+(ns compojure.persist)
 
 (import '(java.io File FileWriter BufferedWriter))
 

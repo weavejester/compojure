@@ -1,5 +1,5 @@
 ;; Functionality for globbing a directory
-(init-ns 'compojure.glob)
+(ns compojure.glob)
 
 (use '(compojure file-utils
                  str-utils))

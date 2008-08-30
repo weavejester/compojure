@@ -1,6 +1,3 @@
-(.loadResourceScript clojure.lang.RT "clojure/contrib/lib/lib.clj") 
-(refer 'clojure.contrib.lib)
-
 ; Load Compojure libraries
 (use '(compojure html
                  http

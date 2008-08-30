@@ -1,5 +1,5 @@
 ;; HTTP resource library for Compojure
-(init-ns 'compojure.http)
+(ns compojure.http)
 
 (use '(compojure control
                  file-utils
