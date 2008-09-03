@@ -1,16 +1,14 @@
 ;; HTTP resource library for Compojure
-(ns compojure.http)
-
-(use '(compojure control
-                 file-utils
-                 parser
-                 str-utils))
-
-(import '(java.io File FileInputStream)
-        '(javax.servlet ServletContext)
-        '(javax.servlet.http HttpServlet
-                             HttpServletRequest
-                             HttpServletResponse))
+(ns compojure.http
+  (:use (compojure control
+                   file-utils
+                   parser
+                   str-utils))
+  (:import (java.io File FileInputStream)
+           (javax.servlet ServletContext)
+           (javax.servlet.http HttpServlet
+                               HttpServletRequest
+                               HttpServletResponse)))
 ;;;; Mimetypes ;;;;
 
 (defn context-mimetype
@@ -22,7 +20,7 @@
 
 ;;;; Routes ;;;;
 
-(defstruct route
+(defstruct url-route
   :regex
   :keywords)
 
@@ -32,7 +30,7 @@
   (let [splat #"\\*"
         word  #":(\\w+)"
         path  #"[^:*]+"]
-    (struct route
+    (struct url-route
       (re-pattern
         (apply str
           (parse route-str
@@ -98,9 +96,9 @@
   [location]
   [302 {"Location" location}])
 
-(defn not-found
+(defn page-not-found
   "A shortcut to create a '404 Not Found' HTTP response."
-  ([] (not-found "public/404.html"))
+  ([] (page-not-found "public/404.html"))
   ([filename] [404 (file filename)]))
 
 ;;;; Resource ;;;;
@@ -199,31 +197,36 @@
 
 ;;;; Servlet ;;;;
 
+(defmacro create-resource
+  "Create a blank HTTP resource."
+  ([name]
+    `(defonce ~name (ref nil)))
+  ([name doc]
+    `(defonce
+      ~(with-meta name (assoc (meta ~name) :doc ~doc))
+       (ref nil))))
+
 (defn extend-resource
+  "Add actions to an existing HTTP resource."
   [name & actions]
   (dosync
     (commute name #(concat actions %))))
 
 (defmacro resource
   "Construct a new resource, or add to an existing one."
-  [name doc & resources]
-  `(do (defonce
-        ~(if (string? doc)
-           (with-meta name (assoc (meta name) :doc doc))
-           name)
-         (ref nil))
-       (extend-resource ~name
-         ~@(if (string? doc)
-             resources
-             (cons doc resources)))))
-
+  [name doc & actions]
+  (if (string? doc)
+   `(do (create-resource ~name ~doc)
+        (extend-resource ~name ~@actions))
+   `(do (create-resource ~name)
+        (extend-resource ~name ~doc ~@actions))))
 
 (defn servlet
   "Create a servlet from a list of resources."
-  [resources]
+  [resource]
   (proxy [HttpServlet] []
     (service [request response]
-      (apply-http-action @resources
+      (apply-http-action @resource
                          (.getServletContext this)
                          request
                          response))))
