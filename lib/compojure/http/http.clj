@@ -105,7 +105,7 @@
 
 ;;;; Resource ;;;;
 
-(defstruct http-resource
+(defstruct http-action
   :method
   :route
   :function)
@@ -120,7 +120,7 @@
           (.setAttribute session "clj-session" clj-session)
           clj-session))))
 
-(defmacro resource-fn
+(defmacro action-fn
   "Macro that wraps the body of a resource up in a standalone function."
   [& body]
   `(fn ~'[route context request]
@@ -150,66 +150,80 @@
   (or (.getParameter request "_method")
       (.getMethod request)))
 
-(defn apply-http-resource
-  "Finds and evaluates the resource that matches the HttpServletRequest. If the
-  resource returns :next, the next matching resource is evaluated."
-  [resources context request response]
+(defn apply-http-action
+  "Finds and evaluates the action that matches the HttpServletRequest. If the
+  action returns :next, the next matching action is evaluated."
+  [actions context request response]
   (let [method    (find-method request)
         path      (.getPathInfo request)
         method=  #(or (nil? %) (= method %))
 
-        route?    (fn [resource]
-                    (if (method= (resource :method))
-                      (match-route (resource :route) path)))
+        route?    (fn [action]
+                    (if (method= (action :method))
+                      (match-route (action :route) path)))
 
-        response? (fn [resource]
-                    (if-let route-params (route? resource)
-                      (let [func (resource :function)
+        response? (fn [action]
+                    (if-let route-params (route? action)
+                      (let [func (action :function)
                             resp (func route-params
                                        context
                                        request)]
                         (if (not= :next resp)
                           (or resp [])))))]
     (update-response response context
-      (some response? resources))))
+      (some response? actions))))
             
 (defmacro GET "Creates a GET resource."
   [route & body]
-  `(struct http-resource "GET" (compile-route ~route) (resource-fn ~@body)))
+  `(struct http-action "GET" (compile-route ~route) (action-fn ~@body)))
 
 (defmacro PUT "Creates a PUT resource."
   [route & body]
-  `(struct http-resource "PUT" (compile-route ~route) (resource-fn ~@body)))
+  `(struct http-action "PUT" (compile-route ~route) (action-fn ~@body)))
 
 (defmacro POST "Creates a POST resource."
   [route & body]
-  `(struct http-resource "POST" (compile-route ~route) (resource-fn ~@body)))
+  `(struct http-action "POST" (compile-route ~route) (action-fn ~@body)))
 
 (defmacro DELETE "Creates a DELETE resource."
   [route & body]
-  `(struct http-resource "DELETE" (compile-route ~route) (resource-fn ~@body)))
+  `(struct http-action "DELETE" (compile-route ~route) (action-fn ~@body)))
 
 (defmacro HEAD "Creates a HEAD resource."
   [route & body]
-  `(struct http-resource "HEAD" (compile-route ~route) (resource-fn ~@body)))
+  `(struct http-action "HEAD" (compile-route ~route) (action-fn ~@body)))
 
 (defmacro ANY "Creates a resource that responds to any HTTP method."
   [route & body]
-  `(struct http-resource nil (compile-route ~route) (resource-fn ~@body)))
+  `(struct http-action nil (compile-route ~route) (action-fn ~@body)))
 
 ;;;; Servlet ;;;;
 
-(defn http-servlet
+(defn extend-resource
+  [name & actions]
+  (dosync
+    (commute name #(concat actions %))))
+
+(defmacro resource
+  "Construct a new resource, or add to an existing one."
+  [name doc & resources]
+  `(do (defonce
+        ~(if (string? doc)
+           (with-meta name (assoc (meta name) :doc doc))
+           name)
+         (ref nil))
+       (extend-resource ~name
+         ~@(if (string? doc)
+             resources
+             (cons doc resources)))))
+
+
+(defn servlet
   "Create a servlet from a list of resources."
-  [& resources]
+  [resources]
   (proxy [HttpServlet] []
     (service [request response]
-      (apply-http-resource resources
-                           (.getServletContext this)
-                           request
-                           response))))
-
-(defmacro defservlet
-  "Shortcut for (def name (servlet resources))"
-  [name & resources]
-  `(def ~name (http-servlet ~@resources)))
+      (apply-http-action @resources
+                         (.getServletContext this)
+                         request
+                         response))))

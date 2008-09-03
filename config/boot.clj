@@ -4,7 +4,7 @@
                  jetty))
 
 ; Create a default servlet
-(defservlet hello-world
+(resource hello
   (GET "/"
     (html
       (doctype :html4)
@@ -22,7 +22,7 @@
 (def server
   (http-server
     :port     8080
-    :servlets ["/*" hello-world]))
+    :servlets ["/*" (servlet hello)]))
 
 ; Start the server
 (start server)
