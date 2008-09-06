@@ -9,7 +9,8 @@
       [:body
         body]]))
 
-(resource hello
+(defservlet hello
+  "Basic Hello-World servlet."
   (GET "/"
     (template "Hello World"
       [:h1 "Hello World"]))
@@ -18,6 +19,6 @@
 
 (defserver server
   {:port 8080}
-  "/*" (servlet hello))
+  "/*" hello)
 
 (start server)
