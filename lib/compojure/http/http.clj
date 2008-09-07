@@ -200,7 +200,7 @@
 ;;;; Servlet ;;;;
  
 (defn servlet
-  "Create a servlet from a list of resources."
+  "Create a servlet from a sequence of resources."
   [& resources]
   (proxy [HttpServlet] []
     (service [request response]

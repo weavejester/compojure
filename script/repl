@@ -7,7 +7,7 @@ classpath=app:$jars:lib
 
 if which rlwrap > /dev/null
 then
-    rlwrap java -cp $classpath clojure.lang.Repl app/$1.clj
+    rlwrap java -cp $classpath clojure.lang.Repl boot/boot.clj
 else
-    java -cp $classpath jline.ConsoleRunner clojure.lang.Repl app/$1.clj
+    java -cp $classpath jline.ConsoleRunner clojure.lang.Repl boot/boot.clj
 fi
