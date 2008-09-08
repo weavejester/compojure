@@ -204,6 +204,7 @@
   [& resources]
   (proxy [HttpServlet] []
     (service [request response]
+      (.setCharacterEncoding response "UTF-8")
       (apply-http-resource resources
                            (.getServletContext this)
                            request

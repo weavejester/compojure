@@ -4,8 +4,8 @@
 ;; An example boot setup is included below:
 (use 'compojure.jetty)
 
-;; Load app/example.clj
-(load-file "app/example.clj")
+;; Load app/example/example.clj
+(require 'example)
 
 ;; Define a new HTTP server on port 8080, with the hello-world servlet
 ;; defined in app/example.clj

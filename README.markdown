@@ -1,8 +1,10 @@
-Compojure is a modular web framework for the Clojure programming language. It's
-only requirement is a Java VM, as it comes with jar files for Clojure and the
-HTTP server, Jetty.
+Compojure is an open source web framework for the Clojure programming language,
+designed to be a fast, concise and functional way of developing applications.
+It's only requirement is a woring Java VM, as it comes bundled with jar files
+for Clojure and the Java HTTP server, Jetty.
 
-Note that Compojure is still in active development and rather unfinished.
+Compojure is still in active development, but a lot of the API is now
+relatively stable.
 
 Quickstart
 ==========
@@ -11,34 +13,30 @@ Quickstart
 
         $ git clone git://github.com/weavejester/compojure.git
 
-2. Run the inbuilt REPL script. This automatically includes all the relevant
-   jars and Compojure libraries. A bourne-compatible shell is required (at
-   least until someone creates an equivalent batch script).
+2. Run Compojure:
 
-        $ script/repl
+        $ script/run
 
-3. Add a basic "Hello World" HTTP resource:
+3. An example "Hello World" application should be up and running at:
+http://localhost:8080/
 
-        user=> (GET "/" (html [:h1 "Hello World"]))
-
-4. Your page should be up and running at: <http://localhost:8080/>
 
 File Structure
 ==============
 
-Like Ruby on Rails, Merb, and other similar frameworks, Compojure uses a fixed
-directory layout.
+By default, Compojure is organised with the file structure listed below. But
+there's nothing stopping you taking the Compojure libraries and using them in
+any fashion you want.
 
-    +- app             - Your web application code
+    +- app             - Your main application code
     |
-    +- config
-    |  +- boot.clj     - The script that initializes Compojure
+    +- boot
+    |  +- boot.clj     - The script that initializes your application
     |
     +- jars            - The jar files used by the application
     |
     +- lib
     |  +- compojure    - The Compojure libraries
-    |  +- contrib      - Libraries from Clojure Contrib
     |
     +- public          - Static files that are served if no route is found
     |
@@ -47,19 +45,22 @@ directory layout.
        +- run          - Runs non-interactively
 
 
+Core Libraries
+==============
 
-Core Modules
-============
-
-Compojure comes with several core modules that provide the bulk of its
+Compojure provides several core libraries that provide the bulk of its
 functionality.
 
 HTTP
 ----
 
 The HTTP module provides Compojure with a RESTful and functional way to define
-HTTP resources. It's syntax was heavily inspired by the Ruby web framework,
+Java servlets. It's syntax was heavily inspired by the Ruby web framework,
 Sinatra.
+
+
+
+
 
 There are four macros for generating resources:
 
