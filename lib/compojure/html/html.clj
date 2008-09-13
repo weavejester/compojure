@@ -6,7 +6,7 @@
 
 (import '(clojure.lang Sequential))
 
-(load-resources "html_helpers.clj")
+(load "html_helpers.clj")
 
 (defn escape-html
   "Change special characters into HTML character entities."
