@@ -48,6 +48,10 @@
   [name]
   [:input {:type "text" :name (str* name) :id (str* name)}])
 
+(defn text-area
+  [name]
+  [:textarea {:name (str* name) :id (str* name)} ""])
+
 (defn hidden-field
   [name value]
   [:input {:type  "hidden"
@@ -83,7 +87,7 @@
   [& styles]
   (domap style styles
     [:link {:type "text/css"
-            :href (str @*static* "/stylesheet/" style ".js")}]))
+            :href (str @*static* "/stylesheet/" style ".css")}]))
 
 (defn xhtml-tag
   [lang & contents]
