@@ -1,4 +1,30 @@
-;; HTTP handler library for Compojure
+;; compojure.http
+;;
+;; Compojure library for constructing HTTP servlet proxy objects. 
+;; 
+;; Here's a small taste of the syntax:
+;;
+;;   (defservlet example
+;;     "An example servlet that contains a bit of everything."
+;;     (GET "/"
+;;       "Hello World")
+;;     (GET "/:name"
+;;       (str "Hello " (route :name)))
+;;     (GET "/image"
+;;       (file "public/image.png"))
+;;     (GET "/error"
+;;       [500 "Error 500"])
+;;     (POST "/mesg"
+;;       (redirect-to "/"))
+;;     (GET "/header"
+;;       [{"X-Fortune" "Be prepared!"}
+;;        "Custom X-Header"])
+;;     (PUT "/:var"
+;;       (dosync
+;;         (commute session assoc :var (route :var)))
+;;     (ANY "/*"
+;;       (page-not-found))
+
 (ns compojure.http
   (:use (compojure control
                    file-utils
@@ -185,15 +211,27 @@
   ([]         (page-not-found "public/404.html"))
   ([filename] [404 (file filename)]))
  
+(defn- find-index-file
+  "Search the directory for index.*"
+  [dir]
+  (first
+    (filter
+     #(re-matches #"index\\..*" (.toLowerCase (.getName %)))
+      (.listFiles dir))))
+
 (defn serve-file
-  "Attempts to serve up a static file from a directory. Nil is returned if the
-  file does not exist."
+  "Attempts to serve up a static file from a directory, which defaults to
+  './public'. Nil is returned if the file does not exist. If the file is a
+  directory, the function looks for a file in the directory called 'index.*'."
   ([path]
     (serve-file "public" path))
   ([root path]
-    (let [static-file (file root path)]
-      (if (.isFile static-file)
-        static-file))))
+    (let [filepath (file root path)]
+      (cond
+        (.isFile filepath)
+          filepath
+        (.isDirectory filepath)
+          (find-index-file filepath)))))
  
 ;;;; Servlet creation ;;;;
  
@@ -209,7 +247,7 @@
                           response))))
  
 (defmacro defservlet
-  "Shortcut for (def name (servlet handlers))"
+  "Shortcut for (def name doc? (servlet handlers))"
   [name doc & handlers]
   (if (string? doc)
     `(def
