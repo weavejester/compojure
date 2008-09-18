@@ -214,10 +214,9 @@
 (defn- find-index-file
   "Search the directory for index.*"
   [dir]
-  (first
-    (filter
-     #(re-matches #"index\\..*" (.toLowerCase (.getName %)))
-      (.listFiles dir))))
+  (first (filter
+          #(re-matches #"index\\..*" (.toLowerCase (.getName %)))
+           (.listFiles dir))))
 
 (defn serve-file
   "Attempts to serve up a static file from a directory, which defaults to

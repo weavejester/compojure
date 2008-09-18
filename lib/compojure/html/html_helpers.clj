@@ -1,8 +1,7 @@
 ;; Helper functions for generating common HTML elements
-(in-ns 'compojure.html)
-
-(use '(compojure control str-utils)
-     '(clojure.contrib seq-utils))
+(ns compojure.html
+  (:use  (compojure control str-utils)
+         (clojure.contrib seq-utils)))
 
 (def #^{:private true}
   *static* (ref ""))

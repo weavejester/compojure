@@ -1,10 +1,24 @@
-;; Generate HTML or XML output from a tree of vectors
-(ns compojure.html)
+;; compojure.html
+;;
+;; Compojure library for generating HTML or XML output from a tree of vectors.
+;;
+;; A small example of the syntax:
+;; 
+;;   (html
+;;     [:html
+;;       [:head
+;;         [:title "Hello World"]]
+;;       [:body
+;;         [:h1 {:class "example"} "Hello World"]
+;;         [:ul
+;;           (map
+;;             (fn [x] [:li x])
+;;            '(first second third))]]])
 
-(use '(compojure str-utils)
-     '(clojure.contrib seq-utils))
-
-(import '(clojure.lang Sequential))
+(ns compojure.html
+  (:use (compojure str-utils)
+        (clojure.contrib seq-utils))
+  (:import (clojure.lang Sequential)))
 
 (load-resources "html_helpers.clj")
 
