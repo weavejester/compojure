@@ -16,3 +16,17 @@
   "Similar to doseq, but collects the results into a sequence."
   [item list & body]
   `(map (fn [~item] ~@body) ~list))
+
+(defmacro redef
+  "Redefine an existing value, keeping the metadata intact."
+  [name value]
+  `(let [m# (meta #'~name)
+         v# (def ~name ~value)]
+     (.setMeta v# (merge m# (meta #'~name)))
+     v#))
+
+(defmacro decorate-with
+  "Wrap functions in a decorator."
+  [decorator & funcs]
+  `(do ~@(domap f funcs
+          `(redef ~f (~decorator ~f)))))

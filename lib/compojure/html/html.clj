@@ -9,18 +9,28 @@
 ;;       [:head
 ;;         [:title "Hello World"]]
 ;;       [:body
-;;         [:h1 {:class "example"} "Hello World"]
-;;         [:ul
-;;           (map
-;;             (fn [x] [:li x])
-;;            '(first second third))]]])
+;;         [:h1.big "Hello World"]
+;;         [:img {:src "test.png"}]
+;;         [:ul#letters
+;;           (domap letter '(a b c d)
+;;             [:li letter])]]])
 
 (ns compojure.html
   (:use (compojure str-utils)
         (clojure.contrib seq-utils))
   (:import (clojure.lang Sequential)))
 
-(load-resources "html_helpers.clj")
+(defn- optional-attrs
+  "Adds an optional attribute map to the supplied function's arguments."
+  [func]
+  (fn [attrs & body]
+    (if (map? attrs)
+      (let [[tag func-attrs & body] (apply func body)]
+        (apply vector tag (merge func-attrs attrs) body))
+      (apply func attrs body))))
+
+(load-resources "form_functions.clj")
+(load-resources "page_functions.clj")
 
 (defn escape-html
   "Change special characters into HTML character entities."
