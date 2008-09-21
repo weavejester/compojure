@@ -31,8 +31,15 @@
   ([name]       (text-field name ""))
   ([name value] (input-field "text" name value)))
 
+(defn password-field
+  "Creates a password input field."
+  [name]
+  (input-field "password" name ""))
+
 (defn check-box
   "Creates a check box."
+  ([name]
+    (check-box name "1"))
   ([name true-value]
     (input-field "checkbox" name true-value))
   ([name true-value false-value]
@@ -40,6 +47,26 @@
           [:input {:type  "hidden"
                    :name  (str* name)
                    :value false-value}])))
+
+(defn select-options
+  "Turn a collection into a set of option tags."
+  ([options]
+    (select-options options nil))
+  ([options selected]
+    (let [select (fn [opt attrs]
+                   (if (and selected (= opt selected))
+                     (merge attrs {:selected "selected"})))]
+      (domap opt options
+        (if (vector? opt)
+          [:option (select (opt 2) {:value (opt 2)}) (opt 1)]
+          [:option (select opt {}) opt])))))
+
+(defn drop-down
+  "Creates a drop-down box using the 'select' tag."
+  ([name options]
+    (drop-down name options nil))
+  ([name options selected]
+    [:select (select-options options selected)]))
 
 (defn text-area
   "Creates a text area element."
@@ -62,6 +89,16 @@
   [text]
   [:input {:type "reset" :value text}])
 
+(decorate-with optional-attrs
+  hidden-field
+  text-field
+  check-box
+  drop-down
+  text-area
+  label
+  submit-button
+  reset-button)
+
 (defn form-to*
   [[method action] & body]
   (if (includes? method ['GET 'POST])
@@ -70,19 +107,15 @@
        (hidden-field "_method" method)
        body]))
 
-(decorate-with optional-attrs
-  hidden-field
-  text-field
-  text-area
-  check-box
-  label
-  submit-button
-  reset-button
-  form-to*)
-
 (defmacro form-to
   "Create a form that points to a particular method and route.
   e.g. (form-to [PUT \"/post\"]
          ...)"
   [handler & body]
-  `(form-to* ~handler ~@body))
+  (if (map? handler)
+    (let [[method action] (first body)
+          body            (rest body)]
+      `(optional-attrs handler
+         (form-to* ['~method ~action] ~@body)))
+    (let [[method action] handler]
+      `(form-to* ['~method ~action] ~@body))))

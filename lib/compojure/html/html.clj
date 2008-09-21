@@ -142,6 +142,7 @@
   "Format HTML in a readable fashion."
   [next-format tag attrs & body]
   (let [[tag attrs] (parse-css-tag tag attrs)
+        tag         (keyword tag)
         format      (if (contains? html-block-tags tag)
                       indented-xml-formatter
                       raw-xml-formatter)

@@ -5,13 +5,13 @@
 (use 'compojure.jetty)
 
 ;; Load app/example/example.clj
-(require 'example)
+(use 'example)
 
 ;; Define a new HTTP server on port 8080, with the hello-world servlet
 ;; defined in app/example.clj
 (defserver server
   {:port 8080}
-  "/*" example/hello-world)
+  "/*" example-servlet)
 
 ;; Start the server
 (start server)
