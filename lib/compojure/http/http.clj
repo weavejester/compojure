@@ -11,6 +11,8 @@
         '(javax.servlet.http HttpServlet
                              HttpServletRequest
                              HttpServletResponse))
+
+(load "cookie.clj")
 ;;;; Mimetypes ;;;;
 
 (defn context-mimetype
@@ -227,3 +229,4 @@
     (fn [context request response]
       (let [resources (@*http-resources* group)]
         (apply-http-resource resources context request response)))))
+  
