@@ -1,8 +1,7 @@
 ;; Helper functions for generating common HTML elements
 (in-ns 'compojure.html)
-
-(use '(compojure control str-utils)
-     '(clojure.contrib seq-utils))
+(use '(compojure control str-utils))
+(use '(clojure.contrib seq-utils str-utils))
 
 (def #^{:private true}
   *static* (ref ""))
@@ -25,8 +24,11 @@
     \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n"})
 
 (defn link-to
-  [url title]
-  [:a {:href url} title])
+  ([url title]
+     [:a {:href url} title])
+  ([url title param-map]
+     (link-to (str* url "?" 
+		     (str-join "&" (map (fn [pair] (str* (first pair) "=" (second pair))) param-map))) title)))
 
 (defmacro form-to
   [[method action] & body]
