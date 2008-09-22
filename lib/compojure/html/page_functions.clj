@@ -53,6 +53,22 @@
   [url & content]
   [:a {:href url} content])
 
+(defn unordered-list
+  "Wrap a collection in an unordered list"
+  [coll]
+  [:ul {}
+    (domap x coll
+      [:li x])])
+
+(defn ordered-list
+  "Wrap a collection in an unordered list"
+  [coll]
+  [:ol {}
+    (domap x coll
+      [:li x])])
+
 (decorate-with optional-attrs
   xhtml-tag
-  link-to)
+  link-to
+  unordered-list
+  ordered-list)
