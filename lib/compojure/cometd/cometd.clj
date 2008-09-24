@@ -3,10 +3,13 @@
 ;; An interface to Jetty's cometd implementation
 
 (ns compojure.cometd
-  (:use    (compojure json))
-  (:import (dojox.cometd MessageListener)
-           (org.mortbay.cometd.continuation ContinuationCometdServlet)
-           (org.mortbay.util.ajax JSON$Generator)))
+  (:use    (compojure control))
+  (:import (clojure.lang Sequential)
+           (java.util Collection
+                      HashMap
+                      Map)
+           (dojox.cometd MessageListener)
+           (org.mortbay.cometd.continuation ContinuationCometdServlet)))
 
 (def *cometd*
   (new ContinuationCometdServlet))
@@ -27,12 +30,21 @@
   (.. servlet (getBayeux)
               (getChannel channel true)))
 
-(defn- json-generator
-  "Creates a JSON.Generator object for outputting Clojure data structures."
+(defn- clj->java
+  "Convert a clojure data structure into Java-compatible types."
   [data]
-  (proxy [JSON$Generator] []
-    (addJSON [buffer]
-      (.append buffer (json data)))))
+  (cond
+    (keyword? data)
+      (name data)
+    (sequential? data)
+      (map clj->java data)
+    (map? data)
+      (let [hmap (new HashMap)]
+        (doseq [key val] data
+          (.put hmap (clj->java key) (clj->java val)))
+        hmap)
+    otherwise
+      data))
 
 (defn publish
   "Publish a message to a channel."
@@ -43,8 +55,23 @@
   ([servlet client channel message]
     (.publish (get-channel servlet channel)
               client
-              (json-generator message)
+              (clj->java message)
               nil)))
+
+(defn- java->clj
+  "Turn a standard Java object into its equivalent Clojure data structure."
+  [data]
+  (cond
+    (instance? Collection data)
+      (vec (map java->clj data))
+    (instance? Map data)
+      (apply hash-map
+        (mapcat
+          #(list (java->clj (.getKey %))
+                 (java->clj (.getValue %)))
+          data))
+    otherwise
+      data))
 
 (defn subscribe
   "Subscribe to a channel."
@@ -55,7 +82,7 @@
       (.addListener client
         (proxy [MessageListener] []
           (deliver [from to mesg]
-            (func mesg))))
+            (func (java->clj mesg)))))
       (.subscribe (get-channel servlet channel) client))))
 
 ;;;; Security ;;;;

@@ -1,6 +1,9 @@
 ;; Macros and functions for controling program flow
 (ns compojure.control)
 
+(def #^{:doc "Synonym for true; useful for ending conds"}
+  otherwise true)
+
 (defn ifn
   "Equivalent to: (if (pred x) x (func x))"
   [pred func x]
