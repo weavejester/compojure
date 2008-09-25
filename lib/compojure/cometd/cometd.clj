@@ -3,7 +3,8 @@
 ;; An interface to Jetty's cometd implementation
 
 (ns compojure.cometd
-  (:use    (compojure control))
+  (:use    (compojure control)
+           (clojure.contrib def))
   (:import (clojure.lang Sequential)
            (java.util Collection
                       HashMap
@@ -11,8 +12,9 @@
            (dojox.cometd MessageListener)
            (org.mortbay.cometd.continuation ContinuationCometdServlet)))
 
-(def *cometd*
-  (new ContinuationCometdServlet))
+(defvar *cometd*
+  (new ContinuationCometdServlet)
+  "Default cometd servlet object")
 
 ;;;; Sending and receiving
 
@@ -62,7 +64,7 @@
   "Turn a standard Java object into its equivalent Clojure data structure."
   [data]
   (cond
-    (instance? Collection data)
+    (or (instance? Collection data) (.isArray (class data)))
       (vec (map java->clj data))
     (instance? Map data)
       (apply hash-map
