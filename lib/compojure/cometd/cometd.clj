@@ -9,14 +9,106 @@
            (java.util Collection
                       HashMap
                       Map)
-           (dojox.cometd MessageListener)
+           (dojox.cometd MessageListener
+                         SecurityPolicy)
            (org.mortbay.cometd.continuation ContinuationCometdServlet)))
 
-(defvar *cometd*
-  (new ContinuationCometdServlet)
-  "Default cometd servlet object")
+;;;; Security ;;;;
 
-;;;; Sending and receiving
+(defn- rules-allow?
+  "Is the client allowed to perform this action?"
+  [rules & args]
+  (loop [rules rules]
+    (if (seq rules)
+      (let [[type pred] (first rules)]
+        (if (apply pred args)
+          type
+          (recur (rest rules))))
+      false)))
+    
+(defn create-security-policy
+  "Create a extensible security policy for a cometd implementation."
+  [subscribe-rules publish-rules]
+  (proxy [SecurityPolicy] []
+    (canHandshake [message]
+      true)
+    (canCreate [client channel message]
+      true)
+    (canSubscribe [client channel message]
+      (rules-allow? @subscribe-rules client channel message))
+    (canPublish [client channel message]
+      (rules-allow? @publish-rules client channel message))))
+
+(defn add-rule-to-chain
+  "Add a allow or deny predicate to an existing rule chain ref. If the a
+  string is supplied in place of the predicate, the rule applies to the
+  channel matching the string."
+  [rules allow? pred]
+  (if (string? pred)
+    (add-rule-to-chain rules allow?
+      (fn [client channel message]
+        (= channel pred)))
+    (dosync
+      (commute rules conj [allow? pred]))))
+
+(defn create-cometd-servlet
+  "Create a new ContinuationCometdServlet with the supplied security rule
+  chain refs."
+  [subscribe-rules publish-rules]
+  (proxy [ContinuationCometdServlet] []
+    (newBayeux []
+      (doto (proxy-super newBayeux)
+            (setSecurityPolicy
+              (create-security-policy
+                subscribe-rules
+                publish-rules))))))
+
+;;;; Default servlet and rule chains ;;;;
+
+(defvar *subscribe-rules*
+  (ref [])
+  "Default rule chain for subscriptions.")
+
+(defvar *publish-rules*
+  (ref [])
+  "Default rule chain for publishing.")
+
+(defvar *cometd*
+  (create-cometd-servlet
+    *subscribe-rules*
+    *publish-rules*)
+  "Default cometd servlet object tied to default security rule chains.")
+
+(defn allow-publish
+  "Allow publishing of messages based on a predicate or channel name."
+  [pred-or-channel]
+  (add-rule-to-chain *publish-rules* true pred-or-channel))
+
+(defn deny-publish
+  "Deny publishing of messages based on a predicate or channel name."
+  [pred-or-channel]
+  (add-rule-to-chain *publish-rules* false pred-or-channel))
+
+(defn allow-subscribe
+  "Allow subscribing to a channel based on a predicate or channel name."
+  [pred-or-channel]
+  (add-rule-to-chain *subscribe-rules* true pred-or-channel))
+
+(defn deny-subscribe
+  "Deny subscribing to a channel based on a predicate or channel name."
+  [pred-or-channel]
+  (add-rule-to-chain *subscribe-rules* false pred-or-channel))
+
+(defn- local-client?
+  "Is the message being sent locally?"
+  [client channel message]
+  (if client
+    (.isLocal client)))
+
+(allow-subscribe local-client?)   ; Allow local access by default
+(allow-publish local-client?)
+
+;;;; Sending and receiving ;;;;
 
 (defn new-client
   "Create a new cometd client object."
@@ -85,28 +177,15 @@
         (proxy [MessageListener] []
           (deliver [from to mesg]
             (func (java->clj mesg)))))
-      (.subscribe (get-channel servlet channel) client))))
+      (.subscribe (get-channel servlet channel) client)
+      client)))
 
-;;;; Security ;;;;
-
-(comment
-(defn allowed-to?)
-
-(defn create-security-policy
-  "Create a extensible security policy for an existing cometd servlet."
-  [servlet]
-  (.. servlet
-      (getBayeux)
-      (setSecurityPolicy
-        (proxy SecurityPolicy
-          (canPublish [])))))
-
-(defn deny-subscribe
-  "Deny subscription requests matching a predicate."
-  [pred])
-  
-
-(defn deny-publish
-  [pred])
-
-)
+(defn unsubscribe
+  "Unsubscribe from a channel."
+  ([channel]
+    (doseq client (.getSubscribers (get-channel *cometd* channel))
+      (unsubscribe client channel)))
+  ([client channel]
+    (unsubscribe *cometd* client channel))
+  ([servlet client channel]
+    (.unsubscribe (get-channel servlet channel) client))) 
