@@ -4,7 +4,8 @@
 
 (ns compojure.html
   (:use (compojure control
-                   str-utils)))
+                   str-utils))
+  (:use (clojure.contrib str-utils)))
 
 (def doctype
   {:html4
@@ -50,12 +51,14 @@
 
 (defn link-to
   "Link some page content to another URL."
-  ([url & content]
+  [url & content]
      [:a {:href url} content])
-  ([url content param-map]
-     (link-to (str* url "?" 
-		    (str-join "&" (map (fn [pair] (str* (first pair) "=" (second pair))) param-map))) content)))
 
+(defn url-args
+  "adds a map of paramters on to a url" 
+  ([url param-map]
+     (str* url "?" 
+	   (str-join "&" (map (fn [pair] (str* (first pair) "=" (second pair))) param-map)))))
 
 (defn unordered-list
   "Wrap a collection in an unordered list"
