@@ -1,8 +1,11 @@
-Compojure is a modular web framework for the Clojure programming language. It's
-only requirement is a Java VM, as it comes with jar files for Clojure and the
-HTTP server, Jetty.
+Compojure is an open source web framework for the Clojure programming language,
+designed to produce concise and functional code without any messing around with
+mammoth configuration files and byzantine libraries of interdependent classes.
+It's only requirement is a working Java VM, as it comes bundled with jar files
+for Clojure and the Java HTTP server, Jetty.
 
-Note that Compojure is still in active development and rather unfinished.
+Compojure is still in active development, but a lot of the API is now
+relatively stable.
 
 Quickstart
 ==========
@@ -11,34 +14,30 @@ Quickstart
 
         $ git clone git://github.com/weavejester/compojure.git
 
-2. Run the inbuilt REPL script. This automatically includes all the relevant
-   jars and Compojure libraries. A bourne-compatible shell is required (at
-   least until someone creates an equivalent batch script).
+2. Run Compojure:
 
-        $ script/repl
+        $ script/run
 
-3. Add a basic "Hello World" HTTP resource:
+3. An example "Hello World" application should be up and running at:
+http://localhost:8080/
 
-        user=> (GET "/" (html [:h1 "Hello World"]))
-
-4. Your page should be up and running at: <http://localhost:8080/>
 
 File Structure
 ==============
 
-Like Ruby on Rails, Merb, and other similar frameworks, Compojure uses a fixed
-directory layout.
+By default, Compojure is organised with the file structure listed below. But
+there's nothing stopping you taking the Compojure libraries and using them in
+any fashion you want.
 
-    +- app             - Your web application code
+    +- app             - Your main application code
     |
-    +- config
-    |  +- boot.clj     - The script that initializes Compojure
+    +- boot
+    |  +- boot.clj     - The script that initializes your application
     |
     +- jars            - The jar files used by the application
     |
     +- lib
     |  +- compojure    - The Compojure libraries
-    |  +- contrib      - Libraries from Clojure Contrib
     |
     +- public          - Static files that are served if no route is found
     |
@@ -47,46 +46,69 @@ directory layout.
        +- run          - Runs non-interactively
 
 
+Core Libraries
+==============
 
-Core Modules
-============
-
-Compojure comes with several core modules that provide the bulk of its
+Compojure provides several core libraries that provide the bulk of its
 functionality.
 
 HTTP
 ----
 
 The HTTP module provides Compojure with a RESTful and functional way to define
-HTTP resources. It's syntax was heavily inspired by the Ruby web framework,
+Java servlets. It's syntax was heavily inspired by the Ruby web framework,
 Sinatra.
 
-There are four macros for generating resources:
+To create a servlet, you pass a series of HTTP resource definitions to the
+`servlet` function:
 
-    GET  POST  PUT  DELETE
+    (def #^{:doc "A simple greeter"} greet
+      (servlet
+        (GET "/greet" "Hello visitor!")
+        (ANY "/*"     (page-not-found))))
 
-These correspond to the HTTP methods of the same name. They take the form:
+Compojure also provides a `defservlet` macro, that works as you might expect:
+
+    (defservlet greet
+      "A simple greeter"
+      (GET "/greet" "Hello visitor!")
+      (ANY "/*"     (page-not-found)))
+
+The resource definitions passed to `defservlet` are Compojure's way of
+associating a URL route with code that produces a useful HTTP response, such as
+a web page or image.
+
+Resource definitions take the form:
 
     (method route & body)
 
-    e.g. (GET "/greet" "Hello visitor!")
+The method can be any one of the standard HTTP methods:
 
-The route can be fixed, or embedded with parameters. These parameters can be
-accessed via the 'route' map:
+    GET  POST  PUT  DELETE  HEAD
+
+Or, if you wish to match any HTTP method, you can use
+
+    ANY
+
+The route can be a fixed string, like "/greet", but often you're going to want
+to assign certain parts of the route to parameters that affect the output:
 
     (GET "/greet/:name"
       (str "Hello " (route :name)))
 
-Along with 'route', there are several other bindings available by default in
+Here, the resource definition assigns the path after "/greet" to the parameter
+`:name`. Parameters from routes can be accessed via the `route` function.
+
+Along with `route`, there are several other bindings available by default in
 all resource declarations:
 
   * method          - the HTTP method
   * full-path       - the full path of the request 
-  * param [name]    - a HTTP parameter
-  * header [name]   - a HTTP header
-  * route [name]    - a named part of the request path
+  * (param name)    - a HTTP parameter
+  * (header name)   - a HTTP header
+  * (route name)    - a named part of the request path
   * session         - a ref to a session-specific map
-  * mime [filename] - guesses the mimetype of a filename
+  * (mime filename) - guesses the mimetype of a filename
   * request         - the HttpServletRequest object
   * context         - the HttpServletContext object
   * response        - the HttServletResponse object

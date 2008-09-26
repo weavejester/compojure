@@ -1,10 +1,8 @@
 ;; Utility functions for manipulating strings
-(ns compojure.str-utils)
-
-(use '(clojure.contrib seq-utils
-                       str-utils))
-
-(import '(clojure.lang Named))
+(ns compojure.str-utils
+  (:use    (clojure.contrib seq-utils
+                            str-utils))
+  (:import (clojure.lang Named)))
 
 (defn escape
   "Returns a string with each occurance of a character in

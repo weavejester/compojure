@@ -5,9 +5,4 @@ done
 
 classpath=app:$jars:lib
 
-if which rlwrap > /dev/null
-then
-    rlwrap java -cp $classpath clojure.lang.Script config/boot.clj
-else
-    java -cp $classpath jline.ConsoleRunner clojure.lang.Script config/boot.clj
-fi
+java -cp $classpath clojure.lang.Script boot/boot.clj
