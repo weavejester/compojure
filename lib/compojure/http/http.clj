@@ -234,22 +234,38 @@
  
 ;;;; Servlet creation ;;;;
  
+(defn- http-service
+  "Represents the service method called by a HttpServlet."
+  [object request response handlers]
+  (.setCharacterEncoding response "UTF-8")
+  (apply-http-handler handlers
+                      (.getServletContext object)
+                      request
+                      response))
 (defn servlet
   "Create a servlet from a sequence of handlers."
   [& handlers]
   (proxy [HttpServlet] []
     (service [request response]
-      (.setCharacterEncoding response "UTF-8")
-      (apply-http-handler handlers
-                          (.getServletContext this)
-                          request
-                          response))))
- 
+      (http-service this request response handlers))))
+
+(defn update-servlet
+  "Update an existing servlet proxy with a new set of handlers."
+  [object & handlers]
+  (update-proxy object
+    {'service (fn [this request response]
+                (http-service this request response handlers))}))
+
 (defmacro defservlet
-  "Shortcut for (def name doc? (servlet handlers))"
+  "Defines a new servlet with an optional doc-string, or if a servlet is
+  already defined, it updates the existing servlet with the supplied handlers.
+  Note that updating is not a thread-safe operation."
   [name doc & handlers]
   (if (string? doc)
-    `(def
-       ~(with-meta name (assoc (meta name) :doc doc))
-        (servlet ~@handlers))
-    `(def ~name (servlet ~doc ~@handlers))))
+    `(do (defonce
+          ~(with-meta name (assoc (meta name) :doc doc))
+           (proxy [HttpServlet] []))
+         (update-servlet ~name ~@handlers))
+    `(do (defonce ~name
+           (proxy [HttpServlet] []))
+         (update-servlet ~name ~doc ~@handlers))))
