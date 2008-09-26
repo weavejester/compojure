@@ -62,7 +62,7 @@
     (if (string? string-or-map)
       (enc string-or-map)
       (str-join "&"
-        (map (fn [[key val]] (str (enc key) "="(enc val)))
+        (map (fn [[key val]] (str (enc key) "=" (enc val)))
              string-or-map)))))
 
 (defn url-params
