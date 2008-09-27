@@ -32,6 +32,7 @@
                    str-utils))
   (:import (java.io File
                     FileInputStream)
+           (java.net URL)
            (javax.servlet ServletContext)
            (javax.servlet.http HttpServlet
                                HttpServletRequest
@@ -55,20 +56,20 @@
   "Turn a route string into a regex and seq of symbols."
   [route-str]
   (let [splat #"\\*"
-        word #":(\\w+)"
-        path #"[^:*]+"]
+        word  #":(\\w+)"
+        path  #"[^:*]+"]
     (struct url-route
       (re-pattern
         (apply str
           (parse route-str
             splat "(.*?)"
-            word "([^/.,;?]+)"
-            path #(re-escape (.group %)))))
+            word  "([^/.,;?]+)"
+            path  #(re-escape (.group %)))))
       (filter (complement nil?)
         (parse route-str
           splat :*
-          word #(keyword (.group % 1))
-          path nil)))))
+          word  #(keyword (.group % 1))
+          path  nil)))))
  
 (defn- match-route
   "Match a path against a parsed route. Returns a map of keywords and their
@@ -109,7 +110,7 @@
              full-path (.getPathInfo  request)
              param    #(.getParameter request (compojure.str-utils/str* %))
              header   #(.getHeader    request (compojure.str-utils/str* %))
-             mimetype #(compojure.http/context-mimetype (str %))
+             mimetype #(compojure.http/context-mimetype context (str %))
              session   (compojure.http/get-session request)]
        (do ~@body))))
  
@@ -119,39 +120,46 @@
   [#^HttpServletRequest request]
   (or (.getParameter request "_method")
       (.getMethod request)))
- 
+
+(defn- send-stream
+  "Send a stream of data to the HTTP response."
+  [context response stream filename]
+  (.setHeader response
+    "Content-Type" (context-mimetype context (str filename)))
+  (with-open in stream
+    (pipe-stream in (.getOutputStream response))))
+  
 (defn- update-response
   "Destructively update a HttpServletResponse using a Clojure datatype:
     string - Adds to the response body
-    seq - Adds all containing elements to the response body
-    map - Updates the HTTP headers
+    seq    - Adds all containing elements to the response body
+    map    - Updates the HTTP headers
     Number - Updates the status code
-    File - Updates the response body via a file stream
+    File   - Updates the response body via a file stream
+    URL    - Updates the response body via a stream to the URL
     vector - Iterates through its contents, successively updating the response
              with each value"
-   [#^HttpServletResponse response context update]
-   (cond
-     (vector? update)
-       (doseq u update
-         (update-response response context u))
-     (string? update)
-       (.. response (getWriter) (print update))
-     (seq? update)
-       (let [writer (.getWriter response)]
-         (doseq d update
-           (.print writer d)))
-     (map? update)
-       (doseq [k v] update
-         (.setHeader response k v))
-     (instance? Number update)
-       (.setStatus response update)
-     (instance? File update)
-       (let [out (.getOutputStream response)
-             in (new FileInputStream update)]
-         (.setHeader response
-            "Content-Type" (context-mimetype context (str update)))
-       (pipe-stream in out))))
- 
+  [#^HttpServletResponse response context update]
+  (cond
+    (vector? update)
+      (doseq u update
+        (update-response response context u))
+    (string? update)
+      (.. response (getWriter) (print update))
+    (seq? update)
+      (let [writer (.getWriter response)]
+        (doseq d update
+          (.print writer d)))
+    (map? update)
+      (doseq [k v] update
+        (.setHeader response k v))
+    (instance? Number update)
+      (.setStatus response update)
+    (instance? File update)
+      (send-stream context response (new FileInputStream update) update)
+    (instance? URL update)
+      (send-stream context response (.openStream update) update)))
+        
 (defn- apply-http-handler
   "Finds and evaluates the handler that matches the HttpServletRequest. If the
   handler returns :next, the next matching handler is evaluated."
