@@ -1,14 +1,24 @@
-;; Various utility functions for handling files
-(ns compojure.file-utils)
+;; clojure.file-utils
+;;
+;; Various utility functions for handling and retrieving files.
 
-(import '(java.io File FileReader
-                  PushbackReader
-                  InputStream OutputStream))
+(ns compojure.file-utils
+  (:import (java.io File
+                    FileReader
+                    PushbackReader
+                    InputStream
+                    OutputStream)
+           (clojure.lang RT)))
 (defn file
   "Returns an instance of java.io.File."
   ([name]          (new File name))
   ([parent name]   (new File parent name))
   ([p q & parents] (reduce file (file p q) parents)))
+
+(defn resource
+  "Returns a URL to a file in a resource."
+  [name]
+  (.getResource (.baseLoader RT) name))
 
 (defn list-dir
   "List all the files in a directory."

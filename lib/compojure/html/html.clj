@@ -121,21 +121,18 @@
   #{:br :dd :dt :h1 :h2 :h3 :h4 :h5 :h6 :hr :li :link
     :option :td :textarea :title})
 
-(defn- merge-id-and-class
-  "Merge a given id and class into an attributes map."
-  [attrs id class]
-  (merge attrs
-    (if id    {:id id})
-    (if class {:class class})))
-
 (defn- parse-css-tag
   "Pulls the id and class attributes from a tag name formatted in a CSS style.
   e.g. :div#content -> [:div  {:id \"content\"}]
        :span.error  -> [:span {:class \"error\"}]"
   [tag attrs]
-  (let [lexer-regex        #"(\\w+)(#(\\w+))?(\\.(\\w+))?"
-        [_ tag _ id _ cls] (re-matches lexer-regex (str* tag))
-        attrs              (merge-id-and-class attrs id cls)]
+  (let [word  "([^\\s\\.#]+)"
+        lexer (str word "(#" word ")?" "(\\." word ")?")
+        [_ tag _ id _ class]
+              (re-matches (re-pattern lexer) (str* tag))
+        attrs (merge attrs
+                (if id    {:id id})
+                (if class {:class class}))]
     [tag attrs]))
 
 (defn- html-formatter

@@ -3,9 +3,10 @@
 ;; Functions for generating document and header boilerplate.
 
 (ns compojure.html
-  (:use (compojure control
-                   str-utils))
-  (:use (clojure.contrib str-utils)))
+  (:use    (compojure control
+                      str-utils)
+           (clojure.contrib str-utils))
+  (:import (java.net URLEncoder)))
 
 (def doctype
   {:html4
@@ -41,7 +42,7 @@
   "Include a list of external stylesheet files."
   [& styles]
   (domap style styles
-    [:link {:type "text/css" :href style}]))
+    [:link {:type "text/css" :href style :rel "stylesheet"}]))
 
 (defn javascript-tag
   "Wrap the supplied javascript up in script tags and a CDATA section."
@@ -50,15 +51,27 @@
     (str "//<![CDATA[\n" script "\n//]]>")])
 
 (defn link-to
-  "Link some page content to another URL."
+  "Wraps some content in a HTML hyperlink with the supplied URL."
   [url & content]
      [:a {:href url} content])
 
-(defn url-args
-  "adds a map of paramters on to a url" 
-  ([url param-map]
-     (str* url "?" 
-	   (str-join "&" (map (fn [pair] (str* (first pair) "=" (second pair))) param-map)))))
+(defn url-encode
+  "Encodes a single string or sequence of key/value pairs."
+  [string-or-map]
+  (let [enc #(.encode URLEncoder (str* %))]
+    (if (string? string-or-map)
+      (enc string-or-map)
+      (str-join "&"
+        (map (fn [[key val]] (str (enc key) "=" (enc val)))
+             string-or-map)))))
+
+(defn url-params
+  "Encodes a map of parameters and adds them onto the end of an existing
+  address.
+  e.g. (url-params \"http://example.com\" {:lang \"en\", :offset 10})
+       => \"http://example.com?lang=en&offset=10\""
+  [address param-map]
+  (str address "?" (url-encode param-map)))
 
 (defn unordered-list
   "Wrap a collection in an unordered list"
