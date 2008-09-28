@@ -42,7 +42,7 @@
   "Include a list of external stylesheet files."
   [& styles]
   (domap style styles
-    [:link {:type "text/css" :href style}]))
+    [:link {:type "text/css" :href style :rel "stylesheet"}]))
 
 (defn javascript-tag
   "Wrap the supplied javascript up in script tags and a CDATA section."

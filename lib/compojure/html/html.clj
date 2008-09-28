@@ -128,10 +128,8 @@
   [tag attrs]
   (let [word  "([^\\s\\.#]+)"
         lexer (str word "(#" word ")?" "(\\." word ")?")
-
         [_ tag _ id _ class]
-          (re-matches (re-pattern lexer) (str* tag))
-
+              (re-matches (re-pattern lexer) (str* tag))
         attrs (merge attrs
                 (if id    {:id id})
                 (if class {:class class}))]
