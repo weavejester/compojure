@@ -1,4 +1,6 @@
 #!/bin/sh
+
+cd $(dirname $0)/..
 for file in jars/*.jar; do
     jars=$jars:$file
 done
