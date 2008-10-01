@@ -86,8 +86,6 @@
           (route :keywords)
           (rest (re-groups matcher)))))))
 
-;;;; Cookies
-
 ;;;; Handler functions ;;;;
  
 (defstruct http-handler
