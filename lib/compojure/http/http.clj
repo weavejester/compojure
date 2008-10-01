@@ -34,7 +34,8 @@
                     FileInputStream)
            (java.net URL)
            (javax.servlet ServletContext)
-           (javax.servlet.http HttpServlet
+           (javax.servlet.http Cookie
+                               HttpServlet
                                HttpServletRequest
                                HttpServletResponse)))
 ;;;; Mimetypes ;;;;
@@ -84,7 +85,9 @@
         (map hash-map
           (route :keywords)
           (rest (re-groups matcher)))))))
- 
+
+;;;; Cookies
+
 ;;;; Handler functions ;;;;
  
 (defstruct http-handler
@@ -102,16 +105,25 @@
           (.setAttribute session "clj-session" clj-session)
           clj-session))))
  
+(defn get-cookie-map
+  "Creates a name/value map from all of the cookies in the request."
+  [request]
+  (apply hash-map
+    (mapcat (fn [cookie] [(keyword (.getName cookie))
+                          (.getValue cookie)])
+            (.getCookies request))))
+
 (defmacro handler-fn
   "Macro that wraps the body of a handler up in a standalone function."
   [& body]
   `(fn ~'[route context request]
-     (let ~'[method    (.getMethod    request)
-             full-path (.getPathInfo  request)
-             param    #(.getParameter request (compojure.str-utils/str* %))
-             header   #(.getHeader    request (compojure.str-utils/str* %))
-             mimetype #(compojure.http/context-mimetype context (str %))
-             session   (compojure.http/get-session request)]
+     (let ~'[method     (.getMethod    request)
+             full-path  (.getPathInfo  request)
+             param     #(.getParameter request (compojure.str-utils/str* %))
+             header    #(.getHeader    request (compojure.str-utils/str* %))
+             mimetype  #(compojure.http/context-mimetype context (str %))
+             session    (compojure.http/get-session request)
+             cookie-map (compojure.http/get-cookie-map request)]
        (do ~@body))))
  
 (defn- find-method
@@ -158,7 +170,9 @@
     (instance? File update)
       (send-stream context response (new FileInputStream update) update)
     (instance? URL update)
-      (send-stream context response (.openStream update) update)))
+      (send-stream context response (.openStream update) update)
+    (instance? Cookie update)
+      (.addCookie response update)))
         
 (defn- apply-http-handler
   "Finds and evaluates the handler that matches the HttpServletRequest. If the
@@ -209,6 +223,20 @@
 
 ;;;; Helper functions ;;;;
 
+(defn cookie
+  "Create a new Cookie object."
+  [name value & attrs]
+  (let [cookie (new Cookie (str* name) value)
+        attrs  (apply hash-map attrs)
+        iff    (fn [attr func] (if attr (func attr)))]
+    (iff (attrs :comment) #(.setComment cookie %))
+    (iff (attrs :domain)  #(.setDomain  cookie %))
+    (iff (attrs :max-age) #(.setMaxAge  cookie %))
+    (iff (attrs :path)    #(.setPath    cookie %))
+    (iff (attrs :secure)  #(.setSecure  cookie %))
+    (iff (attrs :version) #(.setVersion cookie %))
+    cookie))
+ 
 (defn redirect-to
   "A shortcut for a '302 Moved' HTTP redirect."
   [location]
