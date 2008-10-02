@@ -3,7 +3,8 @@
 ;; An interface to Jetty's cometd implementation
 
 (ns compojure.cometd
-  (:use    (compojure control)
+  (:use    (compojure control
+                      str-utils)
            (clojure.contrib def))
   (:import (clojure.lang Sequential)
            (java.util Collection
@@ -39,6 +40,11 @@
     (canPublish [client channel message]
       (rules-allow? @publish-rules client channel message))))
 
+(defn- match-channel
+  "Match a channel name to a string with wildcards."
+  [channel string]
+  (.matches channel (.replace (re-escape string) "\\*" ".*")))
+
 (defn add-rule-to-chain
   "Add a allow or deny predicate to an existing rule chain ref. If the a
   string is supplied in place of the predicate, the rule applies to the
@@ -47,7 +53,7 @@
   (if (string? pred)
     (add-rule-to-chain rules allow?
       (fn [client channel message]
-        (= channel pred)))
+        (match-channel channel pred)))
     (dosync
       (commute rules conj [allow? pred]))))
 

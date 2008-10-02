@@ -36,10 +36,10 @@
   "Change special characters into HTML character entities."
   [string]
   (.. (str string)
-    (replaceAll "&"  "&amp;")
-    (replaceAll "<"  "&lt;")
-    (replaceAll ">"  "&gt;")
-    (replaceAll "\"" "&quot;")))
+    (replace "&"  "&amp;")
+    (replace "<"  "&lt;")
+    (replace ">"  "&gt;")
+    (replace "\"" "&quot;")))
 
 (def h escape-html)    ; Shortcut for escaping HTML
 
