@@ -268,12 +268,12 @@
  
 ;;;; Servlet creation ;;;;
  
-(defn- http-service
+(defn http-service
   "Represents the service method called by a HttpServlet."
-  [object request response handlers]
+  [#^HttpServlet this request response handlers]
   (.setCharacterEncoding response "UTF-8")
   (apply-http-handler handlers
-                      (.getServletContext object)
+                      (.getServletContext this)
                       request
                       response))
 (defn servlet
@@ -303,3 +303,11 @@
     `(do (defonce ~name
            (proxy [HttpServlet] []))
          (update-servlet ~name ~doc ~@handlers))))
+
+(defmacro defservice
+  "Defines a 'MyClass-service' method suitable for being called by a
+  HttpServlet class created by genclass."
+  [cname & handlers]
+  `(defn ~(symbol (str cname "-service"))
+   ~'[this request response]
+     (http-service ~'this ~'request ~'response (list ~@handlers))))
