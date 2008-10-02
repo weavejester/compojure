@@ -66,7 +66,8 @@
   ([name options]
     (drop-down name options nil))
   ([name options selected]
-    [:select (select-options options selected)]))
+    [:select {:name (str* name) :id (str* name)}
+      (select-options options selected)]))
 
 (defn text-area
   "Creates a text area element."
