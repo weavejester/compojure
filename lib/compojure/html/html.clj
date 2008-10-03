@@ -152,3 +152,4 @@
   "Nicely formats a tree of vectors into HTML."
   [& trees]
   (map-xml html-formatter trees))
+

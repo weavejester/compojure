@@ -102,6 +102,26 @@
         (let [clj-session (ref {})]
           (.setAttribute session "clj-session" clj-session)
           clj-session))))
+
+(defn to-seq [array]
+  "Returns a seq containing the contents of a java array"
+  (map (fn [i] (aget array i)) (range 0 (alength array))))
+
+(defn enum-to-seq 
+  ([#^java.util.Enumeration enum]
+     (enum-to-seq enum ()))
+  ([#^java.util.Enumeration enum vals]
+     (if (. enum (hasMoreElements))
+       (recur enum (cons (. enum (nextElement)) vals))
+       vals)))
+
+(defn param-map [#^HttpServletRequest request]
+  "creates a name/value map from all of the parameters in the request"
+  [request]
+  (apply hash-map
+    (mapcat (fn [name] [(keyword name)
+                          (.getParameter request name)])
+            (enum-to-seq (.getParameterNames request)))))
  
 (defn get-cookie-map
   "Creates a name/value map from all of the cookies in the request."
@@ -110,6 +130,7 @@
     (mapcat (fn [cookie] [(keyword (.getName cookie))
                           (.getValue cookie)])
             (.getCookies request))))
+
 
 (defmacro handler-fn
   "Macro that wraps the body of a handler up in a standalone function."
