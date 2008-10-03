@@ -52,3 +52,9 @@
   "Concatenate a sequence of strings into lines of a single string."
   [coll]
   (str-join "\n" coll))
+
+(defn capitalize
+  "Uppercase the first letter of a string, and lowercase the rest."
+  [s]
+  (str (.toUpperCase (.substring s 0 1))
+       (.toLowerCase (.substring s 1))))
