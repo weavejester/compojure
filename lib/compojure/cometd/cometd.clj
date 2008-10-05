@@ -182,7 +182,7 @@
       (.addListener client
         (proxy [MessageListener] []
           (deliver [from to mesg]
-            (func (java->clj mesg)))))
+            (func from (java->clj mesg)))))
       (.subscribe (get-channel servlet channel) client)
       client)))
 
