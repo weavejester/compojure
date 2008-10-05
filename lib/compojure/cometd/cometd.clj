@@ -167,7 +167,7 @@
     (instance? Map data)
       (apply hash-map
         (mapcat
-          #(list (java->clj (.getKey %))
+          #(list (keyword (java->clj (.getKey %)))
                  (java->clj (.getValue %)))
           data))
     otherwise
