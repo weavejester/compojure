@@ -158,6 +158,13 @@
               (clj->java message)
               nil)))
 
+(defn deliver
+  "Deliver a message to a specific client."
+  ([client channel message]
+    (deliver client (new-client) channel message))
+  ([client from channel message]
+    (.deliver client from channel (clj->java message) nil)))
+
 (defn- java->clj
   "Turn a standard Java object into its equivalent Clojure data structure."
   [data]
