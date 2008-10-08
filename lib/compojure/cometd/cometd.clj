@@ -26,7 +26,7 @@
           type
           (recur (rest rules))))
       false)))
-    
+
 (defn create-security-policy
   "Create a extensible security policy for a cometd implementation."
   [subscribe-rules publish-rules]
@@ -34,11 +34,15 @@
     (canHandshake [message]
       true)
     (canCreate [client channel message]
-      true)
+      (and client (not (.startsWith channel "/meta/"))))
     (canSubscribe [client channel message]
-      (rules-allow? @subscribe-rules client channel message))
+      (and (not (.startsWith channel "/meta/")
+           (not= channel "/*")
+           (not= channel "/**")
+           (rules-allow? @subscribe-rules client channel message))))
     (canPublish [client channel message]
-      (rules-allow? @publish-rules client channel message))))
+      (or (= channel "/meta/handshake")
+          (rules-allow? @publish-rules client channel message)))))
 
 (defn- match-channel
   "Match a channel name to a string with wildcards."
@@ -72,11 +76,11 @@
 ;;;; Default servlet and rule chains ;;;;
 
 (defvar *subscribe-rules*
-  (ref [])
+  (ref (list))
   "Default rule chain for subscriptions.")
 
 (defvar *publish-rules*
-  (ref [])
+  (ref (list))
   "Default rule chain for publishing.")
 
 (defvar *cometd*
@@ -113,6 +117,7 @@
 
 (allow-subscribe local-client?)   ; Allow local access by default
 (allow-publish local-client?)
+(allow-publish "/meta/*")         ; Allow client to report meta events
 
 ;;;; Sending and receiving ;;;;
 
