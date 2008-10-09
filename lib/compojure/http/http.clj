@@ -33,6 +33,8 @@
   (:import (java.io File
                     FileInputStream)
            (java.net URL)
+           (java.util Enumeration
+                      Map$Entry)
            (javax.servlet ServletContext)
            (javax.servlet.http Cookie
                                HttpServlet
@@ -92,7 +94,37 @@
   :method
   :route
   :function)
- 
+
+(defn- first-if-one
+  "Returns the first value of a collection if there is only one element,
+  otherwise returns the collection."
+  [coll]
+  (if (rest coll)
+    coll
+    (first coll)))
+
+(defn- parse-key-value
+  "Parse a key and value to make them more Clojure-friendly."
+  [key val]
+  [(keyword key) (first-if-one (vec val))])
+
+(defn get-params
+  "Creates a name/value map of all the request parameters."
+  [#^HttpServletRequest request]
+  (apply hash-map
+    (mapcat 
+      (fn [#^Map$Entry e] (parse-key-value (.getKey e) (.getValue e)))
+      (.getParameterMap request))))
+
+(defn get-headers
+  "Creates a name/value map of all the request headers."
+  [#^HttpServletRequest request]
+  (apply hash-map
+    (mapcat
+      #(parse-key-value (.toLowerCase %)
+                        (enumeration-seq (.getHeaders request %)))
+       (enumeration-seq (.getHeaderNames request)))))
+
 (defn get-session
   "Returns a ref to a hash-map that acts as a HTTP session that can be updated
   within a Clojure STM transaction."
@@ -123,26 +155,25 @@
                           (.getParameter request name)])
             (enum-to-seq (.getParameterNames request)))))
  
-(defn get-cookie-map
+(defn get-cookies
   "Creates a name/value map from all of the cookies in the request."
-  [request]
+  [#^HttpServletRequest request]
   (apply hash-map
-    (mapcat (fn [cookie] [(keyword (.getName cookie))
-                          (.getValue cookie)])
-            (.getCookies request))))
+    (mapcat #(list (keyword (.getName %)) (.getValue %))
+             (.getCookies request))))
 
 
 (defmacro handler-fn
   "Macro that wraps the body of a handler up in a standalone function."
   [& body]
   `(fn ~'[route context request]
-     (let ~'[method     (.getMethod    request)
-             full-path  (.getPathInfo  request)
-             param     #(.getParameter request (compojure.str-utils/str* %))
-             header    #(.getHeader    request (compojure.str-utils/str* %))
-             mimetype  #(compojure.http/context-mimetype context (str %))
-             session    (compojure.http/get-session request)
-             cookie-map (compojure.http/get-cookie-map request)]
+     (let ~'[method    (.getMethod    request)
+             full-path (.getPathInfo  request)
+             params    (compojure.http/get-params  request)
+             headers   (compojure.http/get-headers request)
+             mimetype #(compojure.http/context-mimetype context (str %))
+             session   (compojure.http/get-session request)
+             cookies   (compojure.http/get-cookies request)]
        (do ~@body))))
  
 (defn- find-method
@@ -242,7 +273,7 @@
 
 ;;;; Helper functions ;;;;
 
-(defn cookie
+(defn new-cookie
   "Create a new Cookie object."
   [name value & attrs]
   (let [cookie (new Cookie (str* name) value)
