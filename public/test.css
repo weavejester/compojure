@@ -4,7 +4,12 @@ font-family: arial, 'sans serif';
 margin-left: 15pt;
 }
 
-.error
+.FormError
+{
+    color:red;
+}
+
+.FormErrorSummary
 {
     color:red;
 }

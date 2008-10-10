@@ -151,5 +151,7 @@
 (defn html
   "Nicely formats a tree of vectors into HTML."
   [& trees]
-  (map-xml html-formatter trees))
+  (if (and (seq? trees) (seq? (first trees)))
+    (apply html (first trees))
+    (map-xml html-formatter trees)))
 
