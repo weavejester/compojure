@@ -68,18 +68,3 @@
        ((html-struct :html))))
   ([html-struct]
      (render html-struct {})))
-      
-
-(defn always-true [params]
-  {})
-
-(defn always-false [params]
-  {"" "lots of errors!"})
-
-(def test-html
-  (html-with-validator always-true
-      [:head
-       "header stuff"]
-      [:body
-       [:p
-	(System/currentTimeMillis)]]))
