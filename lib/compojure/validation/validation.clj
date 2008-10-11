@@ -26,8 +26,7 @@
 (defn validate-in [params name lst message]
   (let [result (seq-contains? lst (params name))]
     (when (not result)
-      (set! validation-errors (assoc validation-errors name message))
-      (println name " :" message))
+      (set! validation-errors (assoc validation-errors name message)))
     result))
 
 (defmacro decorate-errors [param-name & html-body]
@@ -45,11 +44,7 @@
 	     [:ul
 	      (map (fn [err] [:li err]) (vals validation-errors))]]]))
 
-;; (defn html-with-validator [arg & html-body]
-;;   {:html html-body, :validator arg})
-
 (defmacro defhtml [name & body]
-  (println "body is " body)
   `(def ~name {:html (fn [] (html ~@body))}))
 
 (defmacro html-with-validator [arg & html-body]
@@ -65,18 +60,13 @@
 
 (defn render 
   ([html-struct options]
-     (println "render. options = " options)
      (cond
       (options :validate) 
           (binding [compojure.validation/validation-errors (get-validation-errors html-struct (options :params))]
-	    (println "inside binding, validation-errors = " validation-errors)
 	    (render html-struct (dissoc options :validate)))
        true
-       (do 
-	 (println "rendering, validation errors = " validation-errors)
-	 ((html-struct :html)))))
+       ((html-struct :html))))
   ([html-struct]
-     (println "render no options")
      (render html-struct {})))
       
 

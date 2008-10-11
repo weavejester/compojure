@@ -78,9 +78,7 @@
   (POST "/form"
 	(if (valid-html? example-form params)
 	  (template "Form Validation" (html [:p "You are a genius!"]))
-	  (do
-	    (println "POST, rendering with errors")
-	    (render example-form {:validate true :params params}))))
+	  (render example-form {:validate true :params params})))
 
   (GET "/public/*"
        (serve-file "public" (route :*)))
