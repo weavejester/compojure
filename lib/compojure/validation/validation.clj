@@ -1,6 +1,6 @@
 
-(ns compojure.validation
-    (:use compojure.html))
+(ns compojure.validation)
+    ;(:use compojure.html))
 
 (def validator-functions [])
 (def validation-errors {})
@@ -44,9 +44,6 @@
 	     [:ul
 	      (map (fn [err] [:li err]) (vals validation-errors))]]]))
 
-(defmacro defhtml [name & body]
-  `(def ~name {:html (fn [] (html ~@body))}))
-
 (defmacro html-with-validator [arg & html-body]
   `{:html (fn [] (html ~@html-body)), :validator ~arg})
 
@@ -58,13 +55,3 @@
 (defn valid-html? [html-struct params]
   (zero? (count (get-validation-errors html-struct params))))
 
-(defn render 
-  ([html-struct options]
-     (cond
-      (options :validate) 
-          (binding [compojure.validation/validation-errors (get-validation-errors html-struct (options :params))]
-	    (render html-struct (dissoc options :validate)))
-       true
-       ((html-struct :html))))
-  ([html-struct]
-     (render html-struct {})))
