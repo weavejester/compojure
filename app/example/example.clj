@@ -20,13 +20,15 @@
       [:body
         body]]))
 
-(defn dummy-validator [params]
-  {:password "Password must not be blank"
-   :agree "must not be blank"
-   "" "zipcode must be inside Texas"})
+(defn form-validator [params]
+  (validate-not-blank params :name "must not be blank")
+  (validate-not-blank params :password "must not be blank")
+  (validate-not-blank params :sex "must not be blank")
+  (validate-acceptance params :agree "must accept the eula")
+  (validate-in params :sex ["Female"] "must be female"))
 
 (def example-form
-  (html-with-validator dummy-validator
+  (html-with-validator form-validator
     (doctype :xhtml-strict)
     [:html
      [:head

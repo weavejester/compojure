@@ -5,17 +5,30 @@
 (def validator-functions [])
 (def validation-errors {})
 
-(defn acceptance-predicate [val]
-  (not (nil? val)))
+(defn acceptance-pred [params name message]
+  (not (nil? (params name))))
+
+(defn validate-acceptance [params name message]
+  (let [result (not (nil? (params name)))]
+    (when (not result)
+      (set! validation-errors (assoc validation-errors name message)))
+    result))
+
+(defn validate-not-blank [params name message]
+  (let [result (and (not (nil? (params name))) (not (= "" (params name))))]
+    (when (not result)
+      (set! validation-errors (assoc validation-errors name message)))
+    result))
 
 (defn seq-contains? [seq val]
   (contains? (set seq) val))
 
-(defn in-pred [lst val]
-  (seq-contains? lst val))
-
-(defn not-blank-pred [val]
-  (not (nil? val)))
+(defn validate-in [params name lst message]
+  (let [result (seq-contains? lst (params name))]
+    (when (not result)
+      (set! validation-errors (assoc validation-errors name message))
+      (println name " :" message))
+    result))
 
 (defmacro decorate-errors [param-name & html-body]
   `(if (contains? validation-errors ~param-name)
@@ -35,11 +48,17 @@
 ;; (defn html-with-validator [arg & html-body]
 ;;   {:html html-body, :validator arg})
 
+(defmacro defhtml [name & body]
+  (println "body is " body)
+  `(def ~name {:html (fn [] (html ~@body))}))
+
 (defmacro html-with-validator [arg & html-body]
   `{:html (fn [] (html ~@html-body)), :validator ~arg})
 
 (defn get-validation-errors [html-struct params]
-     ((html-struct :validator) params))
+  (binding [validation-errors {}]
+    ((html-struct :validator) params)
+    validation-errors))
 
 (defn valid-html? [html-struct params]
   (zero? (count (get-validation-errors html-struct params))))
@@ -74,7 +93,3 @@
       [:body
        [:p
 	(System/currentTimeMillis)]]))
-
-;(defn validate-user [params]
-;  (validate-not-blank params :name "Must have a name")
-;  (validate-zipcode params :zipcode))
