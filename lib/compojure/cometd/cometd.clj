@@ -217,12 +217,9 @@
 
 (defn on-timeout
   "Calls the supplied function when the client times out."
-  ([#^Client client func]
-    (on-timeout client func (.getTimeout client)))
-  ([#^Client client func timeout]
-    (.setTimeout client timeout)
+  [#^Client client func]
     (.addListener client
       (proxy [RemoveListener] []
         (removed [id timeout?]
           (if timeout?
-            (func client)))))))
+            (func client))))))
