@@ -5,14 +5,16 @@
 (ns compojure.cometd
   (:use    (compojure control
                       str-utils)
-           (clojure.contrib def))
+           (clojure.contrib def
+                            memoize))
   (:import (clojure.lang Sequential)
            (java.util Collection
                       HashMap
                       Map)
            (dojox.cometd MessageListener
                          SecurityPolicy)
-           (org.mortbay.cometd.continuation ContinuationCometdServlet)))
+           (org.mortbay.cometd.continuation ContinuationBayeux
+                                            ContinuationCometdServlet)))
 
 ;;;; Security ;;;;
 
@@ -61,19 +63,7 @@
     (dosync
       (commute rules conj [allow? pred]))))
 
-(defn create-cometd-servlet
-  "Create a new ContinuationCometdServlet with the supplied security rule
-  chain refs."
-  [subscribe-rules publish-rules]
-  (proxy [ContinuationCometdServlet] []
-    (newBayeux []
-      (doto (proxy-super newBayeux)
-            (setSecurityPolicy
-              (create-security-policy
-                subscribe-rules
-                publish-rules))))))
-
-;;;; Default servlet and rule chains ;;;;
+;;;; Servlet and rule chains ;;;;
 
 (defvar *subscribe-rules*
   (ref (list))
@@ -82,12 +72,6 @@
 (defvar *publish-rules*
   (ref (list))
   "Default rule chain for publishing.")
-
-(defvar *cometd*
-  (create-cometd-servlet
-    *subscribe-rules*
-    *publish-rules*)
-  "Default cometd servlet object tied to default security rule chains.")
 
 (defn allow-publish
   "Allow publishing of messages based on a predicate or channel name."
@@ -109,6 +93,28 @@
   [pred-or-channel]
   (add-rule-to-chain *subscribe-rules* false pred-or-channel))
 
+(defn new-bayeux
+  "Create a new Bayeux object with the given security rules."
+  [subscribe-rules publish-rules]
+  (doto (new ContinuationBayeux)
+          (setSecurityPolicy
+            (create-security-policy
+              subscribe-rules
+              publish-rules))))
+
+(defvar *bayeux*
+  (new-bayeux *subscribe-rules* *publish-rules*)
+  "Default Bayeux object.")
+
+(defn cometd-servlet
+  "Create a new ContinuationCometdServlet with the supplied Bayeux object, or
+  uses the default *bayeux* if not supplied."
+  ([]
+    (cometd-servlet *bayeux*))
+  ([bayeux]
+    (proxy [ContinuationCometdServlet] []
+      (newBayeux [] bayeux))))
+
 (defn- local-client?
   "Is the message being sent locally?"
   [client channel message]
@@ -121,19 +127,12 @@
 
 ;;;; Sending and receiving ;;;;
 
-(defn new-client
-  "Create a new cometd client object."
-  ([]   (new-client "compojure"))
-  ([id] (new-client *cometd* id))
-  ([servlet id]
-    (.. servlet (getBayeux)
-                (newClient id))))
-
-(defn- get-channel
-  "Gets a cometd channel that we can publish or subscribe to."
-  [servlet channel]
-  (.. servlet (getBayeux)
-              (getChannel channel true)))
+(defvar- singleton-client
+  (memoize
+    (fn [bayeux]
+      (.newClient bayeux "publisher")))
+  "Creates a new client the first time its called, then returns the same
+  client for each subsequent call.")
 
 (defn- clj->java
   "Convert a clojure data structure into Java-compatible types."
@@ -154,11 +153,11 @@
 (defn publish
   "Publish a message to a channel."
   ([channel message]
-    (publish (new-client) channel message))
+    (publish (singleton-client *bayeux*) channel message))
   ([client channel message]
-    (publish *cometd* client channel message))
-  ([servlet client channel message]
-    (.publish (get-channel servlet channel)
+    (publish *bayeux* client channel message))
+  ([bayeux client channel message]
+    (.publish (.getChannel bayeux channel true)
               client
               (clj->java message)
               nil)))
@@ -166,7 +165,7 @@
 (defn deliver
   "Deliver a message to a specific client."
   ([client channel message]
-    (deliver client (new-client) channel message))
+    (deliver client (singleton-client *bayeux*) channel message))
   ([client from channel message]
     (.deliver client from channel (clj->java message) nil)))
 
@@ -194,22 +193,22 @@
 (defn subscribe
   "Subscribe to a channel."
   ([channel func]
-    (subscribe *cometd* channel func))
-  ([servlet channel func]
-    (let [client (new-client)]
+    (subscribe *bayeux* channel func))
+  ([bayeux channel func]
+    (let [client (.newClient bayeux "subscriber")]
       (.addListener client
         (proxy [MessageListener] []
           (deliver [from to mesg]
             (func from (java->clj mesg)))))
-      (.subscribe (get-channel servlet channel) client)
+      (.subscribe (.getChannel bayeux channel true) client)
       client)))
 
 (defn unsubscribe
   "Unsubscribe from a channel."
   ([channel]
-    (doseq client (.getSubscribers (get-channel *cometd* channel))
+    (doseq client (.getSubscribers (.getChannel *bayeux* channel))
       (unsubscribe client channel)))
   ([client channel]
-    (unsubscribe *cometd* client channel))
-  ([servlet client channel]
-    (.unsubscribe (get-channel servlet channel) client))) 
+    (unsubscribe *bayeux* client channel))
+  ([bayeux client channel]
+    (.unsubscribe (.getChannel bayeux channel) client)))
