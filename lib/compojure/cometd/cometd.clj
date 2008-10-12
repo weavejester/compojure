@@ -1,6 +1,6 @@
 ;; compojure.cometd
 ;;
-;; An interface to Jetty's cometd implementation
+;; An interface to Jetty's cometd implementation.
 
 (ns compojure.cometd
   (:use    (compojure control
@@ -170,18 +170,24 @@
   ([client from channel message]
     (.deliver client from channel (clj->java message) nil)))
 
+(defn- seqable?
+  "Can x be turned into a Clojure sequence?"
+  [x]
+  (or (instance? Collection x)
+      (and x (.isArray (class x)))))
+
 (defn- java->clj
   "Turn a standard Java object into its equivalent Clojure data structure."
   [data]
   (cond
-    (or (instance? Collection data) (.isArray (class data)))
-      (vec (map java->clj data))
     (instance? Map data)
       (apply hash-map
         (mapcat
           #(list (keyword (java->clj (.getKey %)))
                  (java->clj (.getValue %)))
           data))
+    (seqable? data)
+      (vec (map java->clj data))
     otherwise
       data))
 
