@@ -11,7 +11,9 @@
            (java.util Collection
                       HashMap
                       Map)
-           (dojox.cometd MessageListener
+           (dojox.cometd Client
+                         MessageListener
+                         RemoveListener
                          SecurityPolicy)
            (org.mortbay.cometd.continuation ContinuationBayeux
                                             ContinuationCometdServlet)))
@@ -212,3 +214,15 @@
     (unsubscribe *bayeux* client channel))
   ([bayeux client channel]
     (.unsubscribe (.getChannel bayeux channel) client)))
+
+(defn on-timeout
+  "Calls the supplied function when the client times out."
+  ([#^Client client func]
+    (on-timeout client func (.getTimeout client)))
+  ([#^Client client func timeout]
+    (.setTimeout client timeout)
+    (.addListener client
+      (proxy [RemoveListener] []
+        (removed [id timeout?]
+          (if timeout?
+            (func client)))))))
