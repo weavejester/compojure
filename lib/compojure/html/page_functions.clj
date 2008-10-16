@@ -87,15 +87,6 @@
     (domap x coll
       [:li x])])
 
-(defn html-redirect [url]
-   "returns an html page that immediately redirects to the given URL"
-   (html
-    (doctype :xhtml-strict)
-    [:html
-     [:head
-      [:meta {:http-equiv "refresh" :content (str 0 ";" url)}]
-      [:body]]]))
-
 (decorate-with optional-attrs
   xhtml-tag
   link-to
