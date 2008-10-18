@@ -135,12 +135,13 @@
 
 ;;;; Sending and receiving ;;;;
 
-(defvar- singleton-client
-  (memoize
-    (fn [bayeux]
-      (.newClient bayeux "publisher")))
-  "Creates a new client the first time its called, then returns the same
-  client for each subsequent call.")
+(defn singleton-client
+  "Creates a new client the first time its called, and returns the same
+  client for each subsequent call."
+  [bayeux]
+  (.newClient bayeux "publisher"))
+
+(decorate-with memoize singleton-client)
 
 (defn- clj->java
   "Convert a clojure data structure into Java-compatible types."
