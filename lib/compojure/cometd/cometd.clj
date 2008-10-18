@@ -4,6 +4,7 @@
 
 (ns compojure.cometd
   (:use    (compojure control
+                      jetty
                       str-utils)
            (clojure.contrib def
                             memoize))
@@ -11,7 +12,8 @@
            (java.util Collection
                       HashMap
                       Map)
-           (dojox.cometd Client
+           (dojox.cometd Bayeux
+                         Client
                          MessageListener
                          RemoveListener
                          SecurityPolicy)
@@ -109,13 +111,17 @@
   "Default Bayeux object.")
 
 (defn cometd-servlet
-  "Create a new ContinuationCometdServlet with the supplied Bayeux object, or
-  uses the default *bayeux* if not supplied."
-  ([]
-    (cometd-servlet *bayeux*))
-  ([bayeux]
-    (proxy [ContinuationCometdServlet] []
-      (newBayeux [] bayeux))))
+  "Create a new ContinuationCometdServlet in a ServletHolder wrapper, with the
+  supplied Bayeux object and init parameters. Uses the default *bayeux* if the
+  Bayeux object is not supplied."
+  [& params]
+  (let [[bayeux params] (if (instance? Bayeux (first params))
+                          (split-at 1 params)
+                          [*bayeux* params])]
+    (apply servlet-holder
+      (proxy [ContinuationCometdServlet] []
+        (newBayeux [] bayeux))
+      params)))
 
 (defn- local-client?
   "Is the message being sent locally?"

@@ -6,6 +6,16 @@
 
 ;;;;; HTTP server ;;;;
 
+(defn servlet-holder
+  "Wrap a servlet in a ServletHolder object with a supplied set of parameters
+  to be set on servlet init."
+  [servlet & params]
+  (let [holder (new ServletHolder servlet)
+        params (partition 2 params)]
+    (doseq [key val] params
+      (.setInitParameter holder (name key) (str val)))
+    holder))
+
 (defn- create-server
   "Construct a Jetty Server instance."
   [options servlets]
@@ -14,7 +24,11 @@
         context  (new Context server "/" (. Context SESSIONS))
         servlets (partition 2 servlets)]
     (doseq [path servlet] servlets
-      (.addServlet context (new ServletHolder servlet) path))
+      (.addServlet context
+                   (if (instance? ServletHolder servlet)
+                     servlet
+                     (new ServletHolder servlet))
+                   path))
     server))
 
 (defn http-server
