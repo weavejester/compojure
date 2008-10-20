@@ -2,7 +2,8 @@
 (ns compojure.validation
     (:use compojure.html)
     (:use clojure.contrib.test-is)
-    (:use clojure.contrib.seq-utils))
+    (:use clojure.contrib.seq-utils)
+    (:use clojure.contrib.trace))
 
 (def validator-functions [])
 (def validation-errors {})
@@ -101,7 +102,8 @@ false or nil, message will be added as a validation error."
     (is (= [:div {:class "FormErrorSummary"} [:p "the page had the following errors:" [:ul [:li "page error one"] [:li "page error two"] [:li "foo error"]]]] (validation-error-summary)))))
 
 (defmacro html-with-validator [arg & html-body]
-  `{:html (fn [] (html ~@html-body)), :validator ~arg})
+  `{:html (fn [params#]
+	    (html ~@html-body)), :validator ~arg})
 
 (defn get-validation-errors [html-struct params]
   (binding [validation-errors {}]
@@ -110,19 +112,3 @@ false or nil, message will be added as a validation error."
 
 (defn valid-html? [html-struct params]
   (zero? (count (get-validation-errors html-struct params))))
-
-(defmacro defhtml [name let-binding & body]
-  `(defn ~name {:html (fn [params]
-			(let ~@let-binding
-			  (html ~@body)))}))
-
-(defn render 
-  ([html-struct options]
-     (cond
-      (options :validate) 
-          (binding [compojure.validation/validation-errors (get-validation-errors html-struct (options :params))]
-	    (render html-struct (dissoc options :validate)))
-       true
-       ((html-struct :html))))
-  ([html-struct]
-     (render html-struct {})))
