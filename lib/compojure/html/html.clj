@@ -17,8 +17,7 @@
 
 (ns compojure.html
   (:use (compojure str-utils)
-        (clojure.contrib seq-utils)
-	(compojure validation))
+        (clojure.contrib seq-utils))
   (:import (clojure.lang Sequential)))
 
 (defn- optional-attrs
@@ -156,16 +155,3 @@
     (apply html (first trees))
     (map-xml html-formatter trees)))
 
-(defmacro defhtml [name & body]
-  `(def ~name {:html (fn [] (html ~@body))}))
-
-(defn render 
-  ([html-struct options]
-     (cond
-      (options :validate) 
-          (binding [compojure.validation/validation-errors (get-validation-errors html-struct (options :params))]
-	    (render html-struct (dissoc options :validate)))
-       true
-       ((html-struct :html))))
-  ([html-struct]
-     (render html-struct {})))

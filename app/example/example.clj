@@ -21,11 +21,11 @@
         body]]))
 
 (defn form-validator [params]
-  (validate-not-blank params :name "must not be blank")
-  (validate-not-blank params :password "must not be blank")
-  (validate-not-blank params :sex "must not be blank")
-  (validate-acceptance params :agree "must accept the eula")
-  (validate-in params :sex ["Female"] "must be female"))
+  (validate present? :name params "name must not be blank")
+  (validate present? :password params "password must not be blank")
+  (validate present? :sex params "sex must not be blank")
+  (validate #{"Female" "Male"} :sex  params "must be male or female")
+  (validate present? :agree params "must accept the eula"))
 
 (def example-form
   (html-with-validator form-validator
@@ -46,7 +46,7 @@
 
        (decorate-errors :sex 
 			[:p (label :sex "Sex:") " "
-			 (drop-down :sex ["Male" "Female"])])
+			 (drop-down :sex ["Male" "Female" "Other"])])
 
        [:p (label :profile "Profile:") [:br]
 	(text-area {:cols 40 :rows 10} :profile)]
