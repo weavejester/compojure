@@ -15,4 +15,6 @@
           (binding [compojure.validation/validation-errors (get-validation-errors html-struct (options :params))]
 	    (render html-struct (dissoc options :validate)))
        true
-       ((html-struct :html) (options :data)))))
+       ((html-struct :html) (options :data))))
+  ([html-struct]
+     (render html-struct {})))

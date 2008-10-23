@@ -2,37 +2,18 @@
 (ns compojure.validation
     (:use compojure.html)
     (:use clojure.contrib.test-is)
-    (:use clojure.contrib.seq-utils)
-    (:use clojure.contrib.trace))
+    (:use clojure.contrib.seq-utils))
 
-(def validator-functions [])
 (def validation-errors {})
 
 (load "predicates.clj")
-
-(defn- add-error [param-name message]
-  (println "adding error " param-name " " message)
-  (set! validation-errors (assoc validation-errors param-name 
-				 (conj (get validation-errors param-name []) message))))
-
-(deftest test-add-error
-  (binding [validation-errors {}]
-    (add-error :foo "this is an error")
-    (is (= ["this is an error"] (validation-errors :foo)))
-    (add-error :foo "a second error")
-    (is (= ["this is an error" "a second error"] (validation-errors :foo)))
-    (add-error :bar "an error on bar")
-    (is (= ["this is an error" "a second error"] (validation-errors :foo))) ;test that this doesn't interfere with the original errors
-    (is (= ["an error on bar"] (validation-errors :bar)))  ; and that we can get our error on bar
-    (add-error nil "this error is on the whole page")
-    (is (= ["this error is on the whole page"] (validation-errors nil))))) 
 
 (defn validate [pred param-name params message]
   "validate a single parameter. pred is a function that takes one
 argument, the value of the parameter with name param-name. If pred
 returns false or nil, message will be added as a validation error."
      (when-not (pred (params param-name))
-       (add-error param-name message)))
+       {param-name message}))
 
 (defn validate-params [pred params message]
   "Validate the relationship between two or more parameters. If the
@@ -40,52 +21,81 @@ validation only depends on one argument, use validate. pred is a
 function that takes one argument, the params map. If pred returns
 false or nil, message will be added as a validation error."
   (when-not (pred params)
-    (add-error nil message)))
+    {nil message}))
+
+(defn validator [& results]
+  "takes a list of calls to validate and validate-params. Returns a map of validation errors"
+  (with-local-vars [errors {}]
+    (doseq result results ; each validator call returns a map
+      (doseq kv result ; for each kv pair
+	(when kv
+	  (var-set errors (assoc (var-get errors) (key kv)
+				 (conj (get (var-get errors) (key kv) []) (val kv)))))))
+    (var-get errors)))
+
+(deftest test-validator-good
+  (let [params {:username "Bob", :subject "this is 26 characters long"}]
+    (println "params = " params)
+	(is (= (validator
+		   (validate present? :username params "must not be blank"))
+	       {}))))
+
+(deftest test-validator-one-error
+  (let [params {:username nil, :subject "this is 26 characters long"}]
+	(is (= (validator
+		   (validate present? :username params "must not be blank")
+		   (validate (max-length 30) :subject params "must be <= 30 characters long"))
+	       {:username ["must not be blank"]}))))
+
+(deftest test-validator-two-errors
+  (let [params {:username nil, :subject "this is 26 characters long"}]
+    (is (= (validator
+	    (validate present? :username params "must not be blank")
+	    (validate (max-length 15) :subject params "must be <= 15 characters long")
+	    (validate (max-length 10) :subject params "must be <= 10 characters long"))
+	   {:username ["must not be blank"],
+	    :subject ["must be <= 15 characters long",
+		      "must be <= 10 characters long"]}))))
 
 (deftest test-validate-param
-  (binding [validation-errors {}]
-    (validate present? :username {:username "Bob"} "must not be blank")
-    (is (= nil (validation-errors :username))))
-
-  (binding [validation-errors {}]
-    (validate present? :username {} "must not be blank")
-    (is (= ["must not be blank"] (validation-errors :username)))))
+  (is (= (validate present? :username {:username "Bob"} "must not be blank") 
+	 nil))
+  (is (= (validate present? :username {} "must not be blank") 
+	 {:username "must not be blank"})))
 
 (deftest test-validate-page
   (let [foo-greater-bar? (fn [params] 
-			   (> (params :foo) (params :bar)))
-	foo-times-bar-odd? (fn [params]
-			    (odd? (* (params :foo) (params :bar))))]
-
-    (binding [validation-errors {}]
-      (validate foo-greater-bar? {:foo 5 :bar 3} "foo must be greater than bar")
-      (is (= nil (validation-errors nil)))
-      (validate foo-greater-bar? {:foo 4 :bar 6} "foo must be greater than bar")
-      (is (= ["foo must be greater than bar"] (validation-errors nil)))
-      (validate foo-times-bar-odd? {:foo 3 :bar 4} "foo times bar must be odd")
-      (is (= ["foo must be greater than bar", "foo times bar must be odd"] (validation-errors nil))))))
-
-(defmacro decorate-errors [param-name & html-body]
-  `(if (and 
-	(contains? validation-errors ~param-name) 
-	(> (count (validation-errors ~param-name)) 0))
+			   (> (params :foo) (params :bar)))]
+      (is (= (validate-params foo-greater-bar? {:foo 5 :bar 3} "foo must be greater than bar")
+	     nil))
+      (is (= (validate-params foo-greater-bar? {:foo 4 :bar 6} "foo must be greater than bar")
+	     {nil "foo must be greater than bar"}))))
+      
+(defn decorate-errors [param-name & html-body]
+  (if (and 
+	(contains? validation-errors param-name) 
+	(> (count (validation-errors param-name)) 0))
      [:div {:class "FormError"}
       (vec (cons :ul 
-       (map (fn [err#] 
-	      [:li err#]) (validation-errors ~param-name))))
-      ~@html-body]
-     ~@html-body))
+       (map (fn [err] 
+	      [:li err]) (validation-errors param-name))))
+      html-body]
+     html-body))
   
 (deftest test-decorate-errors
-  (let [dummy-html [:ul [:li "a"] [:li "b"]]]
+  (let [dummy-html (list [:ul [:li "a"] [:li "b"]][:p "some more html"])]
     (binding [validation-errors {}]
-      (is (= dummy-html (decorate-errors :foo dummy-html))))
-    (binding [validation-errors {:bar "unrelated error"}]
-      (is (= dummy-html (decorate-errors :foo dummy-html))))
+      (is (= (decorate-errors :foo dummy-html) 
+	     (list dummy-html))))
+    (binding [validation-errors {:bar ["unrelated error"]}]
+      (is (= (decorate-errors :foo dummy-html) 
+	     (list dummy-html))))
     (binding [validation-errors {:foo ["foo error one"]}]
-      (is (= [:div {:class "FormError"} [:ul [:li "foo error one"]] dummy-html] (decorate-errors :foo dummy-html))))
+      (is (= (decorate-errors :foo dummy-html) 
+	     [:div {:class "FormError"} [:ul [:li "foo error one"]] (list dummy-html)])))
     (binding [validation-errors {:foo ["foo error one" "second error"]}]
-      (is (= [:div {:class "FormError"} [:ul [:li "foo error one"] [:li "second error"]] dummy-html] (decorate-errors :foo dummy-html))))))
+      (is (= (decorate-errors :foo dummy-html)
+	     [:div {:class "FormError"} [:ul [:li "foo error one"] [:li "second error"]] (list dummy-html)])))))
 
 (defn validation-error-summary []
   "displays a div with the summary of errors on the page"
@@ -106,9 +116,7 @@ false or nil, message will be added as a validation error."
 	    (html ~@html-body)), :validator ~arg})
 
 (defn get-validation-errors [html-struct params]
-  (binding [validation-errors {}]
-    ((html-struct :validator) params)
-    validation-errors))
-
+  ((html-struct :validator) params))
+  
 (defn valid-html? [html-struct params]
   (zero? (count (get-validation-errors html-struct params))))
