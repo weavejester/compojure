@@ -5,6 +5,7 @@
     (:use clojure.contrib.seq-utils))
 
 (def validation-errors {})
+(def *params* {})
 
 (load "predicates.clj")
 
@@ -35,10 +36,9 @@ false or nil, message will be added as a validation error."
 
 (deftest test-validator-good
   (let [params {:username "Bob", :subject "this is 26 characters long"}]
-    (println "params = " params)
-	(is (= (validator
-		   (validate present? :username params "must not be blank"))
-	       {}))))
+    (is (= (validator
+	    (validate present? :username params "must not be blank"))
+	   {}))))
 
 (deftest test-validator-one-error
   (let [params {:username nil, :subject "this is 26 characters long"}]
@@ -72,13 +72,9 @@ false or nil, message will be added as a validation error."
 	     {nil "foo must be greater than bar"}))))
       
 (defn decorate-errors [param-name & html-body]
-  (if (and 
-	(contains? validation-errors param-name) 
-	(> (count (validation-errors param-name)) 0))
-     [:div {:class "FormError"}
-      (vec (cons :ul 
-       (map (fn [err] 
-	      [:li err]) (validation-errors param-name))))
+  (if-let errors (seq (validation-errors param-name))
+    [:div.error
+     (unordered-list errors)
       html-body]
      html-body))
   
@@ -92,31 +88,34 @@ false or nil, message will be added as a validation error."
 	     (list dummy-html))))
     (binding [validation-errors {:foo ["foo error one"]}]
       (is (= (decorate-errors :foo dummy-html) 
-	     [:div {:class "FormError"} [:ul [:li "foo error one"]] (list dummy-html)])))
+	     [:div.error [:ul {} (list [:li "foo error one"])] (list dummy-html)])))
     (binding [validation-errors {:foo ["foo error one" "second error"]}]
       (is (= (decorate-errors :foo dummy-html)
-	     [:div {:class "FormError"} [:ul [:li "foo error one"] [:li "second error"]] (list dummy-html)])))))
+	     [:div.error [:ul {} (list [:li "foo error one"] [:li "second error"])] (list dummy-html)])))))
 
-(defn validation-error-summary []
+(defn error-summary []
   "displays a div with the summary of errors on the page"
   (when (> (count validation-errors) 0)
-     [:div {:class "FormErrorSummary"}
+     [:div.errorSummary
 	    [:p "the page had the following errors:"
-	     (vec (cons :ul
-			(map (fn [err] [:li err]) (flatten (vals validation-errors)))))]]))
+	     (unordered-list (flatten (vals validation-errors)))]]))
 
-(deftest test-validation-error-summary
+(deftest test-error-summary
   (binding [validation-errors {}]
-    (is (= nil (validation-error-summary))))
+    (is (= nil (error-summary))))
   (binding [validation-errors {nil ["page error one", "page error two"], :foo ["foo error"]}]
-    (is (= [:div {:class "FormErrorSummary"} [:p "the page had the following errors:" [:ul [:li "page error one"] [:li "page error two"] [:li "foo error"]]]] (validation-error-summary)))))
+    (is (= (error-summary) [:div.errorSummary [:p "the page had the following errors:" [:ul {} (list [:li "page error one"] [:li "page error two"] [:li "foo error"])]]]))))
 
-(defmacro html-with-validator [arg & html-body]
-  `{:html (fn [params#]
-	    (html ~@html-body)), :validator ~arg})
+(defn valid-params? [validate-fn params]
+  (zero? (count (validate-fn params))))
 
-(defn get-validation-errors [html-struct params]
-  ((html-struct :validator) params))
-  
-(defn valid-html? [html-struct params]
-  (zero? (count (get-validation-errors html-struct params))))
+(defmacro with-validation-errors [validation-fn params & body]
+  "Evalutes body in a context with any validation errors"
+  `(binding [validation-errors (~validation-fn ~params)
+	     *params* (with-meta ~params {:errors validation-errors})]
+     ~@body))
+
+(defn validation-errors? []
+  (seq validation-errors))
+
+
