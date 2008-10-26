@@ -58,8 +58,8 @@
 (defn compile-route
   "Turn a route string into a regex and seq of symbols."
   [route-str]
-  (let [splat #"\\*"
-        word  #":(\\w+)"
+  (let [splat #"\*"
+        word  #":(\w+)"
         path  #"[^:*]+"]
     (struct url-route
       (re-pattern
