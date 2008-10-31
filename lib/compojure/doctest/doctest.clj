@@ -84,7 +84,7 @@
   (doseq result (filter (complement :success?) results)
     (.println *test-out*
       (str (pr-str (last (result :expr)))
-           "\n  expected: " (pr-str (result :expected))
+           "\n  expected: " (result :expected)
            "\n  actual:   " (pr-str (result :actual)) "\n")))
   (.println *test-out*
     (str "Success: " (count (filter :success? results)) "/"
