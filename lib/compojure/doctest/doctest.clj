@@ -20,9 +20,14 @@
   :expected
   :actual)
 
-(defn- pushback-str
+(defn- read-str
+  "Parse a string and return a list of all Clojure expressions from it."
   [string]
-  (new PushbackReader (new StringReader string)))
+  (let [eof    (new Object)
+        reader (new PushbackReader (new StringReader string))]
+    (take-while
+      #(not (identical? % eof))
+       (repeatedly #(read reader false eof)))))
 
 (defn- file-reader
   "Return a buffered file reader."
@@ -42,7 +47,7 @@
      (map (partial re-sub #"^. ?" "") lines))])
 
 (defn- expr-marker?
-  "Is the line marked as an expression?"
+  "Is the line marked as an test expression?"
   [[marker _]]
   (= marker \>))
 
@@ -50,14 +55,14 @@
   "Does a test result match the marker/value pair?"
   [marker expected actual]
   (case marker
-    \= (= actual (read (pushback-str expected)))
-    \` (= actual expected)))
+    \= (= actual (last (read-str expected)))
+    \` (= (.trim actual) (.trim expected))))
 
 (defn eval-test
   "Evaluate a test parsed from a file, returning true if the test passes."
   [[[[_ expr]] [[marker expected]]]]
-  (let [expr     (read (pushback-str expr))
-        actual   (eval expr)
+  (let [expr     (read-str expr)
+        actual   (last (map eval expr))
         success? (result-matches? marker expected actual)]
     (struct result
        expr success? expected actual)))
@@ -78,7 +83,7 @@
   [results]
   (doseq result (filter (complement :success?) results)
     (.println *test-out*
-      (str (pr-str (result :expr))
+      (str (pr-str (last (result :expr)))
            "\n  expected: " (pr-str (result :expected))
            "\n  actual:   " (pr-str (result :actual)) "\n")))
   (.println *test-out*
