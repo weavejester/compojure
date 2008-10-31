@@ -1,9 +1,13 @@
 (ns compojure.doctest
-  (:use    (clojure.contrib def))
+  (:use (clojure.contrib def
+                         fcase
+                         seq-utils
+                         str-utils))
   (:import (java.io BufferedReader
+                    FileReader
                     PushbackReader
-                    StringReader
-                    Reader)
+                    Reader
+                    StringReader)
            (java.util.regex Pattern)))
 
 (defvar *test-out* (. System err)
@@ -12,71 +16,71 @@
 
 (defstruct result
   :expr
-  :success
-  :actual
-  :expected)
+  :success?
+  :expected
+  :actual)
 
-(defn slurp-reader
-  "Returns a string of the contents of the reader."
-  [#^Reader reader]
-  (with-open br (new BufferedReader reader)
-    (let [sb (new StringBuilder)]
-      (loop [c (.read br)]
-        (if (neg? c)
-          (str sb)
-          (do (.append sb (char c))
-              (recur (.read br))))))))
+(defn- pushback-str
+  [string]
+  (new PushbackReader (new StringReader string)))
 
-(defn read-str
-  "Parse a string into a vector containing a Clojure expression and the text
-  left over after the end of the expression."
-  [expr]
-  (let [reader (new PushbackReader (new StringReader expr))]
-    [(read reader)
-     (slurp-reader reader)]))
+(defn- file-reader
+  "Return a buffered file reader."
+  [filename]
+  (new BufferedReader (new FileReader filename)))
 
-(defn- test-pair
-  "Parse and evaluate an expression, and compare the output to an expected
-   value."
-  [[expr expected]]
-  (let [expected (pr-str (first (read-str (.trim expected))))
-        capture #(.trim (with-out-str (prn (eval %))))]
-    (try
-      (let [value (capture expr)]
-        (struct result 
-          expr (= value expected)
-          value expected))
-      (catch Exception value
-        (struct result
-          expr (.startsWith (str value) expected)
-          value expected)))))
+(defn- marked-lines
+  "Filter lines beginning with a marker character."
+  [lines]
+  (filter (partial re-find #"^[>=`]( |$)") lines))
 
-(defn literate-test
-  "Run a series of tests extracted from a literate file."
-  [tests]
-  (map test-pair tests))
+(defn- split-marker
+  "Split a group of lines from its marker."
+  [lines]
+  [(ffirst lines)
+   (str-join "\n"
+     (map (partial re-sub #"^. ?" "") lines))])
+
+(defn- expr-marker?
+  "Is the line marked as an expression?"
+  [[marker _]]
+  (= marker \>))
+
+(defn- result-matches?
+  "Does a test result match the marker/value pair?"
+  [marker expected actual]
+  (case marker
+    \= (= actual (read (pushback-str expected)))
+    \` (= actual expected)))
+
+(defn eval-test
+  "Evaluate a test parsed from a file, returning true if the test passes."
+  [[[[_ expr]] [[marker expected]]]]
+  (let [expr     (read (pushback-str expr))
+        actual   (eval expr)
+        success? (result-matches? marker expected actual)]
+    (struct result
+       expr success? expected actual)))
+
+(defn doctest
+  "Evaluate the tests embedded in a file."
+  [filename]
+  (with-open reader (file-reader filename)
+    (let [lines  (marked-lines (line-seq reader))
+          groups (map split-marker
+                      (partition-by first lines))
+          tests  (partition-by expr-marker? groups)]
+      (doall
+        (map eval-test (partition 2 tests))))))
 
 (defn print-results
   "Prints a summary of the results from a literate test to *test-out*."
   [results]
-  (doseq result (filter (complement :success) results)
+  (doseq result (filter (complement :success?) results)
     (.println *test-out*
       (str (pr-str (result :expr))
-           "\n  expected: " (result :expected)
-           "\n  actual:   " (result :actual) "\n")))
+           "\n  expected: " (pr-str (result :expected))
+           "\n  actual:   " (pr-str (result :actual)) "\n")))
   (.println *test-out*
-    (str "Success: " (count (filter :success results)) "/" (count results))))
-
-(defn tests-from-text
-  "Pull tests from a text file."
-  [text]
-  (if text
-    (let [dot-all     (.DOTALL Pattern)
-          re-expr     (.compile Pattern "=>(.*)$" dot-all)
-          re-expected (.compile Pattern "(.*?)(\n\n.*)?$" dot-all)]
-      (if-let next-test (re-find re-expr text)
-        (let [[expr text]       (read-str (next-test 1))
-              [_ expected text] (re-matches re-expected text)]
-          (lazy-cons
-            [expr expected]
-            (tests-from-text text)))))))
+    (str "Success: " (count (filter :success? results)) "/"
+                     (count results))))
