@@ -1,0 +1,11 @@
+#!/bin/sh
+
+cd `dirname $0`/..
+
+for file in jars/*.jar; do
+    jars=$jars:$file
+done
+
+classpath=app:$jars:lib
+
+java -cp $classpath clojure.lang.Script test/test.clj
