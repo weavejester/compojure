@@ -61,13 +61,30 @@
           "</" tag ">")))
 
 (fact "Attributes maps can have many values"
-  [attrs [{:a "1" :b "2" :c "3" :d "4"}]]
-  (= (xml [:tag attrs])
-     (str "<tag a=\"1\" b=\"2\" c=\"3\" d=\"4\" />")))
+  [attr-map [{:a "1" :b "2" :c "3" :d "4"}
+             {:id "a" :class "b"}]
+   attr-str ["a=\"1\" b=\"2\" c=\"3\" d=\"4\""
+             "class=\"b\" id=\"a\""]]
+  (= (xml [:div attr-map])
+     (str "<div " attr-str " />")))
 
-(fact "HTML tag vectors have syntax sugar for class attributes")
+(fact "Special characters are escaped in attributes"
+  [char    ["\""     "<"    ">"    "&"]
+   escaped ["&quot;" "&lt;" "&gt;" "&amp;"]]
+  (= (xml [:div {:id char}])
+     (str "<div id=\"" escaped "\" />")))
 
-(fact "HTML tag vectors have syntax sugar for id attributes")
+(fact "HTML tag vectors have syntax sugar for class attributes"
+  [tag   (rand-tags)
+   class (rand-strs ascii-letters 1 20)]
+  (= (html [tag {:class class}])
+     (html [(str tag "." class)])))
+
+(fact "HTML tag vectors have syntax sugar for id attributes"
+  [tag (rand-tags)
+   id  (rand-strs ascii-letters 1 20)]
+  (= (html [tag {:id id}])
+     (html [(str tag "#" id)])))
 
 (fact "The contents of HTML block tags are indented")
 
