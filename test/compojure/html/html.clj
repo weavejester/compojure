@@ -17,6 +17,11 @@
   (= (xml [tag content])
      (str "<" tag ">" content "</" tag ">")))
 
+(fact "Tags can be specified by keywords, symbols or strings"
+  [tag [:hr 'hr "hr"]]
+  (= (xml [tag])
+     (str "<hr />")))
+
 (fact "Tag vectors concatenate their contents"
   [tag      (rand-tags)
    contents (rand-seqs rand-strs 1 10)]
@@ -40,8 +45,33 @@
      (xml [outer-tag
             before (xml [inner-tag inner-str]) after])))
 
-(fact "Tag vectors can have attribute maps")
+(defn rand-attr-pairs
+  "Generate a random attribute-value pair." []
+  (map vector
+    (rand-strs (str ascii-letters "-") 2 10)
+    (rand-strs (str ascii-letters) 0 30)))
+
+(fact "Tag vectors can have attribute maps"
+  [tag        (rand-tags)
+   [attr val] (rand-attr-pairs)
+   content    (rand-strs)]
+  (= (xml [tag {attr val} content])
+     (str "<" tag " " attr "=\"" val "\">"
+          content
+          "</" tag ">")))
+
+(fact "Attributes maps can have many values"
+  [attrs [{:a "1" :b "2" :c "3" :d "4"}]]
+  (= (xml [:tag attrs])
+     (str "<tag a=\"1\" b=\"2\" c=\"3\" d=\"4\" />")))
 
 (fact "HTML tag vectors have syntax sugar for class attributes")
 
 (fact "HTML tag vectors have syntax sugar for id attributes")
+
+(fact "The contents of HTML block tags are indented")
+
+(fact "The HTML pre tag is rendered without indentation"
+  [content (rand-strs)]
+  (= (html [:body [:div [:pre content]]])
+     "<body>\n  <div>\n    <pre>" content "</pre>\n  </div>\n</body>\n"))

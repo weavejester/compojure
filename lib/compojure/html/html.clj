@@ -49,7 +49,8 @@
   (str-map
     (fn [[key val]]
       (str* " " key "=\"" (h val) "\""))
-    attrs))
+    (apply sorted-map
+      (mapcat identity attrs))))
 
 (def xml)
 

@@ -1,21 +1,18 @@
 (ns fact)
 
-(def #^{:private true}
-  *seed* (new java.util.Random))
-
 (defn rand-ints
   "Generate an infinite sequence of random integers."
   ([]
     (rand-ints -65535 65535))
   ([min max]
-    (repeatedly #(+ (.nextInt *seed* (- max min)) min))))
+    (repeatedly #(+ (rand-int (- max min)) min))))
 
 (defn rand-elems
   "Generate an infinite sequence of random elements from a collection."
   [coll]
   (let [v (vec coll)]
     (repeatedly
-      #(v (.nextInt *seed* (count v))))))
+      #(v (rand-int (count v))))))
 
 (defn rand-seqs
   "Generate an infinite sequence of random length sequences created by
