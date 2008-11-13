@@ -44,13 +44,13 @@
 (def h escape-html)    ; Shortcut for escaping HTML
 
 (defn- map-to-attrs
-  "Turn a map into a string of XML attributes."
+  "Turn a map into a string of XML attributes, sorted by attribute name."
   [attrs]
   (str-map
     (fn [[key val]]
-      (str* " " key "=\"" (h val) "\""))
+      (str " " key "=\"" (h val) "\""))
     (apply sorted-map
-      (mapcat identity attrs))))
+      (mapcat #(map str* %) attrs))))
 
 (def xml)
 
