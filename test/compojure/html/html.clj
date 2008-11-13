@@ -86,6 +86,16 @@
   (= (xml [:div {:id char}])
      (str "<div id=\"" escaped "\" />")))
 
+(fact "Strings, keywords and symbols can be keys in attribute maps"
+  [attr [:id 'id "id"]]
+  (= (xml [:span {attr "a"}])
+     "<span id=\"a\" />"))
+
+(fact "An attribute map can have keys of different types"
+  []
+  (= (xml [:span {:a "1" 'b "2" "c" "3"}])
+     "<span a=\"1\" b=\"2\" c=\"3\" />"))
+
 (def inline-tags
   '(a span em strong code img))
 
