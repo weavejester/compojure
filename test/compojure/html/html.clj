@@ -3,7 +3,7 @@
         (compojure html)))
 
 (def names
-  '(foo Bar foo-bar foo_bar fooBar))
+  '(foo Bar foo-bar foo_bar fooBar foo:bar))
 
 (fact "The first element of a tag vector defines the tag name"
   [tag names]
@@ -101,9 +101,30 @@
   (= (html [tag {:id id}])
      (html [(str tag "#" id)])))
 
-(fact "The contents of HTML block tags are indented")
+(fact "The content of HTML 'block' tags is indented"
+  [tag '(body div p blockquote script)]
+  (= (html [tag "Lorem\nIpsum"])
+     (str "<" tag ">\n  Lorem\n  Ipsum\n</" tag ">\n")))
 
-(fact "The HTML pre tag is rendered without indentation"
+(fact "A newline character is appended to HTML 'line' tags"
+  [tag '(h1 h3 title li)]
+  (= (html [tag "Lorem Ipsum"])
+     (str "<" tag ">Lorem Ipsum</" tag ">\n")))
+
+(fact "Nested tags result in nested indentation"
+  [content  test-contents
+   indented ["    Lorem"
+             "    Lorem Ipsum"
+             "    "
+             "    Lorem\n    Ipsum"
+             "      Lorem"
+             "    Ipsum  "
+             "      Lorem\n        Ipsum"
+             "    Lorem<br />Ipsum"]]
+  (= (html [:div [:p content]])
+     (str "<div>\n  <p>\n" indented "\n  </p>\n</div>\n")))
+
+(fact "The HTML pre tag is always rendered without indentation"
   [content test-contents]
   (= (html [:body [:div [:pre content]]])
      "<body>\n  <div>\n    <pre>" content "</pre>\n  </div>\n</body>\n"))
