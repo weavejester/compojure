@@ -54,11 +54,14 @@
     (select-options options nil))
   ([options selected]
     (let [select (fn [opt attrs]
-                   (if (and selected (= opt selected))
-                     (merge attrs {:selected "selected"})))]
+                   (if (and selected (= opt (str* selected)))
+                     (merge attrs {:selected "selected"})
+                     attrs))]
       (domap opt options
         (if (vector? opt)
-          [:option (select (opt 2) {:value (opt 2)}) (opt 1)]
+          (let [text  (opt 0)
+                value (str* (opt 1))]
+            [:option (select value {:value value}) text])
           [:option (select opt {}) opt])))))
 
 (defn drop-down
