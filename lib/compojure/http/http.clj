@@ -31,6 +31,7 @@
                    parser
                    str-utils))
   (:import (java.io File
+                    InputStream
                     FileInputStream)
            (java.net URL)
            (java.util Enumeration
@@ -162,24 +163,22 @@
   (or (.getParameter request "_method")
       (.getMethod request)))
 
-(defn- send-stream
-  "Send a stream of data to the HTTP response."
-  [context response stream filename]
-  (.setHeader response
-    "Content-Type" (context-mimetype context (str filename)))
-  (with-open in stream
-    (pipe-stream in (.getOutputStream response))))
-  
+(defn- set-type-by-name
+  "Set the content type header by guessing the mimetype from the resource name."
+  [#^HttpServletResponse response context name]
+  (.setHeader response "Content-Type" (context-mimetype context name)))
+
 (defn- update-response
   "Destructively update a HttpServletResponse using a Clojure datatype:
-    string - Adds to the response body
-    seq    - Adds all containing elements to the response body
-    map    - Updates the HTTP headers
-    Number - Updates the status code
-    File   - Updates the response body via a file stream
-    URL    - Updates the response body via a stream to the URL
-    vector - Iterates through its contents, successively updating the response
-             with each value"
+    string      - Adds to the response body
+    seq         - Adds all containing elements to the response body
+    map         - Updates the HTTP headers
+    Number      - Updates the status code
+    File        - Updates the response body via a file stream
+    URL         - Updates the response body via a stream to the URL
+    InputStream - Pipes the input stream to the resource body
+    vector      - Iterates through its contents, successively updating the
+                  response with each value"
   [#^HttpServletResponse response context update]
   (cond
     (vector? update)
@@ -196,12 +195,16 @@
         (.setHeader response k v))
     (instance? Number update)
       (.setStatus response update)
-    (instance? File update)
-      (send-stream context response (new FileInputStream update) update)
-    (instance? URL update)
-      (send-stream context response (.openStream update) update)
     (instance? Cookie update)
-      (.addCookie response update)))
+      (.addCookie response update)
+    (instance? File update)
+      (update-response response context (.toURL update))
+    (instance? URL update)
+      (do (set-type-by-name response context (str update))
+          (update-response response context (.openStream update)))
+    (instance? InputStream update)
+      (with-open in update
+        (pipe-stream in (.getOutputStream response)))))
         
 (defn- apply-http-handler
   "Finds and evaluates the handler that matches the HttpServletRequest. If the
