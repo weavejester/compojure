@@ -4,12 +4,12 @@ font-family: arial, 'sans serif';
 margin-left: 15pt;
 }
 
-.FormError
+.error
 {
     color:red;
 }
 
-.FormErrorSummary
+.errorSummary
 {
     color:red;
 }

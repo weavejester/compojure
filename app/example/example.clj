@@ -33,7 +33,7 @@
     (doctype :xhtml-strict)
     [:html
      [:head
-      (include-css "/public/test.css")
+      (include-css "/public/example.css")
       [:title "Form"]]
      [:body 
       [:form {:method "post" :action "/form"}
@@ -84,10 +84,10 @@
   (GET "/form"
        (example-form))
   (POST "/form"
-    (with-validation-errors validate-example params
-        (if (validation-errors?)			    
-	  (example-form)
-	  (template "Form Validation" (html [:p "You are a genius!"])))))
+    (with-validated-params params validate-example
+      (if (validation-errors?)			    
+	(example-form)
+	(template "Form Validation" (html [:p "User added"])))))
   (GET "/test"
     (test-page :foo (System/currentTimeMillis), :bar [:div "My Div"]))
   (GET "/public/*"
