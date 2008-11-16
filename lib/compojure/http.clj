@@ -182,16 +182,16 @@
   [#^HttpServletResponse response context update]
   (cond
     (vector? update)
-      (doseq u update
+      (doseq [u update]
         (update-response response context u))
     (string? update)
       (.. response (getWriter) (print update))
     (seq? update)
       (let [writer (.getWriter response)]
-        (doseq d update
+        (doseq [d update]
           (.print writer d)))
     (map? update)
-      (doseq [k v] update
+      (doseq [[k v] update]
         (.setHeader response k v))
     (instance? Number update)
       (.setStatus response update)
@@ -203,7 +203,7 @@
       (do (set-type-by-name response context (str update))
           (update-response response context (.openStream update)))
     (instance? InputStream update)
-      (with-open in update
+      (with-open [in update]
         (pipe-stream in (.getOutputStream response)))))
         
 (defn- apply-http-handler
@@ -217,7 +217,7 @@
                    (if (method= (handler :method))
                      (match-route (handler :route) path)))
         response? (fn [handler]
-                    (if-let route-params (route? handler)
+                    (if-let [route-params (route? handler)]
                       (let [func (handler :function)
                             resp (func route-params
                                        context

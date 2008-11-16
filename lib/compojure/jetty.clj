@@ -12,7 +12,7 @@
   [servlet & params]
   (let [holder (new ServletHolder servlet)
         params (partition 2 params)]
-    (doseq [key val] params
+    (doseq [[key val] params]
       (.setInitParameter holder (name key) (str val)))
     holder))
 
@@ -23,7 +23,7 @@
         server   (new Server port)
         context  (new Context server "/" (. Context SESSIONS))
         servlets (partition 2 servlets)]
-    (doseq [path servlet] servlets
+    (doseq [[path servlet] servlets]
       (.addServlet context
                    (if (instance? ServletHolder servlet)
                      servlet
