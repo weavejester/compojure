@@ -75,7 +75,7 @@
           word  #(keyword (.group % 1))
           path  nil)))))
  
-(defn- match-route
+(defn match-route
   "Match a path against a parsed route. Returns a map of keywords and their
   matching path values."
   [route path]
