@@ -25,7 +25,7 @@
   (loop [src     src
          results []
          clauses clauses]
-    (if-let parsed (apply parse-1 src clauses)
+    (if-let [parsed (apply parse-1 src clauses)]
       (let [[src result] parsed
             results      (conj results result)]
         (if (= src "")

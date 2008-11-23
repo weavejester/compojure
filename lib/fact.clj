@@ -184,7 +184,7 @@
   "Prints a summary of the results from a set of verified facts to *test-out*."
   [& results]
   (let [results (apply concat results)]
-    (doseq result results
+    (doseq [result results]
       (.println *test-out* (format-result result)))
     (.println *test-out*
       (str (count results) " facts, "
