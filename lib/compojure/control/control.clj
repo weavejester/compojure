@@ -1,5 +1,6 @@
 ;; Macros and functions for controling program flow
-(ns compojure.control)
+(ns compojure.control
+  (:use (clojure.contrib seq-utils)))
 
 (def #^{:doc "Synonym for true; useful for ending conds"}
   otherwise true)
@@ -35,8 +36,7 @@
           `(redef ~f (~decorator ~f)))))
 
 (defmacro deftmpl
-  "Define a template function. Arguments are passed via key-value
-pairs.
+  "Define a template function. Arguments are passed via key-value pairs.
   e.g. (deftmpl foo [bar baz] (+ bar baz))
        (foo :bar 1 :baz 2)"
   [name doc? & body]
@@ -46,6 +46,6 @@ pairs.
             (list* nil doc? body))]
    `(defn ~name
       ~@doc?
-       [& param-map#]
+       [param-map#]
        (let [{:keys ~params} (apply hash-map param-map#)]
         ~@body))))

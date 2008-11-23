@@ -1,11 +1,9 @@
 Compojure is an open source web framework for the Clojure programming language,
-designed to produce concise and functional code without any messing around with
-mammoth configuration files and byzantine libraries of interdependent classes.
-It's only requirement is a working Java VM, as it comes bundled with jar files
-for Clojure and the Java HTTP server, Jetty.
+designed to produce concise, correct, functional code with the minimum of fuss.
 
-Compojure is still in active development, but a lot of the API is now
+Compojure is still in active development, but a lot of the core API is now
 relatively stable.
+
 
 Quickstart
 ==========
@@ -18,8 +16,7 @@ Quickstart
 
         $ script/run
 
-3. An example "Hello World" application should be up and running at:
-http://localhost:8080/
+3. An example application should be up and running at: http://localhost:8080/
 
 
 File Structure
@@ -67,7 +64,7 @@ To create a servlet, you pass a series of HTTP resource definitions to the
         (GET "/greet" "Hello visitor!")
         (ANY "/*"     (page-not-found))))
 
-Compojure also provides a `defservlet` macro, that works as you might expect:
+Compojure also provides a `defservlet` macro:
 
     (defservlet greet
       "A simple greeter"
@@ -104,9 +101,9 @@ all resource declarations:
 
   * method          - the HTTP method
   * full-path       - the full path of the request 
-  * (param name)    - a HTTP parameter
-  * (header name)   - a HTTP header
-  * (route name)    - a named part of the request path
+  * params          - a hash-map of HTTP parameters
+  * headers         - a hash-map of HTTP headers
+  * route           - a hash-map of named parts of the request path
   * session         - a ref to a session-specific map
   * (mime filename) - guesses the mimetype of a filename
   * request         - the HttpServletRequest object
@@ -134,11 +131,13 @@ In the previous examples, you can see how returning a string adds to the
 response body. Other standard Clojure types modify the response in different
 ways:
 
- * java.lang.String  - adds to the response body
- * java.lang.Number  - changes the status code
- * Clojure hash map  - alters the HTTP headers
- * Clojure seq       - lazily adds to the response body
- * java.io.File      - streams the file to the response body
+ * java.lang.String         - adds to the response body
+ * java.lang.Number         - changes the status code
+ * Clojure map              - alters the HTTP headers
+ * Clojure seq              - lazily adds to the response body
+ * java.io.File             - streams the file to the response body
+ * java.net.URL             - streams the resource of the URL to the response body
+ * java.servlet.http.Cookie - adds the cookie to the HTTP headers
 
 These modifications can be chained together using a standard Clojure vector:
 
@@ -166,7 +165,7 @@ vectors.
          <em>Hello World</em>
        </p>
 
-The tag is taken from the first item of the vector, and can be a string,
+The tag name is taken from the first item of the vector, and can be a string,
 symbol or keyword. You can optionally specify attributes for the tag by
 providing a hash map as the secord item of the vector:
 
@@ -175,6 +174,15 @@ providing a hash map as the secord item of the vector:
     => <div class="footer">
          Page 1
        </div>
+
+The html function additionally offers syntax sugar for defining id and class
+attributes:
+
+    (html [:h1.first  "Foo"]
+          [:h2#second "Bar"])
+
+    => <h1 class="first">Foo</h1>
+       <h2 id="second">Bar</h2>
 
 Any sequences will be expanded out into the containing vector:
 

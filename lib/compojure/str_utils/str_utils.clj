@@ -58,3 +58,8 @@
   [s]
   (str (.toUpperCase (.substring s 0 1))
        (.toLowerCase (.substring s 1))))
+
+(defn grep
+  "Filter a collection of strings by a regex."
+  [re coll]
+  (filter (partial re-find re) coll))
