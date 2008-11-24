@@ -38,26 +38,23 @@
      [:body 
       [:form {:method "post" :action "/form"}
        (error-summary)
-       (decorate-errors :name
-			[:p (label :name "Username:") " "
-			 (text-field :name "Anonymous")])
+       (decorate-fields error-class
+	 [:p (label :name "Username:") " "
+	  (text-field :name "Anonymous")]
 	       
-       (decorate-errors :password
-			[:p (label :password "Password:") " "
-			 (password-field :password)])
+	 [:p (label :password "Password:") " "
+	  (password-field :password)]
 
-       (decorate-errors :sex 
-			[:p (label :sex "Sex:") " "
-			 (drop-down :sex ["Male" "Female" "Other"])])
+	 [:p (label :sex "Sex:") " "
+	  (drop-down :sex ["Male" "Female" "Other"])]
 
-       [:p (label :profile "Profile:") [:br]
-	(text-area {:cols 40 :rows 10} :profile)]
+	 [:p (label :profile "Profile:") [:br]
+	  (text-area {:cols 40 :rows 10} :profile)]
 
-       (decorate-errors :agree 
-			[:p (label :agree "Have read usage agreement:") " "
-			 (check-box :agree)])
-       [:p (submit-button "New User")
-	(reset-button "Reset Form")]]]]))
+	 [:p (label :agree "Have read usage agreement:") " "
+	  (check-box :agree)]
+	 [:p (submit-button "New User")
+	  (reset-button "Reset Form")])]]]))
 
 (defn welcome-page
   "A basic welcome page."

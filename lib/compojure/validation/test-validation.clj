@@ -45,17 +45,44 @@
   (binding [*errors* {nil ["page error one", "page error two"], :foo ["foo error"]}]
     (is (= (error-summary) [:div.errorSummary [:p "the page had the following errors:" [:ul {} (list [:li "page error one"] [:li "page error two"] [:li "foo error"])]]]))))
 
-(deftest test-decorate-errors
-  (let [dummy-html (list [:ul [:li "a"] [:li "b"]][:p "some more html"])]
-    (binding [*errors* {}]
-      (is (= (decorate-errors :foo dummy-html) 
-	     (list dummy-html))))
-    (binding [*errors* {:bar ["unrelated error"]}]
-      (is (= (decorate-errors :foo dummy-html) 
-	     (list dummy-html))))
-    (binding [*errors* {:foo ["foo error one"]}]
-      (is (= (decorate-errors :foo dummy-html) 
-	     [:div.error [:ul {} (list [:li "foo error one"])] (list dummy-html)])))
-    (binding [*errors* {:foo ["foo error one" "second error"]}]
-      (is (= (decorate-errors :foo dummy-html)
-	     [:div.error [:ul {} (list [:li "foo error one"] [:li "second error"])] (list dummy-html)])))))
+;; (deftest test-decorate-errors
+;;   (let [dummy-html (list [:ul [:li "a"] [:li "b"]][:p "some more html"])]
+;;     (binding [*errors* {}]
+;;       (is (= (decorate-errors :foo dummy-html) 
+;; 	     (list dummy-html))))
+;;     (binding [*errors* {:bar ["unrelated error"]}]
+;;       (is (= (decorate-errors :foo dummy-html) 
+;; 	     (list dummy-html))))
+;;     (binding [*errors* {:foo ["foo error one"]}]
+;;       (is (= (decorate-errors :foo dummy-html) 
+;; 	     [:div.error [:ul {} (list [:li "foo error one"])] (list dummy-html)])))
+;;     (binding [*errors* {:foo ["foo error one" "second error"]}]
+;;       (is (= (decorate-errors :foo dummy-html)
+;; 	     [:div.error [:ul {} (list [:li "foo error one"] [:li "second error"])] (list dummy-html)])))))
+
+
+(deftest test-errorclass-no-errors
+  (is (= ((error-class text-field) :foo "default value")
+	 [:input {:type "text" :id "foo" :name "foo" :value "default value"}])))
+
+(deftest test-errorclass-with-errors
+  (binding [*errors* {:foo "an error"}]
+    (is (= ((error-class text-field) :foo "default value")
+       [:div.error [:input {:type "text" :id "foo" :name "foo" :value "default value"}]]))))
+
+
+(deftest test-decorate-fields-no-errors
+  (is (= (decorate-fields error-class (text-field :foo "default value"))
+	 (list [:input {:type "text" :id "foo" :name "foo" :value "default value"}]))))
+
+(deftest test-decorate-fields-with-errors
+  (binding [*errors* {:foo "decorate fields error"}]
+    (is (= (decorate-fields error-class (text-field :foo "default value"))
+	   (list [:div.error [:input {:type "text" :id "foo" :name "foo" :value "default value"}]])))))
+
+(deftest test-decorate-fields-two-fields
+  (is (= (decorate-fields error-class 
+       (text-field :foo "default foo")
+       (text-field :bar "default bar"))
+     (list [:input {:type "text" :id "foo" :name "foo" :value "default foo"}]
+	   [:input {:type "text" :id "bar" :name "bar" :value "default bar"}]))))

@@ -1,7 +1,8 @@
 
 (ns compojure.validation
     (:use compojure.html)
-    (:use clojure.contrib.seq-utils))
+    (:require [clojure.contrib.seq-utils :as seq-utils])
+    (:require [compojure.str-utils :as str-utils]))
 
 (def *errors* {})
 (def *params* {})
@@ -27,20 +28,12 @@ function that takes one argument, the params map."
   "merge a set of validation results"
   (apply merge-with #(into [] (concat %1 %2)) results))
 
-(defn decorate-errors [param-name & html-body]
-  "default decoration for validation errors"
-  (if-let errors (seq (*errors* param-name))
-    [:div.error
-     (unordered-list errors)
-      html-body]
-     html-body))
-  
 (defn error-summary []
   "displays a div with the summary of errors on the page"
   (when (> (count *errors*) 0)
      [:div.errorSummary
 	    [:p "the page had the following errors:"
-	     (unordered-list (flatten (vals *errors*)))]]))
+	     (unordered-list (seq-utils/flatten (vals *errors*)))]]))
 
 (defn valid-params? [validate-fn params]
   (zero? (count (validate-fn params))))
@@ -67,4 +60,39 @@ function that takes one argument, the params map."
 (defn validation-errors? []
   (seq *errors*))
 
+(defn decorate-errors
+  "called when there is a validation error. "
+  [normal-output errors]
+  (html 
+   [:div.error
+   (unordered-list errors)
+	normal-output]))
 
+(defn error-class
+  "Mark an input field with an error class if the parameter has
+errors."
+  [func]
+  (fn [name & args]
+    (let [errors (*errors* name)
+          result (apply func name args)]
+      (if (seq errors)
+        [:div.error result]
+        result)))) 
+
+(defmacro decorate-bind
+  "Wrap named functions in a decorator for a bounded scope."
+  [decorator funcs & body]
+  `(binding
+       ~(vec (mapcat (fn [f] [f (list decorator f)]) funcs))
+     ~@body)) 
+
+(defmacro decorate-fields
+  "Wrap all input field functions in a decorator."
+  [decorator & body]
+  `(decorate-bind ~decorator [compojure.html/label
+			      compojure.html/text-field
+			      compojure.html/password-field
+			      compojure.html/check-box
+			      compojure.html/drop-down
+			      compojure.html/text-area]
+    (list ~@body))) 
