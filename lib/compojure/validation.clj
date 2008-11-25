@@ -7,7 +7,7 @@
 (def *errors* {})
 (def *params* {})
 
-(load "predicates.clj")
+(load "validation/predicates")
 
 (defn validate [pred param-name params message]
   "validate a single parameter. pred is a function that takes one
