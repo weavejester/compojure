@@ -29,8 +29,8 @@
         (apply vector tag (merge func-attrs attrs) body))
       (apply func attrs body))))
 
-(load "form_functions.clj")
-(load "page_functions.clj")
+(load "html/form_functions")
+(load "html/page_functions")
 
 (defn escape-html
   "Change special characters into HTML character entities."
