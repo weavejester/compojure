@@ -11,7 +11,18 @@
 (ns compojure.html
   (:use (compojure control
                    str-utils)
-        (clojure.contrib seq-utils)))
+        (clojure.contrib def
+                         seq-utils)))
+
+(defvar *params* {}
+  "Global parameter map that form input field functions use to populate their
+  default values.")
+
+(defmacro with-params
+  "Bind a map of params to *params*."
+  [params & body]
+  `(binding [*params* ~params]
+    ~@body))
 
 (defn- input-field
   "Creates a form input field."
@@ -23,12 +34,12 @@
 
 (defn hidden-field
   "Creates a hidden input field."
-  [name value]
-  (input-field "hidden" name value))
+  ([name]       (hidden-field name (*params* name)))
+  ([name value] (input-field "hidden" name value)))
 
 (defn text-field
   "Creates a text input field."
-  ([name]       (text-field name ""))
+  ([name]       (text-field name (*params* name)))
   ([name value] (input-field "text" name value)))
 
 (defn password-field
@@ -67,14 +78,15 @@
 (defn drop-down
   "Creates a drop-down box using the 'select' tag."
   ([name options]
-    (drop-down name options nil))
+    (drop-down name options (*params* name)))
   ([name options selected]
     [:select {:name (str* name) :id (str* name)}
       (select-options options selected)]))
 
 (defn text-area
   "Creates a text area element."
-  ([name] (text-area name ""))
+  ([name]
+    (text-area name (*params* name)))
   ([name value]
     [:textarea {:name (str* name) :id (str* name)} value]))
 
@@ -102,6 +114,17 @@
   label
   submit-button
   reset-button)
+
+(defmacro decorate-fields
+  "Wrap all input field functions in a decorator."
+  [decorator & body]
+  `(decorate-bind ~decorator
+     [text-field
+      password-field
+      check-box
+      drop-down
+      text-area]
+    (list ~@body)))
 
 (defn form-to*
   [[method action] & body]

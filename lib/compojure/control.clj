@@ -35,6 +35,13 @@
   `(do ~@(domap f funcs
           `(redef ~f (~decorator ~f)))))
 
+(defmacro decorate-bind
+  "Wrap named functions in a decorator for a bounded scope."
+  [decorator funcs & body]
+  `(binding
+     [~@(mapcat (fn [f] [f (list decorator f)]) funcs)]
+     ~@body))
+
 (defmacro deftmpl
   "Define a template function. Arguments are passed via key-value pairs.
   e.g. (deftmpl foo [bar baz] (+ bar baz))

@@ -1,11 +1,9 @@
-
 (ns compojure.validation
     (:use compojure.html)
     (:require [clojure.contrib.seq-utils :as seq-utils])
     (:require [compojure.str-utils :as str-utils]))
 
 (def *errors* {})
-(def *params* {})
 
 (load "validation/predicates")
 
@@ -38,20 +36,14 @@ function that takes one argument, the params map."
 (defn valid-params? [validate-fn params]
   (zero? (count (validate-fn params))))
 
-(defmacro with-params
-  "Bind of params to *params*"
-  [params & body]
-  `(binding [*params* ~params]
-    ~@body))
-
 (defmacro with-validation
-  "Binds *errors* to (validation-fn *params*)"
+  "Binds *errors* to (validation-fn *params*)."
   [validation-fn & body]
   `(binding [*errors* (~validation-fn *params*)]
     ~@body)) 
 
 (defmacro with-validated-params
-  "Equivalent to (with-params params (with-validation validation-fn))"
+  "Equivalent to (with-params params (with-validation validation-fn))."
   [params validation-fn & body]
   `(with-params ~params
      (with-validation ~validation-fn
@@ -69,8 +61,7 @@ function that takes one argument, the params map."
 	normal-output]))
 
 (defn error-class
-  "Mark an input field with an error class if the parameter has
-errors."
+  "Mark an input field with an error class if the parameter has errors."
   [func]
   (fn [name & args]
     (let [errors (*errors* name)
@@ -78,21 +69,3 @@ errors."
       (if (seq errors)
         [:div.error result]
         result)))) 
-
-(defmacro decorate-bind
-  "Wrap named functions in a decorator for a bounded scope."
-  [decorator funcs & body]
-  `(binding
-       ~(vec (mapcat (fn [f] [f (list decorator f)]) funcs))
-     ~@body)) 
-
-(defmacro decorate-fields
-  "Wrap all input field functions in a decorator."
-  [decorator & body]
-  `(decorate-bind ~decorator [compojure.html/label
-			      compojure.html/text-field
-			      compojure.html/password-field
-			      compojure.html/check-box
-			      compojure.html/drop-down
-			      compojure.html/text-area]
-    (list ~@body))) 
