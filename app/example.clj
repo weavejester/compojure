@@ -5,10 +5,10 @@
 
 (ns example
   (:use (compojure jetty
-		   html
+       html
                    http
-		   validation
-		   control)))
+       validation
+       control)))
 
 (defn template
   "A function to generate the standard outline of a HTML page."
@@ -22,7 +22,7 @@
         body]]))
 
 (defn validate-example [params]
-  (validator
+  (merge-errors
    (validate present? :name params "name must not be blank")
    (validate (max-length 15) :name params "name must be less than 16 characters")
    (validate present? :password params "password must not be blank")
@@ -36,25 +36,26 @@
       (include-css "/public/example.css")
       [:title "Form"]]
      [:body 
-      [:form {:method "post" :action "/form"}
-       (error-summary)
-       (decorate-fields error-class
-	 [:p (label :name "Username:") " "
-	  (text-field :name "Anonymous")]
-	       
-	 [:p (label :password "Password:") " "
-	  (password-field :password)]
+      (form-to [POST "/form"]
+        (error-summary)
+        (decorate-fields error-class
+          [:p (label :name "Username:") " "
+              (text-field :name "Anonymous")]
+        
+          [:p (label :password "Password:") " "
+              (password-field :password)]
 
-	 [:p (label :sex "Sex:") " "
-	  (drop-down :sex ["Male" "Female" "Other"])]
+          [:p (label :sex "Sex:") " "
+              (drop-down :sex ["Male" "Female" "Other"])]
 
-	 [:p (label :profile "Profile:") [:br]
-	  (text-area {:cols 40 :rows 10} :profile)]
+          [:p (label :profile "Profile:") [:br]
+              (text-area {:cols 40 :rows 10} :profile)]
 
-	 [:p (label :agree "Have read usage agreement:") " "
-	  (check-box :agree)]
-	 [:p (submit-button "New User")
-	  (reset-button "Reset Form")])]]]))
+          [:p (label :agree "Have read usage agreement:") " "
+              (check-box :agree)]
+
+          [:p (submit-button "New User")
+              (reset-button "Reset Form")]))]]))
 
 (defn welcome-page
   "A basic welcome page."
@@ -79,16 +80,15 @@
   (GET "/"
     (welcome-page))
   (GET "/form"
-       (example-form))
+    (example-form))
   (POST "/form"
     (with-validated-params params validate-example
-      (if (validation-errors?)			    
-	(example-form)
-	(template "Form Validation" (html [:p "User added"])))))
+      (if (validation-errors?)          
+        (example-form)
+        (template "Form Validation" (html [:p "User added"])))))
   (GET "/test"
     (test-page :foo (System/currentTimeMillis), :bar [:div "My Div"]))
   (GET "/public/*"
-       (serve-file "public" (route :*)))
+    (serve-file "public" (route :*)))
   (ANY "*"
-       (page-not-found)))
-
+    (page-not-found)))

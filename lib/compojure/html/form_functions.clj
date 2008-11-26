@@ -15,7 +15,7 @@
                          seq-utils)))
 
 (defvar *params* {}
-  "Global parameter map that form input field functions use to populate their
+  "Parameter map var that form input field functions use to populate their
   default values.")
 
 (defmacro with-params
