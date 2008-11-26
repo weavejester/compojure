@@ -4,11 +4,10 @@
 ;; demonstration purposes.
 
 (ns example
-  (:use (compojure jetty
-       html
+  (:use (compojure control
+                   html
                    http
-       validation
-       control)))
+                   validation)))
 
 (defn template
   "A function to generate the standard outline of a HTML page."
@@ -22,11 +21,11 @@
         body]]))
 
 (defn validate-example [params]
-  (merge-errors
-   (validate present? :name params "name must not be blank")
-   (validate (max-length 15) :name params "name must be less than 16 characters")
-   (validate present? :password params "password must not be blank")
-   (validate present? :agree params "must accept the eula")))
+  (validation params
+    [:name     present?      "name must not be blank"]
+    [:name     (max-size 15) "name must be less than 16 characters"]
+    [:password present?      "password must not be blank"]
+    [:agree    present?      "must accept the eula"]))
 
 (defn example-form []
   (html
@@ -87,7 +86,8 @@
         (example-form)
         (template "Form Validation" (html [:p "User added"])))))
   (GET "/test"
-    (test-page :foo (System/currentTimeMillis), :bar [:div "My Div"]))
+    (test-page :foo (System/currentTimeMillis),
+               :bar [:div "My Div"]))
   (GET "/public/*"
     (serve-file "public" (route :*)))
   (ANY "*"

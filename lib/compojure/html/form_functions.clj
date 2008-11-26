@@ -128,11 +128,12 @@
 
 (defn form-to*
   [[method action] & body]
-  (if (includes? method ['GET 'POST])
-    [:form {:method method :action action} body]
-    [:form {:method "POST" :action action}
-       (hidden-field "_method" method)
-       body]))
+  (into []
+    (concat
+      (if (includes? method ['GET 'POST])
+        [:form {:method method :action action}]
+        [:form {:method "POST" :action action} (hidden-field "_method" method)])
+      body)))
 
 (defmacro form-to
   "Create a form that points to a particular method and route.

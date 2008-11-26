@@ -1,43 +1,59 @@
+;; compojure.validation
+;;
+;; Functions for validating form parameters.
+
 (ns compojure.validation
-    (:use compojure.html
-          clojure.contrib def))
+    (:use (compojure control
+                     html)
+          (clojure.contrib def)))
 
 (defvar *errors* {}
-  "Validation errors var.")
+  "Var containing validation errors.")
 
 (load "validation/predicates")
 
-(defn validate [pred param-name params message]
-  "validate a single parameter. pred is a function that takes one
-argument, the value of the parameter with name param-name. If pred
-returns false or nil, message will be added as a validation error."
-  (if (pred (params param-name))
-    {}
-    {param-name [message]}))
-
-(defn validate-params [pred params message]
-  "Validate the relationship between two or more parameters. If the
-validation only depends on one argument, use validate. pred is a
-function that takes one argument, the params map."
-  (when-not (pred params)
-    {nil [message]}))
+(defn validate 
+  "Validate a single parameter, or group of parameters, using a predicate. If
+  the predicate fails, a validation error is returned. For a single parameter,
+  use the following form:
+    (validate params name pred message)
+  This will use the value of (pred (params name)) to determine if the parameter
+  is valid. For multiple parameters:
+    (validate params pred message)
+  This will use the value of (pred params) to determine validity."
+  ([params pred message]
+    (if (pred params)
+      {}
+      {nil [message]}))
+  ([params name pred message]
+    (if (pred (params name))
+      {}
+      {name [message]})))
 
 (defn merge-errors
   "Merge a set of validation errors into a single hash map."
   [& results]
   (apply merge-with #(into [] (concat %1 %2)) results))
 
+(defn validation
+  "Convinience function to perform a series of validations on a map of params.
+  Takes a set of params and a collection of argument vectors for the validate
+  function:
+  e.g. (validation params
+           [name pred message]
+           [pred message])
+  Is the same as:
+       (merge-errors
+         (validate params name pred message)
+         (validate params pred message))"
+  [params & validations]
+  (apply merge-errors
+    (map #(apply validate params %) validations)))
+
 (defn validation-errors?
   "True if there are errors in the var *errors*."
   []
   (seq *errors*))
-
-(defn error-summary []
-  "Returns a summary of the errors on the form in HTML."
-  (when (validation-errors?)
-    [:div.error-summary
-      [:p "the page had the following errors:"
-        (unordered-list (apply concat (vals *errors*)))]]))
 
 (defmacro with-validation
   "Binds *errors* to (validation-fn *params*)."
@@ -51,6 +67,11 @@ function that takes one argument, the params map."
   `(with-params ~params
      (with-validation ~validation-fn
        ~@body)))
+
+(defn error-summary
+  "Returns a summary of the errors on the form in HTML."
+  []
+  (unordered-list (apply concat (vals *errors*))))
 
 (defn error-class
   "Decorator function that marks an input field with an error class if the
