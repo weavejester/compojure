@@ -1,6 +1,6 @@
 (ns test.compojure.html
   (:use fact
-        (compojure html)))
+        compojure.html))
 
 (def names
   '(foo Bar foo-bar foo_bar fooBar foo:bar))
