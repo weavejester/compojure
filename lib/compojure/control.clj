@@ -46,6 +46,6 @@
             (list* nil doc? body))]
    `(defn ~name
       ~@doc?
-       [param-map#]
+       [& param-map#]
        (let [{:keys ~params} (apply hash-map param-map#)]
         ~@body))))
