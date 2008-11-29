@@ -1,5 +1,6 @@
 (ns test.compojure.validation
   (:use fact
+        compojure.html
         compojure.validation))
 
 (fact "Parameters that pass validation return empty maps"
@@ -41,3 +42,15 @@
        (validate params :b (partial = 2) "b isn't 2")
        (validate params :c (partial = 3) "c isn't 3")
        (validate params #(= (count %) 3) "size isn't 3"))))
+
+(fact "error-class wraps elements in an error div when errors exist"
+  [func [text-field check-box text-area]]
+  (binding [*errors* {:foo "bar"}]
+    (= ((error-class func) :foo)
+       [:div.error (func :foo)])))
+
+(fact "error-class does nothing div when errors don't exist"
+  [func [text-field check-box text-area]]
+  (binding [*errors* {}]
+    (= ((error-class func) :foo)
+       (func :foo))))
