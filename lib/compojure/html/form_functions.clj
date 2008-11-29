@@ -68,7 +68,7 @@
                    (if (and selected (= opt (str* selected)))
                      (merge attrs {:selected "selected"})
                      attrs))]
-      (domap opt options
+      (domap [opt options]
         (if (vector? opt)
           (let [text  (opt 0)
                 value (str* (opt 1))]

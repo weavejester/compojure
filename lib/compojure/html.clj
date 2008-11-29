@@ -12,7 +12,7 @@
 ;;         [:h1.big "Hello World"]
 ;;         [:img {:src "test.png"}]
 ;;         [:ul#letters
-;;           (domap letter '(a b c d)
+;;           (domap [letter '(a b c d)]
 ;;             [:li letter])]]])
 
 (ns compojure.html

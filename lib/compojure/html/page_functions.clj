@@ -35,13 +35,13 @@
 (defn include-js
   "Include a list of external javascript files."
   [& scripts]
-  (domap script scripts
+  (domap [script scripts]
     [:script {:type "text/javascript" :src script}]))
 
 (defn include-css
   "Include a list of external stylesheet files."
   [& styles]
-  (domap style styles
+  (domap [style styles]
     [:link {:type "text/css" :href style :rel "stylesheet"}]))
 
 (defn javascript-tag
@@ -77,14 +77,14 @@
   "Wrap a collection in an unordered list"
   [coll]
   [:ul {}
-    (domap x coll
+    (domap [x coll]
       [:li x])])
 
 (defn ordered-list
   "Wrap a collection in an unordered list"
   [coll]
   [:ol {}
-    (domap x coll
+    (domap [x coll]
       [:li x])])
 
 (decorate-with optional-attrs

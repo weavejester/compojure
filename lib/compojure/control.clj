@@ -18,7 +18,7 @@
 
 (defmacro domap
   "Similar to doseq, but collects the results into a sequence."
-  [item list & body]
+  [[item list] & body]
   `(map (fn [~item] ~@body) ~list))
 
 (defmacro redef
@@ -32,7 +32,7 @@
 (defmacro decorate-with
   "Wrap functions in a decorator."
   [decorator & funcs]
-  `(do ~@(domap f funcs
+  `(do ~@(domap [f funcs]
           `(redef ~f (~decorator ~f)))))
 
 (defmacro decorate-bind
