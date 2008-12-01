@@ -36,6 +36,7 @@
            (java.net URL)
            (java.util Enumeration
                       Map$Entry)
+           (java.util.regex Pattern)
            (javax.servlet ServletContext)
            (javax.servlet.http Cookie
                                HttpServlet
@@ -55,39 +56,52 @@
 (defstruct url-route
   :regex
   :keywords)
- 
-(defn compile-route
-  "Turn a route string into a regex and seq of symbols."
-  [route-str]
+
+(defmulti compile-route class)
+
+(defmethod compile-route String
+  [route]
   (let [splat #"\*"
         word  #":(\w+)"
         path  #"[^:*]+"]
     (struct url-route
       (re-pattern
         (apply str
-          (parse route-str
+          (parse route
             splat "(.*?)"
             word  "([^/.,;?]+)"
             path  #(re-escape (.group %)))))
       (filter (complement nil?)
-        (parse route-str
+        (parse route
           splat :*
           word  #(keyword (.group % 1))
           path  nil)))))
- 
+
+(defmethod compile-route Pattern
+  [route]
+  route)
+
+(defn- match-group-map
+  "Create a hash-map from a series of regex match groups and a collection of
+  keywords."
+  [groups keywords]
+  (reduce
+    (partial merge-with
+      #(conj (ifn vector? vector %1) %2))
+    {}
+    (map hash-map keywords (rest groups))))
+
 (defn match-route
   "Match a path against a parsed route. Returns a map of keywords and their
   matching path values."
   [route path]
-  (let [matcher (re-matcher (route :regex) path)]
-    (if (.matches matcher)
-      (reduce
-        (partial merge-with
-          #(conj (ifn vector? vector %1) %2))
-        {}
-        (map hash-map
-          (route :keywords)
-          (rest (re-groups matcher)))))))
+  (if (instance? Pattern route)
+    (let [matcher (re-matcher route path)]
+      (if (.matches matcher)
+        (vec (rest (re-groups matcher)))))
+    (let [matcher (re-matcher (route :regex) path)]
+      (if (.matches matcher)
+        (match-group-map (re-groups matcher) (route :keywords))))))
 
 ;;;; Handler functions ;;;;
  
@@ -96,18 +110,11 @@
   :route
   :function)
 
-(defn- first-if-one
-  "Returns the first value of a collection if there is only one element,
-  otherwise returns the collection."
-  [coll]
-  (if (rest coll)
-    coll
-    (first coll)))
-
 (defn- parse-key-value
   "Parse a key and value to make them more Clojure-friendly."
   [key val]
-  [(keyword key) (first-if-one (vec val))])
+  [(keyword key)
+   (if (rest val) val [(first val)])])
 
 (defn get-params
   "Creates a name/value map of all the request parameters."
@@ -142,7 +149,6 @@
   (apply hash-map
     (mapcat #(list (keyword (.getName %)) (.getValue %))
              (.getCookies request))))
-
 
 (defmacro handler-fn
   "Macro that wraps the body of a handler up in a standalone function."
