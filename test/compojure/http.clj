@@ -19,6 +19,12 @@
   (= (match-route (compile-route route) path)
      {:x "foo"}))
 
+(fact "Routes can contain the same keyword many times"
+  [[route path] {"/:x/:x/:x"     "/foo/bar/baz"
+                 "/a/:x/b/:x.:x" "/a/foo/b/bar.baz"}]
+  (= (match-route (compile-route route) path)
+     {:x ["foo" "bar" "baz"]}))
+
 (fact "Routes can match wildcards"
   [[route path] {"/*"     "/foo/bar.txt"
                  "/baz/*" "/baz/foo/bar.txt"
