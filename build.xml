@@ -1,0 +1,18 @@
+<project name="compojure" default="jar">
+  <description>
+    Compojure library package
+  </description>
+
+  <property name="jarfile" location="compojure.jar"/>
+
+  <target name="clean" description="Remove generated files">
+    <delete file="${jarfile}"/>
+  </target>
+
+  <target name="jar" description="Create jar file">
+    <jar jarfile="${jarfile}">
+      <fileset dir="." includes="LICENSE"/>
+      <fileset dir="./src" includes="**/*.clj"/>
+    </jar>
+  </target>
+</project>
