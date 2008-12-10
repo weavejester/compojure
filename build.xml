@@ -9,6 +9,7 @@
 
   <target name="clean" description="Remove generated files">
     <delete file="${jar.file}"/>
+    <delete dir="${build.path}"/>
   </target>
 
   <target name="jar" description="Create jar file">
