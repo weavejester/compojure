@@ -3,16 +3,36 @@
     Compojure library package
   </description>
 
-  <property name="jarfile" location="compojure.jar"/>
+  <property name="build.path" location="build"/>
+  <property name="deps.path" location="deps"/>
+  <property name="jar.file" location="${build.path}/compojure.jar"/>
 
   <target name="clean" description="Remove generated files">
-    <delete file="${jarfile}"/>
+    <delete file="${jar.file}"/>
   </target>
 
   <target name="jar" description="Create jar file">
-    <jar jarfile="${jarfile}">
+    <mkdir dir="${build.path}"/>
+    <jar jarfile="${jar.file}">
       <fileset dir="." includes="LICENSE"/>
       <fileset dir="./src" includes="**/*.clj"/>
     </jar>
+  </target>
+
+  <path id="deps">
+    <file file="${jar.file}"/>
+    <fileset dir="${deps.path}">
+      <include name="*.jar"/>
+    </fileset>
+  </path>
+
+  <target name="test" description="Run Compojure unit tests" depends="jar">
+    <java classname="clojure.lang.Script">
+      <arg value="test/test.clj"/>
+      <classpath>
+        <path refid="deps"/>
+        <path path="."/>
+      </classpath>
+    </java>
   </target>
 </project>
