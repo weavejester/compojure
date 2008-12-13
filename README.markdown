@@ -38,8 +38,7 @@ Jetty is used as the default web server for Compojure, but because Compojure
 uses standard Java servlets, you could potentially use any web server with
 servlet support.
 
-- servlet-api-2.5.6.1.14.jar
-- jetty-6.1.14.zip
+- servlet-api-2.5.6.1.14.jar and jetty-6.1.14.jar
 
        http://dist.codehaus.org/jetty/jetty-6.1.14/jetty-6.1.14.zip
 
