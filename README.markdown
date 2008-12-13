@@ -27,10 +27,12 @@ convinience.
 Clojure and Clojure-Contrib are required libraries for Compojure:
 
 - clojure.jar
-  svn co https://clojure.svn.sourceforge.net/svnroot/clojure clojure
+
+       svn co https://clojure.svn.sourceforge.net/svnroot/clojure clojure
 
 - clojure-contrib.jar
-  svn co https://clojure-contrib.svn.sourceforge.net/svnroot/clojure-contrib clojure-contrib
+
+       svn co https://clojure-contrib.svn.sourceforge.net/svnroot/clojure-contrib clojure-contrib
 
 Jetty is used as the default web server for Compojure, but because Compojure
 uses standard Java servlets, you could potentially use any web server with
@@ -38,12 +40,14 @@ servlet support.
 
 - servlet-api-2.5.6.1.14.jar
 - jetty-6.1.14.zip
-  http://dist.codehaus.org/jetty/jetty-6.1.14/jetty-6.1.14.zip
+
+       http://dist.codehaus.org/jetty/jetty-6.1.14/jetty-6.1.14.zip
 
 For unit testing, Compojure relies on Fact:
 
 - fact.clj
-  http://github.com/weavejester/fact/tree/master
+
+       git clone git://github.com/weavejester/fact.git
 
 
 Core Libraries
