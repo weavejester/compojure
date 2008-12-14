@@ -15,7 +15,7 @@ Building
 
         $ ant
 
-3. Include build/compojure.jar in your classpath.
+3. Include the newly created compojure.jar in your classpath.
 
 
 Dependencies
