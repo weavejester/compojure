@@ -58,9 +58,8 @@ functionality.
 HTTP
 ----
 
-The HTTP module provides Compojure with a RESTful and functional way to define
-Java servlets. It's syntax was heavily inspired by the Ruby web framework,
-Sinatra.
+The HTTP library provides Compojure with a RESTful and functional way to define
+Java servlets. It's syntax was inspired by the Ruby web framework, Sinatra.
 
 To create a servlet, you pass a series of HTTP resource definitions to the
 `servlet` function:
@@ -159,11 +158,33 @@ These modifications can be chained together using a standard Clojure vector:
     (GET "/download"
       (file "public/compojure.tar.gz"))   ; 'file' is an alias to 'new java.io.File'
 
+Jetty
+-----
+
+The Jetty library provides a Clojure-friendly interface to the Jetty web
+server, so that you can easily create a web server with servlet mappings.
+
+    (def my-server
+      (http-server {:port 8080}
+        "/*"       my-main-servlet
+        "/other/*" another-servlet
+        ...))
+
+You can also use the defserver macro:
+
+    (defserver my-server
+      {:port 8080}
+      "/*"       my-main-servlet
+      "/other/*" another-servlet
+      ...))
+
+Once you've created your Jetty server, use `(start my-server)` and
+`(stop my-server)` to start and stop the web server.
 
 HTML
 ----
 
-The HTML module provides a way of defining HTML or XML through a tree of
+The HTML library provides a way of defining HTML or XML through a tree of
 vectors.
 
     (html [:p [:em "Hello World"]])
