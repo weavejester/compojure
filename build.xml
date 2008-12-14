@@ -1,38 +1,63 @@
 <project name="compojure" default="jar">
   <description>
-    Compojure library package
+    Compojure library package.
   </description>
 
-  <property name="build.path" location="build"/>
-  <property name="deps.path" location="deps"/>
-  <property name="jar.file" location="${build.path}/compojure.jar"/>
+  <property name="build.dir" location="classes"/>
+  <property name="deps.dir" location="deps"/>
+  <property name="source.dir" location="src"/>
+  <property name="compojure.jar" location="compojure.jar"/>
 
   <target name="clean" description="Remove generated files">
-    <delete file="${jar.file}"/>
-    <delete dir="${build.path}"/>
+    <delete file="${compojure.jar}"/>
+    <delete dir="${build.dir}"/>
   </target>
 
-  <target name="jar" description="Create jar file">
-    <mkdir dir="${build.path}"/>
-    <jar jarfile="${jar.file}">
-      <fileset dir="." includes="LICENSE"/>
-      <fileset dir="./src" includes="**/*.clj"/>
+  <target name="init">
+    <tstamp/>
+    <mkdir dir="${build.dir}"/>
+  </target>
+
+  <target name="compile" depends="init" description="Compile sources">
+    <java classname="clojure.lang.Compile">
+      <classpath>
+        <path location="${build.dir}"/>
+        <path location="${source.dir}"/>
+        <fileset dir="${deps.dir}">
+          <include name="*.jar"/>
+        </fileset>
+      </classpath>
+      <sysproperty key="clojure.compile.path" value="${build.dir}"/>
+      <arg value="compojure.control"/>
+      <arg value="compojure.file-utils"/>
+      <arg value="compojure.html"/>
+      <arg value="compojure.http"/>
+      <arg value="compojure.jetty"/>
+      <arg value="compojure.json"/>
+      <arg value="compojure.parser"/>
+      <arg value="compojure.str-utils"/>
+      <arg value="compojure.validation"/>
+    </java>
+  </target>
+
+  <target name="jar" description="Create jar file" depends="compile">
+    <jar jarfile="${compojure.jar}">
+      <path location="LICENSE"/>
+      <fileset dir="${source.dir}" includes="**/*.clj"/>
+      <fileset dir="${build.dir}" includes="**/*.class"/>
     </jar>
   </target>
 
-  <path id="deps">
-    <file file="${jar.file}"/>
-    <fileset dir="${deps.path}">
-      <include name="*.jar"/>
-    </fileset>
-  </path>
-
-  <target name="test" description="Run Compojure unit tests" depends="jar">
+  <target name="test" description="Run Compojure unit tests">
     <java classname="clojure.lang.Script">
       <arg value="test/test.clj"/>
       <classpath>
-        <path refid="deps"/>
-        <path path="."/>
+        <path location="."/>
+        <path location="${compojure.jar}"/>
+        <path location="${deps.dir}"/>
+        <fileset dir="${deps.dir}">
+          <include name="*.jar"/>
+        </fileset>
       </classpath>
     </java>
   </target>
