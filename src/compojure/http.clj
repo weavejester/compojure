@@ -328,8 +328,8 @@
   "Update an existing servlet proxy with a new set of handlers."
   [object & handlers]
   (update-proxy object
-    {'service (fn [this request response]
-                (http-service this request response handlers))}))
+    {"service" (fn [this request response]
+                 (http-service this request response handlers))}))
 
 (defmacro defservlet
   "Defines a new servlet with an optional doc-string, or if a servlet is
