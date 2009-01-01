@@ -346,9 +346,16 @@
          (update-servlet ~name ~doc ~@handlers))))
 
 (defmacro defservice
-  "Defines a 'MyClass-service' method suitable for being called by a
-  HttpServlet class created by genclass."
-  [cname & handlers]
-  `(defn ~(symbol (str cname "-service"))
-   ~'[this request response]
-     (http-service ~'this ~'request ~'response (list ~@handlers))))
+  "Defines a service method with an optional prefix suitable for being used by
+  genclass to compile a HttpServlet class.
+  e.g. (defservice
+         (GET \"/\" \"Hello World\"))
+       (defservice \"myprefix-\"
+         (GET \"/\" \"Hello World\"))"
+  [prefix & handlers]
+  (let [[prefix handlers] (if (string? prefix)
+                           [prefix handlers]
+                           ["-"   (cons prefix handlers)])]
+    `(defn ~(symbol (str prefix "service"))
+     ~'[this request response]
+       (http-service ~'this ~'request ~'response (list ~@handlers)))))
