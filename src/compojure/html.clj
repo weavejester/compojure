@@ -17,8 +17,8 @@
 
 (ns compojure.html
   (:use (compojure str-utils)
-        (clojure.contrib seq-utils))
-  (:import (clojure.lang Sequential)))
+        (clojure.contrib def
+                         seq-utils)))
 
 (defn- optional-attrs
   "Adds an optional attribute map to the supplied function's arguments."
@@ -110,17 +110,15 @@
         (expand-seqs (ensure-attrs tree)))
       (str tree))))
 
-(def #^{:private true
-        :doc "A set of HTML tags that should be rendered as blocks"}
-  html-block-tags
+(defvar- html-block-tags
   #{:blockquote :body :div :dl :fieldset :form :head :html :ol
-    :p :pre :table :tbody :tfoot :thead :tr :script :select :ul})
+    :p :pre :table :tbody :tfoot :thead :tr :script :select :ul}
+  "A set of HTML tags that should be rendered as blocks")
 
-(def #^{:private true
-        :doc "HTML tags that should be rendered on their own line"}
-  html-line-tags
+(defvar- html-line-tags
   #{:br :dd :dt :h1 :h2 :h3 :h4 :h5 :h6 :hr :li :link
-    :option :td :textarea :title})
+    :option :td :textarea :title}
+  "HTML tags that should be rendered on their own line")
 
 (defn- parse-css-tag
   "Pulls the id and class attributes from a tag name formatted in a CSS style.
@@ -155,4 +153,3 @@
   (if (and (seq? trees) (seq? (first trees)))
     (apply html (first trees))
     (map-xml html-formatter trees)))
-
