@@ -20,70 +20,47 @@
   (= (xml [tag "Lorem Ipsum"])
      "<xml>Lorem Ipsum</xml>"))
 
-(def test-contents
-  ["Lorem"
-   "Lorem Ipsum"
-   ""
-   "Lorem\nIpsum"
-   "  Lorem"
-   "Ipsum  "
-   "  Lorem\n    Ipsum"
-   "Lorem<br />Ipsum"])
-
 (fact "Tag vectors can contain strings"
-  [content test-contents]
-  (= (xml [:xml content])
-     (str "<xml>" content "</xml>")))
-
-(def test-seqs
-  ['("a" "b")
-   '("a" " b")
-   '("a" "\n" "b")
-   '("a " "b " "c " "d")])
+  [content (rand-strs)]
+   (= (xml [:xml content])
+      (str "<xml>" content "</xml>")))
 
 (fact "Tag vectors concatenate their contents"
-  [contents test-seqs]
+  [contents (rand-seqs #(rand-strs) 1 100)]
   (= (xml (apply vector :xml contents))
      (str "<xml>" (apply str contents) "</xml>")))
 
 (fact "Sequences in tag vectors are expanded out"
-  [contents test-seqs]
+  [contents (rand-seqs #(rand-strs))]
   (= (xml (apply vector :xml contents))
      (xml [:xml contents])))
 
 (fact "Tag vectors can be nested"
-  [dom [[:a [:b]]
-        [:a "b" [:c] "d"]
-        [:a [:b "c"]]
-        [:a [:b [:c "d"]]]]
-   out ["<a><b /></a>"
-        "<a>b<c />d</a>"
-        "<a><b>c</b></a>"
-        "<a><b><c>d</c></b></a>"]]
+  [[dom out]
+     {[:a [:b]]          "<a><b /></a>"
+      [:a "b" [:c] "d"]  "<a>b<c />d</a>"
+      [:a [:b "c"]]      "<a><b>c</b></a>"
+      [:a [:b [:c "d"]]] "<a><b><c>d</c></b></a>"}]
   (= (xml dom) out))
 
 (fact "Tag vectors can have attribute maps"
-  [attr-map [{:a "1"}
-             {:b "1" :a "2"}
-             {:b "2" :c "3" :a "1"}
-             {:aBc "d"}
-             {:a_b "c"}
-             {:a:b "c"}
-             {:something_rather_long "some text"}]
-   attr-str ["a=\"1\""
-             "a=\"2\" b=\"1\""
-             "a=\"1\" b=\"2\" c=\"3\""
-             "aBc=\"d\""
-             "a_b=\"c\""
-             "a:b=\"c\""
-             "something_rather_long=\"some text\""]]
+  [[attr-map attr-str]
+     {{:a "1"}               "a=\"1\""
+      {:b "1" :a "2"}        "a=\"2\" b=\"1\""
+      {:b "2" :c "3" :a "1"} "a=\"1\" b=\"2\" c=\"3\""
+      {:aBc "d"}             "aBc=\"d\""
+      {:a_b "c"}             "a_b=\"c\""
+      {:a:b "c"}             "a:b=\"c\""}]
   (= (xml [:xml attr-map "Lorem Ipsum"])
      (str "<xml " attr-str ">Lorem Ipsum</xml>")))
 
 (fact "Special characters are escaped in attribute values"
-  [char    ["\"" "<" ">" "&"]
-   escaped ["&quot;" "&lt;" "&gt;" "&amp;"]]
-  (= (xml [:div {:id char}])
+  [[original escaped]
+     {"\"" "&quot;"
+      "<"  "&lt;"
+      ">"  "&gt;"
+      "&"  "&amp;"}]
+  (= (xml [:div {:id original}])
      (str "<div id=\"" escaped "\" />")))
 
 (fact "Strings, keywords and symbols can be keys in attribute maps"
@@ -96,48 +73,33 @@
   (= (xml [:span {:a "1" 'b "2" "c" "3"}])
      "<span a=\"1\" b=\"2\" c=\"3\" />"))
 
-(def inline-tags
-  '(a span em strong code img))
+(def tags
+  '(a span em strong code img p html body div script pre))
 
-(fact "HTML tag vectors have syntax sugar for class attributes"
-  [tag   inline-tags
+(fact "HTML tag vectors have CSS syntax sugar for class attributes"
+  [tag   tags
    class names]
   (= (html [tag {:class class}])
      (html [(str tag "." class)])))
 
-(fact "HTML tag vectors have syntax sugar for id attributes"
-  [tag inline-tags
+(fact "Multiple classes can be specified through the CSS syntax sugar"
+  [tag     tags
+   classes ["a" "a b" "a b c" "a b c d"]
+   css     ["a" "a.b" "a.b.c" "a.b.c.d"]]
+  (= (html [tag {:class classes}])
+     (html [(str tag "." css)])))
+
+(fact "HTML tag vectors have CSS syntax sugar for id attributes"
+  [tag tags
    id  names]
   (= (html [tag {:id id}])
      (html [(str tag "#" id)])))
 
-(fact "The content of HTML 'block' tags is indented"
-  [tag '(body div p blockquote script)]
-  (= (html [tag "Lorem\nIpsum"])
-     (str "<" tag ">\n  Lorem\n  Ipsum\n</" tag ">\n")))
-
-(fact "A newline character is appended to HTML 'line' tags"
-  [tag '(h1 h3 title li)]
-  (= (html [tag "Lorem Ipsum"])
-     (str "<" tag ">Lorem Ipsum</" tag ">\n")))
-
-(fact "Nested tags result in nested indentation"
-  [content  test-contents
-   indented ["    Lorem"
-             "    Lorem Ipsum"
-             "    "
-             "    Lorem\n    Ipsum"
-             "      Lorem"
-             "    Ipsum  "
-             "      Lorem\n        Ipsum"
-             "    Lorem<br />Ipsum"]]
-  (= (html [:div [:p content]])
-     (str "<div>\n  <p>\n" indented "\n  </p>\n</div>\n")))
-
-(fact "The HTML pre tag is always rendered without indentation"
-  [content test-contents]
-  (= (html [:body [:div [:pre content]]])
-     "<body>\n  <div>\n    <pre>" content "</pre>\n  </div>\n</body>\n"))
+(fact "HTML is not indented"
+  [tag     tags
+   content (rand-strs)]
+  (= (html [tag content])
+     (xml  [tag content])))
 
 (fact "Options in select lists can have different text and values"
   []

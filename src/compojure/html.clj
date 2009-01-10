@@ -18,7 +18,8 @@
 (ns compojure.html
   (:use (compojure str-utils)
         (clojure.contrib def
-                         seq-utils)))
+                         seq-utils
+                         str-utils)))
 
 (defn- optional-attrs
   "Adds an optional attribute map to the supplied function's arguments."
@@ -52,8 +53,6 @@
     (apply sorted-map
       (mapcat #(map str* %) attrs))))
 
-(def xml)
-
 (defn- create-tag
   "Wrap some content in an XML tag."
   [tag attrs content]
@@ -66,31 +65,14 @@
   [tag attrs]
   (str* "<" tag (map-to-attrs attrs) " />"))
 
-(defn- map-xml
-  "Turn a list of XML into a string using a supplied formatter."
-  [format trees]
-  (str-map (partial xml format) trees))
-
-(defn- raw-xml-formatter
-  "Format XML without any indentation or extra whitespace."
-  [next-format tag attrs & body]
-  (if body
-    (create-tag tag attrs (map-xml next-format body))
-    (create-closed-tag tag attrs)))
-
-(defn- indented-xml-formatter
-  "Format XML with indentation and with no 'single' tags."
-  [next-format tag attrs & body]
-  (str (if body
-         (let [content (map-xml next-format body)]
-           (create-tag tag attrs (str "\n" (indent content))))
-         (create-tag tag attrs ""))
-       "\n"))
-
 (defn- expand-seqs
   "Expand out all the sequences in a collection."
   [coll]
-  (mapcat #(if (seq? %) % (list %)) coll))
+  (mapcat
+    #(if (or (seq? %) (nil? %))
+       %
+       (list %))
+    coll))
 
 (defn- ensure-attrs
   "Ensure the tag has a map of attributes."
@@ -99,57 +81,38 @@
     (list* tag body)
     (list* tag {} body)))
 
-(defn xml
-  "Turns a tree of vectors into a string of XML. Any sequences in the
-  tree are expanded out."
-  ([tree]
-    (xml raw-xml-formatter tree))
-  ([format tree]
-    (if (vector? tree)
-      (apply format format
-        (expand-seqs (ensure-attrs tree)))
-      (str tree))))
-
-(defvar- html-block-tags
-  #{:blockquote :body :div :dl :fieldset :form :head :html :ol
-    :p :pre :table :tbody :tfoot :thead :tr :script :select :ul}
-  "A set of HTML tags that should be rendered as blocks")
-
-(defvar- html-line-tags
-  #{:br :dd :dt :h1 :h2 :h3 :h4 :h5 :h6 :hr :li :link
-    :option :td :textarea :title}
-  "HTML tags that should be rendered on their own line")
+(def css-lexer #"([^\s\.#]+)(?:#([^\s\.#]+))?(?:\.([^\s#]+))?")
 
 (defn- parse-css-tag
   "Pulls the id and class attributes from a tag name formatted in a CSS style.
   e.g. :div#content -> [:div  {:id \"content\"}]
        :span.error  -> [:span {:class \"error\"}]"
   [tag attrs]
-  (let [word  "([^\\s\\.#]+)"
-        lexer (str word "(#" word ")?" "(\\." word ")?")
-        [_ tag _ id _ class]
-              (re-matches (re-pattern lexer) (str* tag))
+  (let [[_ tag id classes] (re-matches css-lexer (str* tag))
         attrs (merge attrs
-                (if id    {:id id})
-                (if class {:class class}))]
+                (if id {:id id})
+                (if classes
+                  {:class (.replace classes "." " ")}))]
     [tag attrs]))
 
-(defn- html-formatter
-  "Format HTML in a readable fashion."
-  [next-format tag attrs & body]
-  (let [[tag attrs] (parse-css-tag tag attrs)
-        tag         (keyword tag)
-        format      (if (contains? html-block-tags tag)
-                      indented-xml-formatter
-                      raw-xml-formatter)
-        content     (apply format html-formatter tag attrs body)]
-    (if (contains? html-line-tags tag)
-      (str content "\n")
-      content)))
+(declare xml)
 
-(defn html
-  "Nicely formats a tree of vectors into HTML."
+(defn xml-tree
+  "Turns a tree of vectors into a string of XML. Any sequences in the
+  tree are expanded out."
+  [tree]
+  (if (vector? tree)
+    (let [[tag attrs & body] (ensure-attrs tree)
+          [tag attrs]        (parse-css-tag tag attrs)
+          body               (expand-seqs body)]
+      (if body
+        (create-tag tag attrs (apply xml body))
+        (create-closed-tag tag attrs)))
+    (str tree)))
+
+(defn xml
+  "Format trees of vectors into a string of XML."
   [& trees]
-  (if (and (seq? trees) (seq? (first trees)))
-    (apply html (first trees))
-    (map-xml html-formatter trees)))
+  (str-map xml-tree trees))
+
+(def html xml)
