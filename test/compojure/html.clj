@@ -106,9 +106,10 @@
   (= (html [:p {attr true}])
      (str "<p " attr "=\"" attr "\" />")))
 
-(fact "Boolean false attribute values are not displayed"
-  [attr names]
-  (= (html [:p {attr false}])
+(fact "Boolean false or nil attribute values are not displayed"
+  [value [false nil]
+   attr  names]
+  (= (html [:p {attr value}])
      "<p />"))
 
 (fact "Options in select lists can have different text and values"

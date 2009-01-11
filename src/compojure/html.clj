@@ -54,9 +54,9 @@
     (sort
       (map (fn [[key val]]
              (cond
-               (true? val)  [(str* key) (str* key)]
-               (false? val) [nil nil]
-               :otherwise   [(str* key) (str* val)]))
+               (true? val) [(str* key) (str* key)]
+               (not val)   [nil nil]
+               :otherwise  [(str* key) (str* val)]))
            attrs))))
 
 (defn- create-tag
