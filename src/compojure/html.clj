@@ -50,8 +50,8 @@
   (str-map
     (fn [[key val]]
       (str " " key "=\"" (h val) "\""))
-    (apply sorted-map
-      (mapcat #(map str* %) attrs))))
+    (sort
+      (map (fn [[k v]] [(str* k) (str* v)]) attrs))))
 
 (defn- create-tag
   "Wrap some content in an XML tag."
