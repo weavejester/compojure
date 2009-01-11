@@ -101,6 +101,16 @@
   (= (html [tag content])
      (xml  [tag content])))
 
+(fact "Boolean true attribute values are rendered as key=\"key\""
+  [attr names]
+  (= (html [:p {attr true}])
+     (str "<p " attr "=\"" attr "\" />")))
+
+(fact "Boolean false attribute values are not displayed"
+  [attr names]
+  (= (html [:p {attr false}])
+     "<p />"))
+
 (fact "Options in select lists can have different text and values"
   []
   (= (select-options [["a" "1"] ["b" "2"] ["c" "3"]])

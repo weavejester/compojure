@@ -49,9 +49,15 @@
   [attrs]
   (str-map
     (fn [[key val]]
-      (str " " key "=\"" (h val) "\""))
+      (if key
+        (str " " key "=\"" (h val) "\"")))
     (sort
-      (map (fn [[k v]] [(str* k) (str* v)]) attrs))))
+      (map (fn [[key val]]
+             (cond
+               (true? val)  [(str* key) (str* key)]
+               (false? val) [nil nil]
+               :otherwise   [(str* key) (str* val)]))
+           attrs))))
 
 (defn- create-tag
   "Wrap some content in an XML tag."
