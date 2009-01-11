@@ -103,6 +103,15 @@
 
 (declare xml)
 
+(def container-tags
+  #{:body :b :dd :div :dl :dt :em :fieldset :form :h1 :h2 :h3 :h4 :h5 :h6 :head
+    :html :i :label :li :ol :pre :script :span :strong :textarea :ul})
+
+(defn container-tag?
+  "Returns true if tag isn't a container tag like div or script."
+  [tag]
+  (container-tags (keyword (str* tag))))
+
 (defn xml-tree
   "Turns a tree of vectors into a string of XML. Any sequences in the
   tree are expanded out."
@@ -111,7 +120,7 @@
     (let [[tag attrs & body] (ensure-attrs tree)
           [tag attrs]        (parse-css-tag tag attrs)
           body               (expand-seqs body)]
-      (if body
+      (if (or body (container-tag? tag))
         (create-tag tag attrs (apply xml body))
         (create-closed-tag tag attrs)))
     (str tree)))

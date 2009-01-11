@@ -37,7 +37,7 @@
 
 (fact "Tag vectors can be nested"
   [[dom out]
-     {[:a [:b]]          "<a><b /></a>"
+     {[:a [:c]]          "<a><c /></a>"
       [:a "b" [:c] "d"]  "<a>b<c />d</a>"
       [:a [:b "c"]]      "<a><b>c</b></a>"
       [:a [:b [:c "d"]]] "<a><b><c>d</c></b></a>"}]
@@ -60,18 +60,18 @@
       "<"  "&lt;"
       ">"  "&gt;"
       "&"  "&amp;"}]
-  (= (xml [:div {:id original}])
-     (str "<div id=\"" escaped "\" />")))
+  (= (xml [:img {:id original}])
+     (str "<img id=\"" escaped "\" />")))
 
 (fact "Strings, keywords and symbols can be keys in attribute maps"
   [attr [:id 'id "id"]]
-  (= (xml [:span {attr "a"}])
-     "<span id=\"a\" />"))
+  (= (xml [:img {attr "a"}])
+     "<img id=\"a\" />"))
 
 (fact "An attribute map can have keys of different types"
   []
-  (= (xml [:span {:a "1" 'b "2" "c" "3"}])
-     "<span a=\"1\" b=\"2\" c=\"3\" />"))
+  (= (xml [:xml {:a "1" 'b "2" "c" "3"}])
+     "<xml a=\"1\" b=\"2\" c=\"3\" />"))
 
 (def tags
   '(a span em strong code img p html body div script pre))
@@ -111,6 +111,11 @@
    attr  names]
   (= (html [:p {attr value}])
      "<p />"))
+
+(fact "Container tags like div always have an explicit closing tag"
+  [tag '(div script span h1 h2 h3 h4 h5 h6 pre textarea)]
+  (= (html [tag])
+     (html [tag ""])))
 
 (fact "Options in select lists can have different text and values"
   []
