@@ -47,7 +47,7 @@
 (defn- map-to-attrs
   "Turn a map into a string of XML attributes, sorted by attribute name."
   [attrs]
-  (str-map
+  (map-str
     (fn [[key val]]
       (if key
         (str " " key "=\"" (h val) "\"")))
@@ -119,6 +119,6 @@
 (defn xml
   "Format trees of vectors into a string of XML."
   [& trees]
-  (str-map xml-tree trees))
+  (map-str xml-tree trees))
 
 (def html xml)

@@ -13,7 +13,7 @@
       #(if (includes? % chars) [\\ %] [%])
       string)))
 
-(defn str-map
+(defn map-str
   "Map a function to a collection, then concatenate the results into a
   string."
   [func coll]
@@ -25,7 +25,7 @@
   ([text]
     (indent text "  "))
   ([text spacer]
-    (str-map
+    (map-str
       #(str spacer % "\n")
       (re-split #"\n" text))))
 
@@ -34,7 +34,7 @@
   e.g (str \"Hello \" :World)  => \"Hello :World\"
       (str* \"Hello \" :World) => \"Hello World\""
   [& args] 
-  (str-map 
+  (map-str
     #(if (instance? Named %) (name %) (str %))
     args))
 
