@@ -36,7 +36,7 @@
   "Include a list of external javascript files."
   [& scripts]
   (domap [script scripts]
-    [:script {:type "text/javascript" :src script}]))
+    [:script {:type "text/javascript" :src script} ""]))
 
 (defn include-css
   "Include a list of external stylesheet files."
