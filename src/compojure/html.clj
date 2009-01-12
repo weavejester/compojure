@@ -105,7 +105,7 @@
 
 (def container-tags
   #{:body :b :dd :div :dl :dt :em :fieldset :form :h1 :h2 :h3 :h4 :h5 :h6 :head
-    :html :i :label :li :ol :pre :script :span :strong :textarea :ul})
+    :html :i :label :li :ol :pre :script :span :strong :style :textarea :ul})
 
 (defn container-tag?
   "Returns true if tag isn't a container tag like div or script."
