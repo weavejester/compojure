@@ -7,33 +7,33 @@
 
 (fact "The first element of a tag vector defines the tag name"
   [tag names]
-  (= (xml [tag "Lorem Ipsum"])
+  (= (html [tag "Lorem Ipsum"])
      (str "<" tag ">Lorem Ipsum</" tag ">")))
 
 (fact "Tag vectors can be empty"
   [tag names]
-  (= (xml [tag])
+  (= (html [tag])
      (str "<" tag " />")))
 
 (fact "Tags can be specified by keywords, symbols or strings"
   [tag [:xml 'xml "xml"]]
-  (= (xml [tag "Lorem Ipsum"])
+  (= (html [tag "Lorem Ipsum"])
      "<xml>Lorem Ipsum</xml>"))
 
 (fact "Tag vectors can contain strings"
   [content (rand-strs)]
-   (= (xml [:xml content])
+   (= (html [:xml content])
       (str "<xml>" content "</xml>")))
 
 (fact "Tag vectors concatenate their contents"
   [contents (rand-seqs #(rand-strs) 1 100)]
-  (= (xml (apply vector :xml contents))
+  (= (html (apply vector :xml contents))
      (str "<xml>" (apply str contents) "</xml>")))
 
 (fact "Sequences in tag vectors are expanded out"
   [contents (rand-seqs #(rand-strs))]
-  (= (xml (apply vector :xml contents))
-     (xml [:xml contents])))
+  (= (html (apply vector :xml contents))
+     (html [:xml contents])))
 
 (fact "Tag vectors can be nested"
   [[dom out]
@@ -41,7 +41,7 @@
       [:a "b" [:c] "d"]  "<a>b<c />d</a>"
       [:a [:b "c"]]      "<a><b>c</b></a>"
       [:a [:b [:c "d"]]] "<a><b><c>d</c></b></a>"}]
-  (= (xml dom) out))
+  (= (html dom) out))
 
 (fact "Tag vectors can have attribute maps"
   [[attr-map attr-str]
@@ -51,7 +51,7 @@
       {:aBc "d"}             "aBc=\"d\""
       {:a_b "c"}             "a_b=\"c\""
       {:a:b "c"}             "a:b=\"c\""}]
-  (= (xml [:xml attr-map "Lorem Ipsum"])
+  (= (html [:xml attr-map "Lorem Ipsum"])
      (str "<xml " attr-str ">Lorem Ipsum</xml>")))
 
 (fact "Special characters are escaped in attribute values"
@@ -60,17 +60,17 @@
       "<"  "&lt;"
       ">"  "&gt;"
       "&"  "&amp;"}]
-  (= (xml [:img {:id original}])
+  (= (html [:img {:id original}])
      (str "<img id=\"" escaped "\" />")))
 
 (fact "Strings, keywords and symbols can be keys in attribute maps"
   [attr [:id 'id "id"]]
-  (= (xml [:img {attr "a"}])
+  (= (html [:img {attr "a"}])
      "<img id=\"a\" />"))
 
 (fact "An attribute map can have keys of different types"
   []
-  (= (xml [:xml {:a "1" 'b "2" "c" "3"}])
+  (= (html [:xml {:a "1" 'b "2" "c" "3"}])
      "<xml a=\"1\" b=\"2\" c=\"3\" />"))
 
 (def tags
@@ -97,9 +97,8 @@
 
 (fact "HTML is not indented"
   [tag     tags
-   content (rand-strs)]
-  (= (html [tag content])
-     (xml  [tag content])))
+   content (rand-strs "ABCDEF\n")]
+  (not (re-find #"[ \t]" (html [tag content]))))
 
 (fact "Boolean true attribute values are rendered as key=\"key\""
   [attr names]
@@ -113,7 +112,7 @@
      "<p />"))
 
 (fact "Container tags like div always have an explicit closing tag"
-  [tag '(div script span h1 h2 h3 h4 h5 h6 pre textarea)]
+  [tag '(div script span h1 style pre textarea)]
   (= (html [tag])
      (html [tag ""])))
 

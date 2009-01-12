@@ -45,7 +45,7 @@
 (def h escape-html)    ; Shortcut for escaping HTML
 
 (defn- map-to-attrs
-  "Turn a map into a string of XML attributes, sorted by attribute name."
+  "Turn a map into a string of HTML attributes, sorted by attribute name."
   [attrs]
   (map-str
     (fn [[key val]]
@@ -60,7 +60,7 @@
            attrs))))
 
 (defn- create-tag
-  "Wrap some content in an XML tag."
+  "Wrap some content in an HTML tag."
   [tag attrs content]
   (str* "<" tag (map-to-attrs attrs) ">"
           content
@@ -101,7 +101,7 @@
                   {:class (.replace classes "." " ")}))]
     [tag attrs]))
 
-(declare xml)
+(declare html)
 
 (def container-tags
   #{:body :b :dd :div :dl :dt :em :fieldset :form :h1 :h2 :h3 :h4 :h5 :h6 :head
@@ -112,8 +112,8 @@
   [tag]
   (container-tags (keyword (str* tag))))
 
-(defn xml-tree
-  "Turns a tree of vectors into a string of XML. Any sequences in the
+(defn html-tree
+  "Turns a tree of vectors into a string of HTML. Any sequences in the
   tree are expanded out."
   [tree]
   (if (vector? tree)
@@ -121,13 +121,11 @@
           [tag attrs]        (parse-css-tag tag attrs)
           body               (expand-seqs body)]
       (if (or body (container-tag? tag))
-        (create-tag tag attrs (apply xml body))
+        (create-tag tag attrs (apply html body))
         (create-closed-tag tag attrs)))
     (str tree)))
 
-(defn xml
-  "Format trees of vectors into a string of XML."
+(defn html
+  "Format trees of vectors into a string of HTML."
   [& trees]
-  (map-str xml-tree trees))
-
-(def html xml)
+  (map-str html-tree trees))
