@@ -21,7 +21,7 @@
                          seq-utils
                          str-utils)))
 
-(defn- optional-attrs
+(defn optional-attrs
   "Adds an optional attribute map to the supplied function's arguments."
   [func]
   (fn [attrs & body]

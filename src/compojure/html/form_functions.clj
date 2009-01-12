@@ -105,27 +105,6 @@
   [text]
   [:input {:type "reset" :value text}])
 
-(decorate-with optional-attrs
-  hidden-field
-  text-field
-  check-box
-  drop-down
-  text-area
-  label
-  submit-button
-  reset-button)
-
-(defmacro decorate-fields
-  "Wrap all input field functions in a decorator."
-  [decorator & body]
-  `(decorate-bind ~decorator
-     [text-field
-      password-field
-      check-box
-      drop-down
-      text-area]
-    (list ~@body)))
-
 (defn form-to*
   [[method action] & body]
   (into []
@@ -143,7 +122,28 @@
   (if (map? handler)
     (let [[method action] (first body)
           body            (rest body)]
-      `(optional-attrs handler
-         (form-to* ['~method ~action] ~@body)))
+      `(form-to* ~handler ['~method ~action] ~@body))
     (let [[method action] handler]
       `(form-to* ['~method ~action] ~@body))))
+
+(decorate-with optional-attrs
+  hidden-field
+  text-field
+  check-box
+  drop-down
+  text-area
+  label
+  submit-button
+  reset-button
+  form-to*)
+
+(defmacro decorate-fields
+  "Wrap all input field functions in a decorator."
+  [decorator & body]
+  `(decorate-bind ~decorator
+     [text-field
+      password-field
+      check-box
+      drop-down
+      text-area]
+    (list ~@body)))
