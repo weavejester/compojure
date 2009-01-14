@@ -30,6 +30,7 @@
                    file-utils
                    parser
                    str-utils))
+  (:use compojure.http.routes)
   (:import (java.io File
                     InputStream
                     FileInputStream)
@@ -50,58 +51,6 @@
   [#^ServletContext context filename]
   (or (.getMimeType context filename)
       "application/octet-stream"))
- 
-;;;; Routes ;;;;
- 
-(defstruct url-route
-  :regex
-  :keywords)
-
-(defmulti compile-route class)
-
-(defmethod compile-route String
-  [route]
-  (let [splat #"\*"
-        word  #":(\w+)"
-        path  #"[^:*]+"]
-    (struct url-route
-      (re-pattern
-        (apply str
-          (parse route
-            splat "(.*?)"
-            word  "([^/.,;?]+)"
-            path  #(re-escape (.group %)))))
-      (filter (complement nil?)
-        (parse route
-          splat :*
-          word  #(keyword (.group % 1))
-          path  nil)))))
-
-(defmethod compile-route Pattern
-  [route]
-  route)
-
-(defn- match-group-map
-  "Create a hash-map from a series of regex match groups and a collection of
-  keywords."
-  [groups keywords]
-  (reduce
-    (partial merge-with
-      #(conj (ifn vector? vector %1) %2))
-    {}
-    (map hash-map keywords (rest groups))))
-
-(defn match-route
-  "Match a path against a parsed route. Returns a map of keywords and their
-  matching path values."
-  [route path]
-  (if (instance? Pattern route)
-    (let [matcher (re-matcher route path)]
-      (if (.matches matcher)
-        (vec (rest (re-groups matcher)))))
-    (let [matcher (re-matcher (route :regex) path)]
-      (if (.matches matcher)
-        (match-group-map (re-groups matcher) (route :keywords))))))
 
 ;;;; Handler functions ;;;;
  

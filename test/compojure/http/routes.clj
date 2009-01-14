@@ -1,6 +1,6 @@
-(ns test.compojure.http
-  (:use fact
-        (compojure http)))
+(ns test.compojure.http.routes
+  (:use fact)
+  (:use compojure.http.routes))
 
 (fact "Routes can match fixed paths"
   [path ["/"
@@ -33,10 +33,3 @@
                  "*"      "foo/bar.txt"}]
   (= (match-route (compile-route route) path)
      {:* "foo/bar.txt"}))
-
-(fact "Routes can be raw regular expressions"
-  [[route path] {#"/(foo)"     "/foo"
-                 #"/([a-z]+)"  "/foo"
-                 #"/.*?/(foo)" "/bar/baz/foo"}]
-  (= (match-route route path)
-     ["foo"]))
