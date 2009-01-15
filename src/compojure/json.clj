@@ -28,4 +28,4 @@
     (string? x)  (pr-str x)
     (keyword? x) (pr-str (name x))
     (number? x)  (pr-str x)
-                 (.toString x)))
+    :else        (str x)))

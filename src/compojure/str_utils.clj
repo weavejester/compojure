@@ -10,7 +10,7 @@
   [chars #^String string]
   (apply str
     (mapcat
-      #(if (includes? % chars) [\\ %] [%])
+      #(if (includes? chars %) [\\ %] [%])
       string)))
 
 (defn map-str
