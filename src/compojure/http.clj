@@ -102,7 +102,7 @@
 (defmacro handler-fn
   "Macro that wraps the body of a handler up in a standalone function."
   [& body]
-  `(fn ~'[route context request]
+  `(fn ~'[route context request response]
      (let ~'[method    (.getMethod    request)
              full-path (.getPathInfo  request)
              params    (compojure.http/get-params  request)
@@ -177,7 +177,8 @@
                       (let [func (handler :function)
                             resp (func route-params
                                        context
-                                       request)]
+                                       request
+                                       response)]
                         (if (not= :next resp)
                           (or resp [])))))]
     (update-response response context

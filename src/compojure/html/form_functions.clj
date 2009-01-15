@@ -109,7 +109,7 @@
   [[method action] & body]
   (into []
     (concat
-      (if (includes? method ['GET 'POST])
+      (if (includes? ['GET 'POST] method)
         [:form {:method method :action action}]
         [:form {:method "POST" :action action} (hidden-field "_method" method)])
       body)))
