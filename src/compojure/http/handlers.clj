@@ -18,7 +18,7 @@
   "Generate a clause for matching the route method and path against a supplied
   method and path."
   [[s-method s-path] [r-method r-path _]]
-  (let [route `(compile-route ~r-path)]
+  (let [route (compile-route r-path)]
     (if (= r-method 'ANY)
      `(match-route ~route ~s-path)
      `(and (= ~s-method ~(name r-method))

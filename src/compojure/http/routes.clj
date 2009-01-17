@@ -66,11 +66,12 @@
             splat "(.*?)"
             word  "([^/.,;?]+)"
             path  #(re-escape (.group %)))))
-      (filter (complement nil?)
-        (lex route
-          splat :*
-          word  #(keyword (.group % 1))
-          path  nil)))))
+      (vec
+        (filter (complement nil?)
+          (lex route
+            splat :*
+            word  #(keyword (.group % 1))
+            path  nil))))))
 
 (defn- assoc-keywords-with-groups
   "Create a hash-map from a series of regex match groups and a collection of
