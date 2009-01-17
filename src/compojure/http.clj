@@ -97,29 +97,6 @@
 
 ;;;; Public macros ;;;;
 
-(defmacro GET "Creates a GET handler."
-  [route & body]
-  `(struct http-handler "GET" (compile-route ~route) (handler-fn ~@body)))
- 
-(defmacro PUT "Creates a PUT handler."
-  [route & body]
-  `(struct http-handler "PUT" (compile-route ~route) (handler-fn ~@body)))
- 
-(defmacro POST "Creates a POST handler."
-  [route & body]
-  `(struct http-handler "POST" (compile-route ~route) (handler-fn ~@body)))
- 
-(defmacro DELETE "Creates a DELETE handler."
-  [route & body]
-  `(struct http-handler "DELETE" (compile-route ~route) (handler-fn ~@body)))
- 
-(defmacro HEAD "Creates a HEAD handler."
-  [route & body]
-  `(struct http-handler "HEAD" (compile-route ~route) (handler-fn ~@body)))
- 
-(defmacro ANY "Creates a handler that responds to any HTTP method."
-  [route & body]
-  `(struct http-handler nil (compile-route ~route) (handler-fn ~@body)))
 
 ;;;; Helper functions ;;;;
 

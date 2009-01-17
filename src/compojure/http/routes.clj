@@ -8,18 +8,15 @@
 
 ;; compojure.http.routes:
 ;; 
-;; Functions compiling and matching routes contructed using the Rails routing
-;; syntax.
+;; Macros and functions for compiling routes in the form (method path & body)
+;; into stand-alone functions that return the return value of the body, or the
+;; keyword :next if they don't match.
 
 (ns compojure.http.routes
   (:use compojure.str-utils))
 
-;; A structure that represents a route
-(defstruct url-route
-  :regex
-  :keywords)
-
 ;; Functions for lexing a string
+
 (defn- apply-action
   "Apply an action to the matcher if the action is not a function."
   [action matcher]
@@ -52,23 +49,29 @@
           results
           (recur results src clauses))))))
 
-;; Functions for compiling and matching routes
-(defn compile-route
+;; Functions for matching paths using a syntax borrowed from Ruby frameworks
+;; like Sinatra and Rails.
+
+(defstruct path-matcher
+  :regex
+  :keywords)
+
+(defn compile-path-matcher
   "Compile a string using the routes syntax into a url-route struct."
-  [route]
+  [matcher]
   (let [splat #"\*"
         word  #":(\w+)"
         path  #"[^:*]+"]
-    (struct url-route
+    (struct path-matcher
       (re-pattern
         (apply str
-          (lex route
+          (lex matcher
             splat "(.*?)"
             word  "([^/.,;?]+)"
             path  #(re-escape (.group %)))))
       (vec
         (filter (complement nil?)
-          (lex route
+          (lex matcher
             splat :*
             word  #(keyword (.group % 1))
             path  nil))))))
@@ -85,12 +88,60 @@
     {}
     (map hash-map keywords (rest groups))))
 
-(defn match-route
-  "Match a path against a parsed route. Returns a map of keywords and their
-  matching path values."
-  [route path]
-  (let [matcher (re-matcher (route :regex) path)]
+(defn match-path
+  "Match a path against a compiled matcher. Returns a map of keywords and
+  their matching path values."
+  [path-matcher path]
+  (let [matcher (re-matcher (path-matcher :regex) path)]
     (if (.matches matcher)
       (assoc-keywords-with-groups
         (re-groups matcher)
-        (route :keywords)))))
+        (path-matcher :keywords)))))
+
+;; Functions and macros for generating routing functions. A routing function
+;; returns :next if it doesn't match, and any other value if it does.
+
+(defn compile-route
+  "Compile a route in the form (method path & body) into a function."
+  [method path body]
+  (let [matcher (compile-path-matcher path)]
+   `(fn [method# path#]
+      (if (and ~method (= method# ~method))
+        (if-let [~'route (match-path ~matcher path#)]
+          (do ~@body)
+          :next)
+        :next))))
+
+(defmacro GET "Generate a GET route."
+  [path & body]
+  (compile-route "GET" path body))
+
+(defmacro POST "Generate a POST route."
+  [path & body]
+  (compile-route "POST" path body))
+
+(defmacro PUT "Generate a PUT route."
+  [path & body]
+  (compile-route "PUT" path body))
+
+(defmacro DELETE "Generate a DELETE route."
+  [path & body]
+  (compile-route "DELETE" path body))
+
+(defmacro HEAD "Generate a HEAD route."
+  [path & body]
+  (compile-route "HEAD" path body))
+
+(defmacro ANY "Generate a route that matches any method."
+  [path & body]
+  (compile-route nil path body))
+
+(defn combine-routes
+  "Create a new route by combine a sequences of routes into one."
+  [& routes]
+  (fn [method path]
+    (loop [[route & routes] routes]
+      (let [ret (route method path)]
+        (if (and (= ret :next) routes)
+          (recur routes)
+          ret)))))
