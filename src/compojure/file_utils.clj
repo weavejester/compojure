@@ -25,16 +25,16 @@
   [dir]
   (seq (. (file dir) (list))))
 
-(defn pipe-stream
-  "Pipe the contents of an InputStream into an OutputStream."
+(defn copy-stream
+  "Copy the contents of an InputStream into an OutputStream."
   ([in out]
-    (pipe-stream in out 4096))
-  ([#^InputStream in #^OutputStream out bufsize]
-    (let [buffer (make-array (. Byte TYPE) bufsize)]
-      (loop [len (. in (read buffer))]
+    (copy-stream in out 4096))
+  ([#^InputStream in, #^OutputStream out, bufsize]
+    (let [buffer (make-array Byte/TYPE bufsize)]
+      (loop [len (.read in buffer)]
         (when (pos? len)
-          (. out (write buffer 0 len))
-          (recur (. in (read buffer))))))))
+          (.write out buffer 0 len)
+          (recur (.read in buffer)))))))
 
 (defn file-parents
   "Lazily iterate through all of the parents of a file."
