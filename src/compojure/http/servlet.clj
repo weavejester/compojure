@@ -84,11 +84,11 @@
   HttpServletRequest instance."
   [[#^HttpServlet servlet, #^HttpServletRequest request] & body]
   `(let [~'context  (.getServletContext ~servlet)
-         ~'method   (.getMethod ~request)
-         ~'url      (.getURL    ~request)
+         ~'method   (.getMethod   ~request)
+         ~'url      (.getRequestURL ~request)
          ~'path     (.getPathInfo ~request)
-         ~'params   (get-params  ~request)
-         ~'headers  (get-headers ~request)
+         ~'params   (get-params   ~request)
+         ~'headers  (get-headers  ~request)
          ~'mimetype (partial context-mimetype ~'context)
          ~'session  (get-session ~request)
          ~'cookies  (get-cookies ~request)]
@@ -156,15 +156,15 @@
   [& routes]
   `(proxy [HttpServlet] []
      (service ~'[request response]
-       (http-service ~'[this request response]
+       (http-handler ~'[this request response]
          ~@routes))))
 
 (defmacro update-servlet
   "Update an existing servlet proxy with a new set of routes."
   [object & routes]
   `(update-proxy ~object
-     {"service" (fn [this request response]
-                  (http-service ~'[this request response]
+     {"service" (fn ~'[this request response]
+                  (http-handler ~'[this request response]
                     ~@routes))}))
 
 (defmacro defservlet
@@ -194,5 +194,5 @@
                            ["-" (cons prefix routes)])]
     `(defn ~(symbol (str prefix "service"))
      ~'[this request response]
-       (http-service ~'[this request response]
+       (http-handler ~'[this request response]
          ~@routes))))
