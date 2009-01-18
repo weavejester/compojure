@@ -21,7 +21,7 @@
   "Apply an action to the matcher if the action is not a function."
   [action matcher]
   (if (and (ifn? action)
-	   (not (keyword? action)))
+           (not (keyword? action)))
     (action matcher)
     action))
 

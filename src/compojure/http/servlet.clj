@@ -76,6 +76,7 @@
     string      - Adds to the response body
     seq         - Adds all containing elements to the response body
     map         - Updates the HTTP headers
+    Cookie      - Adds a cookie to the response
     Number      - Updates the status code
     File        - Updates the response body via a file stream
     URL         - Updates the response body via a stream to the URL
