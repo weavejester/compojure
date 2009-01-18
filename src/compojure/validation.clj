@@ -3,9 +3,10 @@
 ;; Functions for validating form parameters.
 
 (ns compojure.validation
-    (:use (compojure control
-                     html)
-          (clojure.contrib def)))
+  (:use compojure.control)
+  (:use compojure.html.form-helpers)
+  (:use compojure.html.page-helpers)
+  (:use clojure.contrib.def))
 
 (defvar *errors* {}
   "Var containing validation errors.")
@@ -40,8 +41,8 @@
   Takes a set of params and a collection of argument vectors for the validate
   function:
   e.g. (validation params
-           [name pred message]
-           [pred message])
+         [name pred message]
+         [pred message])
   Is the same as:
        (merge-errors
          (validate params name pred message)

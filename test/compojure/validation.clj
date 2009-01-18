@@ -1,7 +1,7 @@
 (ns test.compojure.validation
-  (:use fact
-        compojure.html
-        compojure.validation))
+  (:use fact)
+  (:use compojure.html.form-helpers)
+  (:use compojure.validation))
 
 (fact "Parameters that pass validation return empty maps"
   []

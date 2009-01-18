@@ -1,25 +1,34 @@
-;; compojure.html (page_functions)
-;;
+;; Copyright (c) James Reeves. All rights reserved.
+;; The use and distribution terms for this software are covered by the Eclipse
+;; Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php) which
+;; can be found in the file epl-v10.html at the root of this distribution. By
+;; using this software in any fashion, you are agreeing to be bound by the
+;; terms of this license. You must not remove this notice, or any other, from
+;; this software.
+
+;; compojure.html.page-helpers:
+;; 
 ;; Functions for generating document and header boilerplate.
 
-(ns compojure.html
-  (:use    (compojure control
-                      str-utils)
-           (clojure.contrib str-utils))
-  (:import (java.net URLEncoder)))
+(ns compojure.html.page-helpers
+  (:use compojure.control)
+  (:use compojure.html)
+  (:use compojure.str-utils)
+  (:use clojure.contrib.str-utils)
+  (:import java.net.URLEncoder))
 
 (def doctype
   {:html4
-    "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01//EN\"
-    \"http://www.w3.org/TR/html4/strict.dtd\">\n"
+   (str "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01//EN\""
+        "\"http://www.w3.org/TR/html4/strict.dtd\">\n")
 
    :xhtml-strict
-    "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"
-    \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n"
+   (str "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\""
+        "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n")
 
    :xhtml-transitional
-    "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"
-    \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n"})
+   (str "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\""
+        "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n")})
 
 (defn xhtml-tag
   "Create an XHTML tag for the specified locale.
@@ -58,7 +67,7 @@
 (defn url-encode
   "Encodes a single string or sequence of key/value pairs."
   [string-or-map]
-  (let [enc #(.encode URLEncoder (str* %))]
+  (let [enc #(URLEncoder/encode (str* %))]
     (if (string? string-or-map)
       (enc string-or-map)
       (str-join "&"

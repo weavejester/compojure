@@ -1,18 +1,23 @@
-;; compojure.html (form_functions)
-;;
-;; Functions for generating HTML form controls.
-;;
-;; e.g.
-;; (form-to [PUT "/post"]
-;;   (text-field :subject "New Post")
-;;   (text-area  :body)
-;;   (submit-button "Post"))
+;; Copyright (c) James Reeves. All rights reserved.
+;; The use and distribution terms for this software are covered by the Eclipse
+;; Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php) which
+;; can be found in the file epl-v10.html at the root of this distribution. By
+;; using this software in any fashion, you are agreeing to be bound by the
+;; terms of this license. You must not remove this notice, or any other, from
+;; this software.
 
-(ns compojure.html
-  (:use (compojure control
-                   str-utils)
-        (clojure.contrib def
-                         seq-utils)))
+;; compojure.html.form-helpers:
+;; 
+;; Functions for generating HTML forms and input fields.
+
+(ns compojure.html.form-helpers
+  (:use compojure.html)
+  (:use compojure.control)
+  (:use compojure.str-utils)
+  (:use clojure.contrib.def)
+  (:use clojure.contrib.seq-utils))
+
+;; Global parameters for easy default values
 
 (defvar *params* {}
   "Parameter map var that form input field functions use to populate their
@@ -23,6 +28,8 @@
   [params & body]
   `(binding [*params* ~params]
     ~@body))
+
+;; Form input fields
 
 (defn- input-field
   "Creates a form input field."
@@ -50,14 +57,15 @@
 (defn check-box
   "Creates a check box."
   ([name]
-    (check-box name "1"))
-  ([name true-value]
-    (input-field "checkbox" name true-value))
-  ([name true-value false-value]
-    (list (check-box name true-value)
-          [:input {:type  "hidden"
-                   :name  (str* name)
-                   :value false-value}])))
+    (check-box name (*params* name)))
+  ([name checked?]
+    (check-box name checked? "true"))
+  ([name checked? value]
+    [:input {:type    "checkbox"
+             :name    (str* name)
+             :id      (str* name)
+             :value   value
+             :checked checked?}]))
 
 (defn select-options
   "Turn a collection into a set of option tags."

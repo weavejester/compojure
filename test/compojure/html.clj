@@ -1,6 +1,6 @@
 (ns test.compojure.html
-  (:use fact
-        compojure.html))
+  (:use fact)
+  (:use compojure.html))
 
 (def names
   '(foo Bar foo-bar foo_bar fooBar foo:bar))
@@ -115,10 +115,3 @@
   [tag '(div script span h1 style pre textarea)]
   (= (html [tag])
      (html [tag ""])))
-
-(fact "Options in select lists can have different text and values"
-  []
-  (= (select-options [["a" "1"] ["b" "2"] ["c" "3"]])
-    '([:option {:value "1"} "a"]
-      [:option {:value "2"} "b"]
-      [:option {:value "3"} "c"])))
