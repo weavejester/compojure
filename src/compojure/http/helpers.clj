@@ -10,9 +10,10 @@
 ;; 
 ;; Helper functions for things like redirection, serving files, 404s, etc.
 
-(ns compojure.http.helper
-  (:use compojure.str-utils :only [str*])
-  (:import java.io.File))
+(ns compojure.http.helpers
+  (:use [compojure.str-utils :only (str*)])
+  (:import java.io.File)
+  (:import javax.servlet.http.Cookie))
 
 (defn redirect-to
   "A shortcut for a '302 Moved' HTTP redirect."
@@ -24,7 +25,7 @@
   ([]
     (page-not-found "public/404.html"))
   ([filename]
-    [404 (file filename)]))
+    [404 (File. filename)]))
  
 (defn- find-index-file
   "Search the directory for index.*"

@@ -11,15 +11,17 @@
 ;; Functions for interfacing Compojure with the Java servlet standard.
 
 (ns compojure.http.servlet
-  (:use compojure.file-utils  :only [copy-stream])
-  (:use compojure.http.routes :only [combine-routes])
+  (:use [compojure.file-utils  :only (copy-stream)])
+  (:use [compojure.http.routes :only (combine-routes)])
   (:import java.io.File)
   (:import java.io.InputStream)
   (:import java.net.URL)
   (:import java.util.Map$Entry)
+  (:import javax.servlet.http.Cookie)
   (:import javax.servlet.http.HttpServlet)
   (:import javax.servlet.http.HttpServletRequest)
-  (:import javax.servlet.http.HttpServletResponse))
+  (:import javax.servlet.http.HttpServletResponse)
+  (:import javax.servlet.ServletContext))
 
 ;; Functions to pull information from the request object
 
@@ -81,16 +83,16 @@
   "Adds local servlet vars to the scope given a HttpServlet and a
   HttpServletRequest instance."
   [[#^HttpServlet servlet, #^HttpServletRequest request] & body]
-  (let [~'context  (.getServletContext ~servlet)
-        ~'method   (.getMethod ~request)
-        ~'url      (.getURL    ~request)
-        ~'path     (.getPathInfo ~request)
-        ~'params   (get-params  ~request)
-        ~'headers  (get-headers ~request)
-        ~'mimetype (partial context-mimetype ~'context)
-        ~'session  (get-session ~request)
-        ~'cookies  (get-cookies ~request)]
-     (do ~@body)))
+  `(let [~'context  (.getServletContext ~servlet)
+         ~'method   (.getMethod ~request)
+         ~'url      (.getURL    ~request)
+         ~'path     (.getPathInfo ~request)
+         ~'params   (get-params  ~request)
+         ~'headers  (get-headers ~request)
+         ~'mimetype (partial context-mimetype ~'context)
+         ~'session  (get-session ~request)
+         ~'cookies  (get-cookies ~request)]
+      (do ~@body)))
 
 ;; Functions to set data in the response object
 
