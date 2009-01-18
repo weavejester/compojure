@@ -11,13 +11,24 @@
 ;; Functions for interfacing Compojure with the Java servlet standard.
 
 (ns compojure.http.servlet
-  (:use compojure.file-utils :only [copy-stream])
+  (:use compojure.file-utils  :only [copy-stream])
+  (:use compojure.http.routes :only [combine-routes])
   (:import java.io.File)
   (:import java.io.InputStream)
   (:import java.net.URL)
   (:import java.util.Map$Entry)
+  (:import javax.servlet.http.HttpServlet)
   (:import javax.servlet.http.HttpServletRequest)
   (:import javax.servlet.http.HttpServletResponse))
+
+;; Functions to pull information from the request object
+
+(defn context-mimetype
+  "Guess the mimetype of a filename. Defaults to 'application/octet-stream'
+  if the mimetype is unknown."
+  [#^ServletContext context filename]
+  (or (.getMimeType context (str filename))
+      "application/octet-stream"))
 
 (defn- parse-key-value
   "Parse key/value strings to make them more Clojure-friendly."
@@ -66,10 +77,28 @@
   (or (.getParameter request "_method")
       (.getMethod request)))
 
+(defmacro with-servlet-vars
+  "Adds local servlet vars to the scope given a HttpServlet and a
+  HttpServletRequest instance."
+  [[#^HttpServlet servlet, #^HttpServletRequest request] & body]
+  (let [~'context  (.getServletContext ~servlet)
+        ~'method   (.getMethod ~request)
+        ~'url      (.getURL    ~request)
+        ~'path     (.getPathInfo ~request)
+        ~'params   (get-params  ~request)
+        ~'headers  (get-headers ~request)
+        ~'mimetype (partial context-mimetype ~'context)
+        ~'session  (get-session ~request)
+        ~'cookies  (get-cookies ~request)]
+     (do ~@body)))
+
+;; Functions to set data in the response object
+
 (defn- set-type-by-name
   "Set the content type header by guessing the mimetype from the resource name."
-  [#^HttpServletResponse response context name]
-  (.setHeader response "Content-Type" (context-mimetype context name)))
+  [#^HttpServlet servlet, #^HttpServletResponse response, name]
+  (.setHeader response "Content-Type"
+    (context-mimetype (.getServletContext servlet) name)))
 
 (defn update-response
   "Destructively update a HttpServletResponse using a Clojure datatype:
@@ -83,11 +112,11 @@
     InputStream - Pipes the input stream to the resource body
     vector      - Iterates through its contents, successively updating the
                   response with each value"
-  [#^HttpServletResponse response context update]
+  [#^HttpServlet servlet, #^HttpServletResponse response, update]
   (cond
     (vector? update)
       (doseq [u update]
-        (update-response response context u))
+        (update-response servlet response u))
     (string? update)
       (.. response (getWriter) (print update))
     (seq? update)
@@ -102,10 +131,66 @@
     (instance? Cookie update)
       (.addCookie response update)
     (instance? File update)
-      (update-response response context (.toURL update))
+      (update-response servlet response (.toURL update))
     (instance? URL update)
-      (do (set-type-by-name response context (str update))
-          (update-response response context (.openStream update)))
+      (do (set-type-by-name servlet response update)
+          (update-response servlet response (.openStream update)))
     (instance? InputStream update)
       (with-open [in update]
         (copy-stream in (.getOutputStream response)))))
+
+;; Macros that combine request and response handling
+
+(defmacro http-handler
+  "Handle incoming HTTP requests from a servlet."
+  [[servlet request response] & routes]
+  `(do (.setCharacterEncoding ~response "UTF-8")
+       (update-response ~servlet ~response
+         (with-servlet-vars [~servlet ~request]
+           (combine-routes ~@routes)))))
+
+(defmacro servlet
+  "Create a servlet from a sequence of routes."
+  [& routes]
+  `(proxy [HttpServlet] []
+     (service ~'[request response]
+       (http-service ~'[this request response]
+         ~@routes))))
+
+(defmacro update-servlet
+  "Update an existing servlet proxy with a new set of routes."
+  [object & routes]
+  `(update-proxy ~object
+     {"service" (fn [this request response]
+                  (http-service ~'[this request response]
+                    ~@routes))}))
+
+(defmacro defservlet
+  "Defines a new servlet with an optional doc-string, or if a servlet is
+  already defined, it updates the existing servlet with the supplied handlers.
+  Note that updating is not a thread-safe operation."
+  [name doc & handlers]
+  (if (string? doc)
+    `(do (defonce
+          ~(with-meta name (assoc (meta name) :doc doc))
+           (proxy [HttpServlet] []))
+         (update-servlet ~name ~@handlers))
+    `(do (defonce ~name
+           (proxy [HttpServlet] []))
+         (update-servlet ~name ~doc ~@handlers))))
+
+(defmacro defservice
+  "Defines a service method with an optional prefix suitable for being used by
+  genclass to compile a HttpServlet class.
+  e.g. (defservice
+         (GET \"/\" \"Hello World\"))
+       (defservice \"myprefix-\"
+         (GET \"/\" \"Hello World\"))"
+  [prefix & routes]
+  (let [[prefix routes] (if (string? prefix)
+                           [prefix routes]
+                           ["-" (cons prefix routes)])]
+    `(defn ~(symbol (str prefix "service"))
+     ~'[this request response]
+       (http-service ~'[this request response]
+         ~@routes))))

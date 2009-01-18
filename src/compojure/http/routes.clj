@@ -13,7 +13,7 @@
 ;; keyword :next if they don't match.
 
 (ns compojure.http.routes
-  (:use compojure.str-utils))
+  (:use compojure.str-utils :only [re-escape]))
 
 ;; Functions for lexing a string
 
