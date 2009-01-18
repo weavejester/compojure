@@ -12,6 +12,7 @@
 
 (ns compojure.http.helpers
   (:use [compojure.str-utils :only (str*)])
+  (:use [clojure.contrib.def :only (defmacro-)])
   (:import java.io.File)
   (:import javax.servlet.http.Cookie))
 
@@ -52,14 +53,15 @@
 (defn new-cookie
   "Helper function for creating new Cookie objects."
   [name value & attrs]
-  (let [cookie    (new Cookie (str* name) value)
-        attrs     (apply hash-map attrs)
-        set-attr #(if (attrs %1)
-                    (eval (list %2 cookie (attrs %1))))]
-    (set-attr :comment '.setComment)
-    (set-attr :domain  '.setDomain)
-    (set-attr :max-age '.setMaxAge)
-    (set-attr :path    '.setPath)
-    (set-attr :secure  '.setSecure)
-    (set-attr :version '.setVersion)
-    cookie)) 
+  (let [cookie   (new Cookie (str* name) value)
+        attrs    (apply hash-map attrs)
+        setters  {:comment (memfn setComment comment)
+                  :domain  (memfn setDomain domain)
+                  :max-age (memfn setMaxAge age)
+                  :path    (memfn setPath path)
+                  :secure  (memfn setSecure secure)
+                  :version (memfn setVersion version)}]
+    (doseq [[attr setter] setters]
+      (if-let [value (attrs attr)]
+        (setter cookie value)))
+    cookie))
