@@ -149,7 +149,6 @@
   `(do (.setCharacterEncoding ~response "UTF-8")
        (update-response ~servlet ~response
          (with-servlet-vars [~servlet ~request]
-           (prn (get-method ~request))
            ((combine-routes ~@routes)
               (get-method ~request)
               (.getPathInfo ~request))))))
