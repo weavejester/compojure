@@ -106,7 +106,7 @@
   [method path body]
   (let [matcher (compile-path-matcher path)]
    `(fn [method# path#]
-      (if (and ~method (= method# ~method))
+      (if (or (nil? ~method) (= method# ~method))
         (if-let [~'route (match-path ~matcher path#)]
           (do ~@body)
           :next)

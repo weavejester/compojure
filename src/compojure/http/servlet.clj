@@ -128,7 +128,7 @@
     (map? update)
       (doseq [[k v] update]
         (.setHeader response k v))
-    (number? Number update)
+    (number? update)
       (.setStatus response update)
     (instance? Cookie update)
       (.addCookie response update)
@@ -149,7 +149,10 @@
   `(do (.setCharacterEncoding ~response "UTF-8")
        (update-response ~servlet ~response
          (with-servlet-vars [~servlet ~request]
-           (combine-routes ~@routes)))))
+           (prn (get-method ~request))
+           ((combine-routes ~@routes)
+              (get-method ~request)
+              (.getPathInfo ~request))))))
 
 (defmacro servlet
   "Create a servlet from a sequence of routes."
