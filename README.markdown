@@ -5,6 +5,17 @@ to web development.
 Compojure is still in active development, but it is rapidly approaching version
 0.1.
 
+Sample Code
+-----------
+
+Here's a small sample servlet definition in Compojure:
+
+    (defservlet demo
+      (GET "/"
+        (html [:h1 "Hello World"]))
+      (ANY "*"
+        (page-not-found)))
+
 Documentation
 -------------
 
@@ -16,17 +27,6 @@ Community
 
 The [Compojure Group](http://groups.google.com/group/compojure) is the best place
 to ask questions about Compojure, suggest improvements or to report bugs.
-
-Sample Code
------------
-
-Here's a small sample servlet definition in Compojure:
-
-    (defservlet demo
-      (GET "/"
-        (html [:h1 "Hello World"]))
-      (ANY "*"
-        (page-not-found)))
 
 Tutorials
 ---------
