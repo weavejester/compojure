@@ -10,7 +10,7 @@
 ;; 
 ;; Clojure interface to start an embedded Jetty server.
 
-(ns compojure.jetty
+(ns compojure.server.jetty
   (:import org.mortbay.jetty Server)
   (:import org.mortbay.jetty.servlet.Context)
   (:import org.mortbay.jetty.servlet.ServletHolder)
