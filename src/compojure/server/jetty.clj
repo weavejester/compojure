@@ -40,11 +40,11 @@
 
 (decorate-with memoize get-context)
 
-(defn- get-host-and-path
+(defn get-host-and-path
   "Splits a path or URL into its hostname and path."
   [url-or-path]
-  (if (re-matches #"^/w+://" url-or-path)
-    (let [url (.URL url-or-path)]
+  (if (re-find #"^\w+://" url-or-path)
+    (let [url (URL. url-or-path)]
       [(.getHost url) (.getPath url)])
     [nil url-or-path]))
 
