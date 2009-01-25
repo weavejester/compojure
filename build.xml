@@ -34,7 +34,7 @@
       <arg value="compojure.http.routes"/>
       <arg value="compojure.http.servlet"/>
       <arg value="compojure.http.helpers"/>
-      <arg value="compojure.jetty"/>
+      <arg value="compojure.server.jetty"/>
       <arg value="compojure.json"/>
       <arg value="compojure.str-utils"/>
       <arg value="compojure.validation"/>
