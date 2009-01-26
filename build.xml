@@ -28,12 +28,14 @@
         </fileset>
       </classpath>
       <sysproperty key="clojure.compile.path" value="${build.dir}"/>
+      <arg value="compojure"/>
       <arg value="compojure.control"/>
       <arg value="compojure.file-utils"/>
       <arg value="compojure.html"/>
       <arg value="compojure.http.routes"/>
       <arg value="compojure.http.servlet"/>
       <arg value="compojure.http.helpers"/>
+      <arg value="compojure.ns-utils"/>
       <arg value="compojure.server.jetty"/>
       <arg value="compojure.json"/>
       <arg value="compojure.str-utils"/>
