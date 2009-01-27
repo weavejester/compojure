@@ -1,8 +1,19 @@
+;; Copyright (c) James Reeves. All rights reserved.
+;; The use and distribution terms for this software are covered by the Eclipse
+;; Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php) which
+;; can be found in the file epl-v10.html at the root of this distribution. By
+;; using this software in any fashion, you are agreeing to be bound by the
+;; terms of this license. You must not remove this notice, or any other, from
+;; this software.
+
+;; compojure.str-utils:
+;;
 ;; Utility functions for manipulating strings
+
 (ns compojure.str-utils
-  (:use    (clojure.contrib seq-utils
-                            str-utils))
-  (:import (clojure.lang Named)))
+  (:use clojure.contrib.seq-utils)
+  (:use clojure.contrib.str-utils)
+  (:import clojure.lang.Named))
 
 (defn escape
   "Returns a string with each occurance of a character in
@@ -27,7 +38,7 @@
   ([text spacer]
     (map-str
       #(str spacer % "\n")
-      (re-split #"\n" text))))
+       (re-split #"\n" text))))
 
 (defn str*
   "A version of str that prefers the names of Named objects.
@@ -56,8 +67,8 @@
 (defn capitalize
   "Uppercase the first letter of a string, and lowercase the rest."
   [s]
-  (str (.toUpperCase (.substring s 0 1))
-       (.toLowerCase (.substring s 1))))
+  (str (.toUpperCase (subs s 0 1))
+       (.toLowerCase (subs s 1))))
 
 (defn grep
   "Filter a collection of strings by a regex."
