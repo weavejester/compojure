@@ -8,13 +8,18 @@ Compojure is still in active development, but it is rapidly approaching version
 Sample Code
 -----------
 
-Here's a small sample servlet definition in Compojure:
+Here's a small web application written in Compojure:
 
-    (defservlet demo
+    (use 'compojure)
+
+    (defservlet my-servlet
       (GET "/"
         (html [:h1 "Hello World"]))
       (ANY "*"
         (page-not-found)))
+
+    (run-server {:port 8080}
+      "/*" my-servlet)
 
 Documentation
 -------------

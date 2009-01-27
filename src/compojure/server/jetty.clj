@@ -90,3 +90,8 @@
 (defn stop  "Stop a HTTP server."
   [server]
   (.stop server))
+
+(defn run-server
+  "Create and start a new Jetty HTTP server."
+  [& server-args]
+  (.start (apply http-server server-args)))
