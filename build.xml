@@ -32,6 +32,7 @@
       <arg value="compojure.control"/>
       <arg value="compojure.file-utils"/>
       <arg value="compojure.html"/>
+      <arg value="compojure.http"/>
       <arg value="compojure.http.routes"/>
       <arg value="compojure.http.servlet"/>
       <arg value="compojure.http.helpers"/>
