@@ -123,4 +123,4 @@
 (defn html
   "Format trees of vectors into a string of HTML."
   [& trees]
-  (map-str html-tree trees))
+  (map-str html-tree (expand-seqs trees)))

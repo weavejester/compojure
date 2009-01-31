@@ -31,10 +31,15 @@
      (str "<xml>" (apply str contents) "</xml>")))
 
 (fact "Sequences in tag vectors are expanded out"
+  [contents (rand-seqs #(rand-strs) 1 100)]
+  (= (apply html contents)
+     (html contents)))
+
+(fact "The html function expands sequences"
   [contents (rand-seqs #(rand-strs))]
   (= (html (apply vector :xml contents))
      (html [:xml contents])))
-
+  
 (fact "Tag vectors can be nested"
   [[dom out]
      {[:a [:c]]          "<a><c /></a>"
