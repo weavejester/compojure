@@ -104,7 +104,9 @@
 (defn compile-route
   "Compile a route in the form (method path & body) into a function."
   [method path body]
-  (let [matcher (compile-path-matcher path)]
+  (let [matcher (if (string? path)
+                  (compile-path-matcher path)
+                  `(compile-path-matcher ~path))]
    `(fn [method# path#]
       (if (or (nil? ~method) (= method# ~method))
         (if-let [~'route (match-path ~matcher path#)]

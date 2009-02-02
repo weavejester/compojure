@@ -56,3 +56,8 @@
   (let [route `(GET "/*" (~'route :*))]
     (= ((eval route) "GET" (str "/" path))
        path)))
+
+(fact "Routes can match paths in vars"
+  [path ["/foo" "/bar" "/foo/bar"]]
+  (= ((GET path "passed") "GET" path)
+     "passed"))
