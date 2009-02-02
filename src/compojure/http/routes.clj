@@ -13,7 +13,8 @@
 ;; keyword :next if they don't match.
 
 (ns compojure.http.routes
-  (:use [compojure.str-utils :only (re-escape)]))
+  (:use [compojure.str-utils :only (re-escape)])
+  (:use [compojure.control   :only (decorate-with)]))
 
 ;; Functions for lexing a string
 
@@ -75,6 +76,9 @@
             splat :*
             word  #(keyword (.group % 1))
             path  nil))))))
+
+;; Don't compile paths more than once.
+(decorate-with memoize compile-path-matcher)
 
 (defn- assoc-keywords-with-groups
   "Create a hash-map from a series of regex match groups and a collection of
