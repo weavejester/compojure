@@ -20,6 +20,10 @@
          "/foo.txt"]]
   (match-path (compile-path-matcher path) path))
 
+(fact "Nil routes are treated as '/'"
+  []
+  (match-path (compile-path-matcher "/") nil))
+
 (fact "Routes can contain keywords"
   [[route path] {"/:x"         "/foo"
                  "/bar/:x"     "/bar/foo"

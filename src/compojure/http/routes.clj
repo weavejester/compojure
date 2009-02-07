@@ -96,7 +96,7 @@
   "Match a path against a compiled matcher. Returns a map of keywords and
   their matching path values."
   [path-matcher path]
-  (let [matcher (re-matcher (path-matcher :regex) path)]
+  (let [matcher (re-matcher (path-matcher :regex) (or path "/"))]
     (if (.matches matcher)
       (assoc-keywords-with-groups
         (re-groups matcher)
