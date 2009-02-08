@@ -1,4 +1,5 @@
 (use 'fact)
+(use 'fact.output.verbose)
 (require 'test.compojure.html)
 (require 'test.compojure.http.routes)
 (require 'test.compojure.html.form-helpers)

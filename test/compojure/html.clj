@@ -1,5 +1,6 @@
 (ns test.compojure.html
   (:use fact)
+  (:use fact.utils.random)
   (:use compojure.html))
 
 (def names
@@ -21,22 +22,22 @@
      "<xml>Lorem Ipsum</xml>"))
 
 (fact "Tag vectors can contain strings"
-  [content (rand-strs)]
+  [content String]
    (= (html [:xml content])
       (str "<xml>" content "</xml>")))
 
 (fact "Tag vectors concatenate their contents"
-  [contents (rand-seqs #(rand-strs) 1 100)]
+  [contents #(random-seq random-str 1 100)]
   (= (html (apply vector :xml contents))
      (str "<xml>" (apply str contents) "</xml>")))
 
 (fact "Sequences in tag vectors are expanded out"
-  [contents (rand-seqs #(rand-strs) 1 100)]
+  [contents #(random-seq random-str 1 100)]
   (= (apply html contents)
      (html contents)))
 
 (fact "The html function expands sequences"
-  [contents (rand-seqs #(rand-strs))]
+  [contents #(random-seq random-str)]
   (= (html (apply vector :xml contents))
      (html [:xml contents])))
   
@@ -102,7 +103,7 @@
 
 (fact "HTML is not indented"
   [tag     tags
-   content (rand-strs "ABCDEF\n")]
+   content #"(\w+\n)+"]
   (not (re-find #"[ \t]" (html [tag content]))))
 
 (fact "Boolean true attribute values are rendered as key=\"key\""
