@@ -34,6 +34,17 @@
   (= (match-path (compile-path-matcher route) path)
      {:x "foo"}))
 
+(fact "Routes can contain keywords containing hyphens"
+  [[route path] {"/:foo-bar"                "/baz"
+		 "/aaa/:foo-bar/bbb"        "/aaa/baz/bbb"}]
+  (= (match-path (compile-path-matcher route) path)
+     {:foo-bar "baz"}))
+
+(fact "Routes can contain keywords containing hyphens many times"
+  [[route path] {"/:foo-bar/bbb/:foo-bar"   "/baz/bbb/baz"}]
+  (= (match-path (compile-path-matcher route) path)
+     {:foo-bar ["baz" "baz"]}))
+
 (fact "Routes can contain the same keyword many times"
   [[route path] {"/:x/:x/:x"     "/foo/bar/baz"
                  "/a/:x/b/:x.:x" "/a/foo/b/bar.baz"}]

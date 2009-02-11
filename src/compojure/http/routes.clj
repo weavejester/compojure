@@ -61,7 +61,7 @@
   "Compile a string using the routes syntax into a url-route struct."
   [matcher]
   (let [splat #"\*"
-        word  #":(\w+)"
+        word  #":([-\w]+)"
         path  #"[^:*]+"]
     (struct path-matcher
       (re-pattern
