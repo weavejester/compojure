@@ -18,7 +18,7 @@
 (defn resource
   "Returns a URL to a file in a resource."
   [name]
-  (.getResource (.baseLoader RT) name))
+  (.getResource (RT/baseLoader) name))
 
 (defn list-dir
   "List all the files in a directory."
