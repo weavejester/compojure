@@ -115,7 +115,7 @@
     (let [[tag attrs & body] (ensure-attrs tree)
           [tag attrs]        (parse-css-tag tag attrs)
           body               (expand-seqs body)]
-      (if (or body (explicit-ending-tag? tag))
+      (if (or (seq body) (explicit-ending-tag? tag))
         (create-tag tag attrs (apply html body))
         (create-closed-tag tag attrs)))
     (str tree)))
