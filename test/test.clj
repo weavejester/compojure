@@ -5,17 +5,17 @@
 (require 'test.compojure.html.form-helpers)
 (require 'test.compojure.validation)
 
-(.println *test-out* "compojure.html:")
+(println "compojure.html:")
 (print-color-results (verify-facts 'test.compojure.html))
-(.println *test-out*)
+(println)
 
-(.println *test-out* "compojure.html.form-helpers:")
+(println "compojure.html.form-helpers:")
 (print-color-results (verify-facts 'test.compojure.html.form-helpers))
-(.println *test-out*)
+(println)
 
-(.println *test-out* "compojure.http.routes:")
+(println "compojure.http.routes:")
 (print-color-results (verify-facts 'test.compojure.http.routes))
-(.println *test-out*)
+(println)
 
-(.println *test-out* "compojure.validation:")
+(println "compojure.validation:")
 (print-color-results (verify-facts 'test.compojure.validation))
