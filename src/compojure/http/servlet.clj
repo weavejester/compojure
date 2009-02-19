@@ -36,7 +36,7 @@
   "Parse key/value strings to make them more Clojure-friendly."
   [key val]
   [(keyword key)
-   (if (rest val) val (first val))])
+   (if (next val) val (first val))])
 
 (defn get-params
   "Creates a name/value map of all the request parameters."
