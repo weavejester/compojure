@@ -18,11 +18,11 @@
          "/foo"
          "/foo/bar"
          "/foo.txt"]]
-  (match-path (compile-path-matcher path) path))
+  (match-uri (compile-uri-matcher path) path))
 
 (fact "Nil routes are treated as '/'"
   []
-  (match-path (compile-path-matcher "/") nil))
+  (match-uri (compile-uri-matcher "/") nil))
 
 (fact "Routes can contain keywords"
   [[route path] {"/:x"         "/foo"
@@ -31,24 +31,24 @@
                  "/bar/:x/baz" "/bar/foo/baz"
                  "/:x.txt"     "/foo.txt"
                  "/bar.:x"     "/bar.foo"}]
-  (= (match-path (compile-path-matcher route) path)
+  (= (match-uri (compile-uri-matcher route) path)
      {:x "foo"}))
 
 (fact "Routes can contain keywords containing hyphens"
   [[route path] {"/:foo-bar"                "/baz"
 		 "/aaa/:foo-bar/bbb"        "/aaa/baz/bbb"}]
-  (= (match-path (compile-path-matcher route) path)
+  (= (match-uri (compile-uri-matcher route) path)
      {:foo-bar "baz"}))
 
 (fact "Routes can contain keywords containing hyphens many times"
   [[route path] {"/:foo-bar/bbb/:foo-bar"   "/baz/bbb/baz"}]
-  (= (match-path (compile-path-matcher route) path)
+  (= (match-uri (compile-uri-matcher route) path)
      {:foo-bar ["baz" "baz"]}))
 
 (fact "Routes can contain the same keyword many times"
   [[route path] {"/:x/:x/:x"     "/foo/bar/baz"
                  "/a/:x/b/:x.:x" "/a/foo/b/bar.baz"}]
-  (= (match-path (compile-path-matcher route) path)
+  (= (match-uri (compile-uri-matcher route) path)
      {:x ["foo" "bar" "baz"]}))
 
 (fact "Routes can match wildcards"
@@ -57,7 +57,7 @@
                  "/*/baz" "/foo/bar.txt/baz"
                  "/a/*/b" "/a/foo/bar.txt/b"
                  "*"      "foo/bar.txt"}]
-  (= (match-path (compile-path-matcher route) path)
+  (= (match-uri (compile-uri-matcher route) path)
      {:* "foo/bar.txt"}))
 
 (fact "Keywords are stored in the route map"

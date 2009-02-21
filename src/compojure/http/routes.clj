@@ -50,35 +50,35 @@
           results
           (recur results src clauses))))))
 
-;; Functions for matching paths using a syntax borrowed from Ruby frameworks
+;; Functions for matching URIs using a syntax borrowed from Ruby frameworks
 ;; like Sinatra and Rails.
 
-(defstruct path-matcher
+(defstruct uri-matcher
   :regex
   :keywords)
 
-(defn compile-path-matcher
-  "Compile a string using the routes syntax into a url-route struct."
-  [matcher]
-  (let [splat #"\*"
-        word  #":([-\w]+)"
-        path  #"[^:*]+"]
-    (struct path-matcher
+(defn compile-uri-matcher
+  "Compile a path string using the routes syntax into a uri-matcher struct."
+  [path]
+  (let [splat   #"\*"
+        word    #":([-\w]+)"
+        literal #"[^:*]+"]
+    (struct uri-matcher
       (re-pattern
         (apply str
-          (lex matcher
-            splat "(.*?)"
-            word  "([^/.,;?]+)"
-            path  #(re-escape (.group %)))))
+          (lex path
+            splat   "(.*?)"
+            word    "([^/.,;?]+)"
+            literal #(re-escape (.group %)))))
       (vec
-        (filter (complement nil?)
-          (lex matcher
-            splat :*
-            word  #(keyword (.group % 1))
-            path  nil))))))
+        (remove nil?
+          (lex path
+            splat   :*
+            word    #(keyword (.group % 1))
+            literal nil))))))
 
 ;; Don't compile paths more than once.
-(decorate-with memoize compile-path-matcher)
+(decorate-with memoize compile-uri-matcher)
 
 (defn- assoc-keywords-with-groups
   "Create a hash-map from a series of regex match groups and a collection of
@@ -92,15 +92,15 @@
     {}
     (map hash-map keywords (rest groups))))
 
-(defn match-path
-  "Match a path against a compiled matcher. Returns a map of keywords and
-  their matching path values."
-  [path-matcher path]
-  (let [matcher (re-matcher (path-matcher :regex) (or path "/"))]
+(defn match-uri
+  "Match a URI against a compiled matcher. Returns a map of keywords and
+  their matching URL values."
+  [uri-matcher uri]
+  (let [matcher (re-matcher (uri-matcher :regex) (or uri "/"))]
     (if (.matches matcher)
       (assoc-keywords-with-groups
         (re-groups matcher)
-        (path-matcher :keywords)))))
+        (uri-matcher :keywords)))))
 
 ;; Functions and macros for generating routing functions. A routing function
 ;; returns :next if it doesn't match, and any other value if it does.
@@ -109,11 +109,11 @@
   "Compile a route in the form (method path & body) into a function."
   [method path body]
   (let [matcher (if (string? path)
-                  (compile-path-matcher path)
-                  `(compile-path-matcher ~path))]
-   `(fn [method# path#]
+                  (compile-uri-matcher path)
+                  `(compile-uri-matcher ~path))]
+   `(fn [method# uri#]
       (if (or (nil? ~method) (= method# ~method))
-        (if-let [~'route (match-path ~matcher path#)]
+        (if-let [~'route (match-uri ~matcher uri#)]
           (do ~@body)
           :next)
         :next))))
@@ -145,9 +145,9 @@
 (defn combine-routes
   "Create a new route by combine a sequences of routes into one."
   [& routes]
-  (fn [method path]
+  (fn [method uri]
     (loop [[route & routes] routes]
-      (let [ret (route method path)]
+      (let [ret (route method uri)]
         (if (and (= ret :next) routes)
           (recur routes)
           ret)))))
