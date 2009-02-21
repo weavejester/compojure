@@ -111,12 +111,14 @@
   (let [matcher (if (string? path)
                   (compile-uri-matcher path)
                   `(compile-uri-matcher ~path))]
-   `(fn [method# uri#]
-      (if (or (nil? ~method) (= method# ~method))
-        (if-let [~'route (match-uri ~matcher uri#)]
-          (do ~@body)
-          :next)
-        :next))))
+   `(fn [request#]
+      (let [method# (request# :request-method)
+            uri#    (request# :uri)]
+        (if (or (nil? ~method) (= method# ~method))
+          (if-let [~'route (match-uri ~matcher uri#)]
+            (do ~@body)
+            :next)
+          :next)))))
 
 (defmacro GET "Generate a GET route."
   [path & body]
@@ -145,9 +147,9 @@
 (defn combine-routes
   "Create a new route by combine a sequences of routes into one."
   [& routes]
-  (fn [method uri]
+  (fn [request]
     (loop [[route & routes] routes]
-      (let [ret (route method uri)]
+      (let [ret (route request)]
         (if (and (= ret :next) routes)
           (recur routes)
           ret)))))

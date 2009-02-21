@@ -5,12 +5,12 @@
 (fact "Routes can match HTTP method"
   [method `(GET POST PUT HEAD DELETE)]
   (let [route `(~method "/" "passed")]
-    (= ((eval route) (name method) "/")
+    (= ((eval route) {:request-method (name method), :uri "/"})
        "passed")))
 
 (fact "The ANY route matches any HTTP method"
   [method '(GET POST PUT HEAD DELETE)]
-  (= ((ANY "/" "passed") (name method) "/")
+  (= ((ANY "/" "passed") {:request-method (name method), :uri "/"})
      "passed"))
 
 (fact "Routes can match fixed paths"
@@ -63,16 +63,16 @@
 (fact "Keywords are stored in the route map"
   [keyword [:foo :bar :baz]]
   (let [route `(GET ~(str "/" keyword) (~'route ~keyword))]
-    (= ((eval route) "GET" "/foo")
+    (= ((eval route) {:request-method "GET", :uri "/foo"})
        "foo")))
 
 (fact "Wildcards are stored in the route map"
   [path ["" "foo" "foo/bar" "foo.bar"]]
   (let [route `(GET "/*" (~'route :*))]
-    (= ((eval route) "GET" (str "/" path))
+    (= ((eval route) {:request-method "GET", :uri (str "/" path)})
        path)))
 
 (fact "Routes can match paths in vars"
   [path ["/foo" "/bar" "/foo/bar"]]
-  (= ((GET path "passed") "GET" path)
+  (= ((GET path "passed") {:request-method "GET", :uri path})
      "passed"))
