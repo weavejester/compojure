@@ -122,6 +122,27 @@
             :next)
           :next)))))
 
+(defn combine-routes
+  "Create a new route by combining several routes into one."
+  [& routes]
+  (fn [request]
+    (loop [[route & routes] routes]
+      (let [ret (route request)]
+        (if (and (= ret :next) routes)
+          (recur routes)
+          ret)))))
+
+;; Macros for easily creating a compiled routing table
+
+(defmacro defroutes
+  "Create a function that conforms to the Ring spec from a sequence of routes."
+  [name doc? & routes]
+  (if (string? doc?)
+    `(def ~(with-meta name (assoc ^name :doc doc?))
+       (combine-routes ~@routes))
+    `(def ~name
+       (combine-routes ~doc? ~@routes))))
+
 (defmacro GET "Generate a GET route."
   [path & body]
   (compile-route "GET" path body))
@@ -145,13 +166,3 @@
 (defmacro ANY "Generate a route that matches any method."
   [path & body]
   (compile-route nil path body))
-
-(defn combine-routes
-  "Create a new route by combine a sequences of routes into one."
-  [& routes]
-  (fn [request]
-    (loop [[route & routes] routes]
-      (let [ret (route request)]
-        (if (and (= ret :next) routes)
-          (recur routes)
-          ret)))))
