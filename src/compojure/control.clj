@@ -19,6 +19,12 @@
   `(let [x# ~x]
      (do ~@body x#)))
 
+(defmacro maybe
+  "Returns (f x & xs) if x is not nil, otherwise returns nil."
+  [f x & xs]
+  `(if (not (nil? ~x))
+     (~f ~x ~@xs)))
+
 (defmacro domap
   "Similar to doseq, but collects the results into a sequence."
   [[item list] & body]

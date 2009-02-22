@@ -38,14 +38,6 @@
   [(keyword key)
    (if (next val) val (first val))])
 
-(defn get-params
-  "Creates a name/value map of all the request parameters."
-  [#^HttpServletRequest request]
-  (apply hash-map
-    (mapcat 
-      (fn [#^Map$Entry e] (parse-key-value (.getKey e) (.getValue e)))
-      (.getParameterMap request))))
-
 (defn get-headers
   "Creates a name/value map of all the request headers."
   [#^HttpServletRequest request]
@@ -54,23 +46,6 @@
       #(parse-key-value (.toLowerCase %)
                         (enumeration-seq (.getHeaders request %)))
        (enumeration-seq (.getHeaderNames request)))))
-
-(defn get-session
-  "Returns a ref to a hash-map that acts as a HTTP session that can be updated
-  within a Clojure STM transaction."
-  [#^HttpServletRequest request]
-  (let [session (.getSession request)]
-    (or (.getAttribute session "clj-session")
-        (let [clj-session (ref {})]
-          (.setAttribute session "clj-session" clj-session)
-          clj-session))))
-
-(defn get-cookies
-  "Creates a name/value map from all of the cookies in the request."
-  [#^HttpServletRequest request]
-  (apply hash-map
-    (mapcat #(list (keyword (.getName %)) (.getValue %))
-             (.getCookies request))))
 
 (defn get-method
   "Returns either the value of the '_method' HTTP parameter, or the method

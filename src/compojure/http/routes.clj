@@ -13,8 +13,9 @@
 ;; keyword :next if they don't match.
 
 (ns compojure.http.routes
-  (:use [compojure.str-utils :only (re-escape)])
-  (:use [compojure.control   :only (decorate-with)]))
+  (:use compojure.http.request)
+  (:use compojure.str-utils)
+  (:use compojure.control))
 
 ;; Functions for lexing a string
 
@@ -116,7 +117,8 @@
             uri#    (request# :uri)]
         (if (or (nil? ~method) (= method# ~method))
           (if-let [~'route (match-uri ~matcher uri#)]
-            (do ~@body)
+            (with-request-bindings request#
+              ~@body)
             :next)
           :next)))))
 
