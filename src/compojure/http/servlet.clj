@@ -11,8 +11,9 @@
 ;; Functions for interfacing Compojure with the Java servlet standard.
 
 (ns compojure.http.servlet
-  (:use [compojure.file-utils  :only (copy-stream)])
-  (:use [compojure.http.routes :only (combine-routes)])
+  (:use compojure.file-utils)
+  (:use compojure.http.routes)
+  (:use compojure.http.request)
   (:import java.io.File)
   (:import java.io.InputStream)
   (:import java.net.URL)
@@ -32,42 +33,46 @@
   (or (.getMimeType context (str filename))
       "application/octet-stream"))
 
-(defn- parse-key-value
-  "Parse key/value strings to make them more Clojure-friendly."
-  [key val]
-  [(keyword key)
-   (if (next val) val (first val))])
-
 (defn get-headers
   "Creates a name/value map of all the request headers."
   [#^HttpServletRequest request]
-  (apply hash-map
-    (mapcat
-      #(parse-key-value (.toLowerCase %)
-                        (enumeration-seq (.getHeaders request %)))
-       (enumeration-seq (.getHeaderNames request)))))
+  (reduce
+    (fn [headers name]
+      (assoc headers (.toLowerCase name) (.getHeader request name)))
+    {}
+    (enumeration-seq (.getHeaderNames request))))
 
 (defn get-method
   "Returns either the value of the '_method' HTTP parameter, or the method
   of the HTTP request."
   [#^HttpServletRequest request]
-  (or (.getParameter request "_method")
-      (.getMethod request)))
+  (keyword
+    (.toLowerCase
+      (or (.getParameter request "_method")
+          (.getMethod request)))))
 
-(defmacro with-servlet-vars
-  "Adds local servlet vars to the scope given a HttpServlet and a
-  HttpServletRequest instance."
-  [[#^HttpServlet servlet, #^HttpServletRequest request] & body]
-  `(let [~'context  (.getServletContext ~servlet)
-         ~'method   (.getMethod   ~request)
-         ~'url      (.getRequestURL ~request)
-         ~'path     (.getPathInfo ~request)
-         ~'params   (get-params   ~request)
-         ~'headers  (get-headers  ~request)
-         ~'mimetype (partial context-mimetype ~'context)
-         ~'session  (get-session ~request)
-         ~'cookies  (get-cookies ~request)]
-      (do ~@body)))
+(defn get-content-length
+  "Returns the content length, or nil if there is no content."
+  [#^HttpServletRequest request]
+  (let [length (.getContentLength request)]
+    (if (>= length 0)
+      length)))
+
+(defn create-request-map
+  "Create the request map from the HttpServletRequest object."
+  [#^HttpServletRequest request]
+  {:server-port        (.getServerPort request)
+   :server-name        (.getServerName request)
+   :remote-addr        (.getRemoteAddr request)
+   :uri                (.getRequestURI request)
+   :query-string       (.getQueryString request)
+   :scheme             (keyword (.getScheme request))
+   :request-method     (get-method request)
+   :headers            (get-headers request)
+   :content-type       (.getContentType request)
+   :content-length     (get-content-length request)
+   :character-encoding (.getCharacterEncoding request)
+   :body               (.getInputStream request)})
 
 ;; Functions to set data in the response object
 
@@ -116,60 +121,18 @@
       (with-open [in update]
         (copy-stream in (.getOutputStream response)))))
 
-;; Macros that combine request and response handling
+;; Functions that combine request and response handling
 
-(defmacro http-handler
+(defn- http-handler
   "Handle incoming HTTP requests from a servlet."
-  [[servlet request response] & routes]
-  `(do (.setCharacterEncoding ~response "UTF-8")
-       (update-response ~servlet ~response
-         (with-servlet-vars [~servlet ~request]
-           ((combine-routes ~@routes)
-              (get-method ~request)
-              (.getPathInfo ~request))))))
+  [[servlet request response] routes]
+  (do (.setCharacterEncoding response "UTF-8")
+      (update-response servlet response
+        (routes (create-request-map request)))))
 
-(defmacro servlet
+(defn servlet
   "Create a servlet from a sequence of routes."
-  [& routes]
-  `(proxy [HttpServlet] []
-     (service ~'[request response]
-       (http-handler ~'[this request response]
-         ~@routes))))
-
-(defmacro update-servlet
-  "Update an existing servlet proxy with a new set of routes."
-  [object & routes]
-  `(update-proxy ~object
-     {"service" (fn ~'[this request response]
-                  (http-handler ~'[this request response]
-                    ~@routes))}))
-
-(defmacro defservlet
-  "Defines a new servlet with an optional doc-string, or if a servlet is
-  already defined, it updates the existing servlet with the supplied handlers.
-  Note that updating is not a thread-safe operation."
-  [name doc & handlers]
-  (if (string? doc)
-    `(do (defonce
-          ~(with-meta name (assoc (meta name) :doc doc))
-           (proxy [HttpServlet] []))
-         (update-servlet ~name ~@handlers))
-    `(do (defonce ~name
-           (proxy [HttpServlet] []))
-         (update-servlet ~name ~doc ~@handlers))))
-
-(defmacro defservice
-  "Defines a service method with an optional prefix suitable for being used by
-  genclass to compile a HttpServlet class.
-  e.g. (defservice
-         (GET \"/\" \"Hello World\"))
-       (defservice \"myprefix-\"
-         (GET \"/\" \"Hello World\"))"
-  [prefix & routes]
-  (let [[prefix routes] (if (string? prefix)
-                           [prefix routes]
-                           ["-" (cons prefix routes)])]
-    `(defn ~(symbol (str prefix "service"))
-     ~'[this request response]
-       (http-handler ~'[this request response]
-         ~@routes))))
+  [routes]
+  (proxy [HttpServlet] []
+    (service [request response]
+       (http-handler [this request response] routes))))

@@ -145,23 +145,23 @@
 
 (defmacro GET "Generate a GET route."
   [path & body]
-  (compile-route "GET" path body))
+  (compile-route :get path body))
 
 (defmacro POST "Generate a POST route."
   [path & body]
-  (compile-route "POST" path body))
+  (compile-route :post path body))
 
 (defmacro PUT "Generate a PUT route."
   [path & body]
-  (compile-route "PUT" path body))
+  (compile-route :put path body))
 
 (defmacro DELETE "Generate a DELETE route."
   [path & body]
-  (compile-route "DELETE" path body))
+  (compile-route :delete path body))
 
 (defmacro HEAD "Generate a HEAD route."
   [path & body]
-  (compile-route "HEAD" path body))
+  (compile-route :head path body))
 
 (defmacro ANY "Generate a route that matches any method."
   [path & body]
