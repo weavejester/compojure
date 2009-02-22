@@ -13,7 +13,7 @@
     <delete dir="${build.dir}"/>
   </target>
 
-  <target name="init">
+  <target name="init" depends="clean">
     <tstamp/>
     <mkdir dir="${build.dir}"/>
   </target>
