@@ -22,7 +22,7 @@
   "Parse key/value strings to make them more Clojure-friendly."
   [key val]
   [(keyword key)
-   (if (next val) val (first val))])
+   (if (next val) (vec val) (first val))])
 
 (defn get-params
   "Retrieve a map of parameters from the request map."
