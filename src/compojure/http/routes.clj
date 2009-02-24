@@ -14,6 +14,7 @@
 
 (ns compojure.http.routes
   (:use compojure.http.request)
+  (:use compojure.http.response)
   (:use compojure.str-utils)
   (:use compojure.control))
 
@@ -117,10 +118,9 @@
             uri#    (request# :uri)]
         (if (or (nil? ~method) (= method# ~method))
           (if-let [~'route (match-uri ~matcher uri#)]
-            (with-request-bindings request#
-              ~@body)
-            :next)
-          :next)))))
+            (create-response
+              (with-request-bindings request#
+                ~@body))))))))
 
 (defn combine-routes
   "Create a new route by combining several routes into one."
@@ -128,7 +128,7 @@
   (fn [request]
     (loop [[route & routes] routes]
       (let [ret (route request)]
-        (if (and (= ret :next) routes)
+        (if (and (nil? ret) routes)
           (recur routes)
           ret)))))
 

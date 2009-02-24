@@ -8,7 +8,7 @@
 
 ;; compojure.http.request:
 ;;
-;; Functions for pulling useful data out of a the HTTP request.
+;; Functions for pulling useful data out of a HTTP request map.
 
 ; NOTE:
 ; Eventually these functions will parse the data directly from the request map,
@@ -55,6 +55,6 @@
   `(let [~'request ~req
          ~'headers (:headers ~req)
          ~'params  (get-params ~req)
-         ~'cookies (get-cookies ~req)
+       ;  ~'cookies (get-cookies ~req)
          ~'session (get-session ~req)]
      ~@body))
