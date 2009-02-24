@@ -10,50 +10,54 @@
 ;;
 ;; Functions for pulling useful data out of a HTTP request map.
 
-; NOTE:
-; Eventually these functions will parse the data directly from the request map,
-; but for now lets cheat and sneakily pull the parameters from the
-; HttpServletRequest object stored in (request :servlet-request).
-
 (ns compojure.http.request
-  (:use compojure.control))
+  (:use compojure.control)
+  (:use clojure.contrib.duck-streams)
+  (:use clojure.contrib.str-utils)
+  (:import java.net.URLDecoder))
 
-(defn- parse-key-value
-  "Parse key/value strings to make them more Clojure-friendly."
-  [key val]
-  [(keyword key)
-   (if (next val) (vec val) (first val))])
+(defn- assoc-vec
+  "Associate a key with a value. If the key already exists in the map, create a
+  vector of values."
+  [map key val]
+  (assoc map key
+    (if-let [cur (map key)]
+      (if (vector? cur)
+        (conj cur val)
+        [cur val])
+      val)))
 
-(defn get-params
-  "Retrieve a map of parameters from the request map."
+(defn parse-params
+  "Parse parameters from a string into a map."
+  [param-str]
+  (reduce
+    (fn [param-map s]
+      (if (= s "")
+        param-map
+        (let [[key val] (re-split #"=" s)]
+          (assoc-vec param-map
+            (keyword (URLDecoder/decode key))
+            (URLDecoder/decode val)))))
+    {}
+    (re-split #"&" param-str)))
+
+(defn get-query-params
+  "Parse parameters from the query string."
   [request]
-  (into {}
-    (map #(parse-key-value (key %) (val %))
-          (maybe .getParameterMap (request :servlet-request)))))
+  (if-let [query (request :query-string)]
+    (parse-params query)))
 
-(defn get-cookies
-  "Retrieve a map of cookies from the request map."
+(defn get-body-params
+  "Parse parameters from the request body."
   [request]
-  (into {}
-    (map #(list (keyword (.getName %))
-                (.getValue %))
-          (maybe .getCookies (request :servlet-request)))))
-
-(defn get-session
-  "Returns a ref to a hash-map that acts as a HTTP session that can be updated
-  within a Clojure STM transaction."
-  [request]
-  (let [session (maybe .getSession (request :servlet-request))]
-    (or (maybe .getAttribute session "clj-session")
-        (let [clj-session (ref {})]
-          (maybe .setAttribute session "clj-session" clj-session)
-          clj-session))))
+  (if-let [body (request :body)]
+    (parse-params (slurp* body))))
 
 (defmacro with-request-bindings
   "Add shortcut bindings for the keys in a request map."
-  [req & body]
-  `(let [~'request ~req
-         ~'params  (merge ~'route-params (get-params ~req))
-       ;  ~'cookies (get-cookies ~req)
-         ~'session (get-session ~req)]
+  [request & body]
+  `(let [~'request      ~request
+         ~'query-params (get-query-params ~request)
+         ~'body-params  (get-body-params ~request)
+         ~'params       (merge ~'query-params ~'body-params ~'route-params)]
      ~@body))
