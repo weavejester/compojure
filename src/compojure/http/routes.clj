@@ -117,13 +117,13 @@
       (let [method# (request# :request-method)
             uri#    (request# :uri)]
         (if (or (nil? ~method) (= method# ~method))
-          (if-let [~'route (match-uri ~matcher uri#)]
+          (if-let [~'route-params (match-uri ~matcher uri#)]
             (create-response
               (with-request-bindings request#
                 ~@body))))))))
 
-(defn combine-routes
-  "Create a new route by combining several routes into one."
+(defn routes
+  "Create a Ring handler by combining several routes into one."
   [& routes]
   (fn [request]
     (loop [[route & routes] routes]
@@ -135,13 +135,13 @@
 ;; Macros for easily creating a compiled routing table
 
 (defmacro defroutes
-  "Create a function that conforms to the Ring spec from a sequence of routes."
+  "Create a Ring handler function from a sequence of routes."
   [name doc? & routes]
   (if (string? doc?)
     `(def ~(with-meta name (assoc ^name :doc doc?))
-       (combine-routes ~@routes))
+       (routes ~@routes))
     `(def ~name
-       (combine-routes ~doc? ~@routes))))
+       (routes ~doc? ~@routes))))
 
 (defmacro GET "Generate a GET route."
   [path & body]

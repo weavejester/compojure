@@ -53,8 +53,7 @@
   "Add shortcut bindings for the keys in a request map."
   [req & body]
   `(let [~'request ~req
-         ~'headers (:headers ~req)
-         ~'params  (get-params ~req)
+         ~'params  (merge ~'route-params (get-params ~req))
        ;  ~'cookies (get-cookies ~req)
          ~'session (get-session ~req)]
      ~@body))
