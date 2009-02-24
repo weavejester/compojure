@@ -72,7 +72,9 @@
    :content-type       (.getContentType request)
    :content-length     (get-content-length request)
    :character-encoding (.getCharacterEncoding request)
-   :body               (.getInputStream request)})
+   :body               (.getInputStream request)
+   ;; Custom non-Ring field:
+   :servlet-request    request})
 
 ;; Functions to set data in the response object
 
