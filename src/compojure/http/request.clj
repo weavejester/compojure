@@ -28,6 +28,11 @@
         [cur val])
       val)))
 
+(defn urldecode
+  "Decode a urlencoded string using the default encoding."
+  [s]
+  (URLDecoder/decode s *default-encoding*))
+
 (defn parse-params
   "Parse parameters from a string into a map."
   [param-str]
@@ -37,8 +42,8 @@
         param-map
         (let [[key val] (re-split #"=" s)]
           (assoc-vec param-map
-            (keyword (URLDecoder/decode key))
-            (URLDecoder/decode val)))))
+            (keyword (urldecode key))
+            (urldecode val)))))
     {}
     (re-split #"&" param-str)))
 
@@ -49,6 +54,7 @@
     (parse-params query)))
 
 (defn get-character-encoding
+  "Get the character encoding, or use the default from duck-streams."
   [request]
   (or (request :character-encoding) *default-encoding*))
 
