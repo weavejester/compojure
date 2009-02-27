@@ -14,7 +14,8 @@
   (:use compojure.control)
   (:use clojure.contrib.duck-streams)
   (:use clojure.contrib.str-utils)
-  (:import java.net.URLDecoder))
+  (:import java.net.URLDecoder)
+  (:import java.io.InputStreamReader))
 
 (defn- assoc-vec
   "Associate a key with a value. If the key already exists in the map, create a
@@ -47,11 +48,22 @@
   (if-let [query (request :query-string)]
     (parse-params query)))
 
+(defn get-character-encoding
+  [request]
+  (or (request :character-encoding) *default-encoding*))
+
+(defn slurp-body
+  "Slurp the request body into a string."
+  [request]
+  (let [encoding (get-character-encoding request)]
+    (if-let [body (request :body)]
+      (slurp* (InputStreamReader. body encoding)))))
+
 (defn get-body-params
   "Parse parameters from the request body."
   [request]
-  (if-let [body (request :body)]
-    (parse-params (slurp* body))))
+  (if-let [body (slurp-body request)]
+    (parse-params body)))
 
 (defmacro with-request-bindings
   "Add shortcut bindings for the keys in a request map."
