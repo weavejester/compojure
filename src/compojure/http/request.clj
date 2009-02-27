@@ -65,17 +65,18 @@
     (if-let [body (request :body)]
       (slurp* (InputStreamReader. body encoding)))))
 
-(defn get-body-params
-  "Parse parameters from the request body."
+(defn get-form-params
+  "Parse urlencoded form parameters from the request body."
   [request]
-  (if-let [body (slurp-body request)]
-    (parse-params body)))
+  (if (= (request :content-type) "application/x-www-form-urlencoded")
+    (if-let [body (slurp-body request)]
+      (parse-params body))))
 
 (defmacro with-request-bindings
   "Add shortcut bindings for the keys in a request map."
   [request & body]
   `(let [~'request      ~request
          ~'query-params (get-query-params ~request)
-         ~'body-params  (get-body-params ~request)
-         ~'params       (merge ~'query-params ~'body-params ~'route-params)]
+         ~'form-params  (get-form-params ~request)
+         ~'params       (merge ~'query-params ~'form-params ~'route-params)]
      ~@body))
