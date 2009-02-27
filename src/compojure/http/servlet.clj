@@ -35,15 +35,6 @@
     {}
     (enumeration-seq (.getHeaderNames request))))
 
-(defn- get-method
-  "Returns either the value of the '_method' HTTP parameter, or the method
-  of the HTTP request."
-  [#^HttpServletRequest request]
-  (keyword
-    (.toLowerCase
-      (or (.getParameter request "_method")
-          (.getMethod request)))))
-
 (defn- get-content-length
   "Returns the content length, or nil if there is no content."
   [#^HttpServletRequest request]
@@ -60,7 +51,7 @@
    :uri                (.getRequestURI request)
    :query-string       (.getQueryString request)
    :scheme             (keyword (.getScheme request))
-   :request-method     (get-method request)
+   :request-method     (keyword (.toLowerCase (.getMethod request)))
    :headers            (get-headers request)
    :content-type       (.getContentType request)
    :content-length     (get-content-length request)
