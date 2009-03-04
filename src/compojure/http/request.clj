@@ -12,6 +12,7 @@
 
 (ns compojure.http.request
   (:use compojure.control)
+  (:use compojure.str-utils)
   (:use clojure.contrib.duck-streams)
   (:use clojure.contrib.str-utils)
   (:import java.net.URLDecoder)
@@ -38,14 +39,12 @@
   [param-str]
   (reduce
     (fn [param-map s]
-      (if (= s "")
-        param-map
-        (let [[key val] (re-split #"=" s)]
-          (assoc-vec param-map
-            (keyword (urldecode key))
-            (urldecode val)))))
+      (let [[key val] (re-split #"=" s)]
+        (assoc-vec param-map
+          (keyword (urldecode key))
+          (urldecode val))))
     {}
-    (re-split #"&" param-str)))
+    (remove blank? (re-split #"&" param-str))))
 
 (defn get-query-params
   "Parse parameters from the query string."
