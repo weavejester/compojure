@@ -1,5 +1,5 @@
 (ns test.compojure.html.form-helpers
-  (:use fact)
+  (:use fact.core)
   (:use compojure.html.form-helpers))
 
 (fact "Options in select lists can have different text and values"

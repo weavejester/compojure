@@ -1,5 +1,5 @@
 (ns test.compojure.validation
-  (:use fact)
+  (:use fact.core)
   (:use compojure.html.form-helpers)
   (:use compojure.validation))
 
