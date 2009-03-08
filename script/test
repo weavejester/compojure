@@ -1,0 +1,7 @@
+#!/bin/bash
+
+EXT="$(find deps -mindepth 1 -maxdepth 1 -print0 | tr \\0 \:)"
+CLASSPATH="${EXT%:}${CLASSPATH:+:${CLASSPATH}}:src:."
+export CLASSPATH
+
+java fact.main $(find test -name '*.clj') $@

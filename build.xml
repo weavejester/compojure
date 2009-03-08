@@ -51,18 +51,4 @@
       <fileset dir="${build.dir}" includes="**/*.class"/>
     </jar>
   </target>
-
-  <target name="test" description="Run Compojure unit tests">
-    <java classname="clojure.lang.Script">
-      <arg value="test/test.clj"/>
-      <classpath>
-        <path location="."/>
-        <path location="${source.dir}"/>
-        <path location="${deps.dir}"/>
-        <fileset dir="${deps.dir}">
-          <include name="*.jar"/>
-        </fileset>
-      </classpath>
-    </java>
-  </target>
 </project>
