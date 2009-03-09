@@ -34,9 +34,9 @@
   [s]
   (URLDecoder/decode s *default-encoding*))
 
-(defn parse-params
+(defn- parse-params
   "Parse parameters from a string into a map."
-  [param-str]
+  [param-string separator]
   (reduce
     (fn [param-map s]
       (let [[key val] (re-split #"=" s)]
@@ -44,13 +44,14 @@
           (keyword (urldecode key))
           (urldecode val))))
     {}
-    (remove blank? (re-split #"&" param-str))))
+    (remove blank?
+      (re-split separator param-string))))
 
 (defn get-query-params
   "Parse parameters from the query string."
   [request]
   (if-let [query (request :query-string)]
-    (parse-params query)))
+    (parse-params query #"&")))
 
 (defn get-character-encoding
   "Get the character encoding, or use the default from duck-streams."
@@ -69,7 +70,7 @@
   [request]
   (if (= (request :content-type) "application/x-www-form-urlencoded")
     (if-let [body (slurp-body request)]
-      (parse-params body))))
+      (parse-params body #"&"))))
 
 (defmacro with-request-bindings
   "Add shortcut bindings for the keys in a request map."
