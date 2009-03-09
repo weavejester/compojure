@@ -104,33 +104,45 @@
         (re-groups matcher)
         (uri-matcher :keywords)))))
 
+(defn match-method
+  "True if the method from the route matches the method from the request."
+  [route-method request-method]
+  (or (nil? route-method)
+      (= route-method request-method)))
+
+(defmacro request-matcher
+  "Compiles a function to match a HTTP request against the supplied method
+  and path template. Returns a map of the route parameters if the is a match,
+  nil otherwise. Precompiles the route when supplied with a literal string."
+  [method path]
+  (let [matcher (if (string? path)
+                  (compile-uri-matcher path)
+                 `(compile-uri-matcher ~path))]
+   `(fn [request#]
+      (and
+        (match-method ~method  (request# :request-method))
+        (match-uri    ~matcher (request# :uri))))))
+
 ;; Functions and macros for generating routing functions. A routing function
 ;; returns :next if it doesn't match, and any other value if it does.
 
 (defn compile-route
   "Compile a route in the form (method path & body) into a function."
   [method path body]
-  (let [matcher (if (string? path)
-                  (compile-uri-matcher path)
-                  `(compile-uri-matcher ~path))]
-   `(fn [request#]
-      (let [method# (request# :request-method)
-            uri#    (request# :uri)]
-        (if (or (nil? ~method) (= method# ~method))
-          (if-let [~'route-params (match-uri ~matcher uri#)]
-            (create-response
-              (with-request-bindings request#
-                ~@body))))))))
+  `(let [matcher# (request-matcher ~method ~path)]
+     (fn [request#]
+       (if-let [route-params# (matcher# request#)]
+         (create-response
+           (with-request-bindings
+             (assoc request# :route-params route-params#)
+             ~@body))))))
 
 (defn routes
   "Create a Ring handler by combining several routes into one."
   [& routes]
   (fn [request]
-    (loop [[route & routes] routes]
-      (let [ret (route request)]
-        (if (and (nil? ret) routes)
-          (recur routes)
-          ret)))))
+    (let [request (with-params request)]
+      (some #(% request) routes))))
 
 ;; Macros for easily creating a compiled routing table
 

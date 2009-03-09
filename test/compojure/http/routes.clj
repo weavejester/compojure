@@ -71,14 +71,30 @@
         response (route {:request-method :get, :uri path})]
     (= (:body response) "passed")))
 
-(fact "Keywords are stored in the route-params map"
+(fact "Keywords are stored in (request :route-params)"
   [kw [:foo :bar :baz]]
-  (let [route    (GET (str "/" kw) (route-params kw))
-        response (route {:request-method :get, :uri "/foo"})]
-    (= (:body response) "foo")))
+  (let [route    (GET (str "/" kw) (-> request :route-params kw))
+        request  {:request-method :get, :uri "/lorem"}
+        response (route request)]
+    (= (:body response) "lorem")))
 
-(fact "Wildcards are stored in the route-params map"
+(fact "Wildcards are stored in (request :route-params)"
   [path ["" "foo" "foo/bar" "foo.bar"]]
-  (let [route    (GET "/*" (route-params :*))
-        response (route {:request-method :get, :uri (str "/" path)})]
+  (let [route    (GET "/*" (-> request :route-params :*))
+        request  {:request-method :get, :uri (str "/" path)}
+        response (route request)]
     (= (:body response) path)))
+
+(fact "A shortcut to route parameters is to use params"
+  [kw [:foo :bar :baz]]
+  (let [route    (GET (str "/" kw) (params kw))
+        request  {:request-method :get, :uri "/ipsum"}
+        response (route request)]
+    (= (:body response) "ipsum")))
+
+(fact "Routes that don't match the path return nil"
+  [path #"/\w+.txt"]
+  (let [route    (GET "/foo.html" "foobar")
+        request  {:request-method :get, :uri path}
+        response (route request)]
+    (nil? response)))

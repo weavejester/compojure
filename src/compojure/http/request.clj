@@ -72,11 +72,24 @@
     (if-let [body (slurp-body request)]
       (parse-params body #"&"))))
 
+(defn with-params
+  "Add urlencoded parameters to a request map."
+  [request]
+  (merge request
+    {:query-params (get-query-params request)
+     :form-params  (get-form-params request)}))
+
+(defn get-params
+  "Merge all parameters in the request map."
+  [request]
+  (merge
+    (request :query-params)
+    (request :form-params)
+    (request :route-params)))
+
 (defmacro with-request-bindings
   "Add shortcut bindings for the keys in a request map."
   [request & body]
-  `(let [~'request      ~request
-         ~'query-params (get-query-params ~request)
-         ~'form-params  (get-form-params ~request)
-         ~'params       (merge ~'query-params ~'form-params ~'route-params)]
+  `(let [~'request ~request
+         ~'params  (get-params ~'request)]
      ~@body))
