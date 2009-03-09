@@ -15,3 +15,8 @@
                  :body         (ByteArrayInputStream. (.getBytes params))}]
     (= (get-form-params request)
        {(keyword name) value})))
+
+(fact "Cookies can be passed via the 'cookie' HTTP header"
+  [[cookie name value] #"(\w+)=(\w+)"]
+  (= (get-cookies {:headers {"cookie" cookie}})
+     {(keyword name) value}))

@@ -72,7 +72,7 @@
     (if-let [body (slurp-body request)]
       (parse-params body #"&"))))
 
-(defn with-params
+(defn with-parameters
   "Add urlencoded parameters to a request map."
   [request]
   (merge request
@@ -87,9 +87,29 @@
     (request :form-params)
     (request :route-params)))
 
+(defn get-cookies
+  "Pull out a map of cookies from a request map."
+  [request]
+  (if-let [cookies (get-in request [:headers "cookie"])]
+    (parse-params cookies #";\s*")))
+
+(defn with-cookies
+  "Parse the cookies from a request map and add them back in under the
+  :cookies key."
+  [request]
+  (assoc request :cookies (get-cookies request)))
+
+(defn with-common-extensions
+  "Adds request parameters, cookies and session mappings to the request map."
+  [request]
+  (-> request
+    with-parameters 
+    with-cookies))
+
 (defmacro with-request-bindings
   "Add shortcut bindings for the keys in a request map."
   [request & body]
   `(let [~'request ~request
-         ~'params  (get-params ~'request)]
+         ~'params  (get-params ~'request)
+         ~'cookies (:cookies ~'request)]
      ~@body))

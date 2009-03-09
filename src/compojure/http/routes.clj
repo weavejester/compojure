@@ -141,7 +141,7 @@
   "Create a Ring handler by combining several routes into one."
   [& routes]
   (fn [request]
-    (let [request (with-params request)]
+    (let [request (with-common-extensions request)]
       (some #(% request) routes))))
 
 ;; Macros for easily creating a compiled routing table
