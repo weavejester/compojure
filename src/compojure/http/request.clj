@@ -13,21 +13,11 @@
 (ns compojure.http.request
   (:use compojure.control)
   (:use compojure.str-utils)
+  (:use compojure.seq-utils)
   (:use clojure.contrib.duck-streams)
   (:use clojure.contrib.str-utils)
   (:import java.net.URLDecoder)
   (:import java.io.InputStreamReader))
-
-(defn- assoc-vec
-  "Associate a key with a value. If the key already exists in the map, create a
-  vector of values."
-  [map key val]
-  (assoc map key
-    (if-let [cur (map key)]
-      (if (vector? cur)
-        (conj cur val)
-        [cur val])
-      val)))
 
 (defn urldecode
   "Decode a urlencoded string using the default encoding."

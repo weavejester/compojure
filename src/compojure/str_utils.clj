@@ -13,7 +13,8 @@
 (ns compojure.str-utils
   (:use clojure.contrib.seq-utils)
   (:use clojure.contrib.str-utils)
-  (:import clojure.lang.Named))
+  (:import clojure.lang.Named)
+  (:import java.util.UUID))
 
 (defn escape
   "Returns a string with each occurance of a character in
@@ -74,3 +75,8 @@
   "Filter a collection of strings by a regex."
   [re coll]
   (filter (partial re-find re) coll))
+
+(defn uuid
+  "Generate a random UUID."
+  []
+  (str (UUID/randomUUID)))

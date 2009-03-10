@@ -16,6 +16,7 @@
   (:use compojure.http.request)
   (:use compojure.http.response)
   (:use compojure.str-utils)
+  (:use compojure.seq-utils)
   (:use compojure.control))
 
 ;; Functions for lexing a string
@@ -87,12 +88,9 @@
   keywords."
   [groups keywords]
   (reduce
-    (partial merge-with
-      #(if (vector? %1)
-         (conj %1 %2)
-         (vector %1 %2)))
+    (fn [m [k v]] (assoc-vec m k v))
     {}
-    (map hash-map keywords (rest groups))))
+    (map vector keywords (rest groups))))
 
 (defn match-uri
   "Match a URI against a compiled matcher. Returns a map of keywords and

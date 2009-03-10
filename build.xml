@@ -40,6 +40,7 @@
       <arg value="compojure.server.jetty"/>
       <arg value="compojure.json"/>
       <arg value="compojure.str-utils"/>
+      <arg value="compojure.seq-utils"/>
       <arg value="compojure.validation"/>
     </java>
   </target>
