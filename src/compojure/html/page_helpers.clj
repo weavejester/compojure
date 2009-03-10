@@ -62,7 +62,7 @@
 (defn link-to
   "Wraps some content in a HTML hyperlink with the supplied URL."
   [url & content]
-     [:a {:href url} content])
+  [:a {:href url} content])
 
 (defn url-encode
   "Encodes a single string or sequence of key/value pairs."
