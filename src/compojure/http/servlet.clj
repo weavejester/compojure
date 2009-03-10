@@ -44,7 +44,7 @@
 
 (defn create-request
   "Create the request map from the HttpServletRequest object."
-  [#^HttpServletRequest request]
+  [#^HttpServletRequest request, #^HttpServlet servlet]
   {:server-port        (.getServerPort request)
    :server-name        (.getServerName request)
    :remote-addr        (.getRemoteAddr request)
@@ -58,7 +58,8 @@
    :character-encoding (.getCharacterEncoding request)
    :body               (.getInputStream request)
    ;; Custom non-Ring field:
-   :servlet-request    request})
+   :servlet-request    request
+   :servlet-context    (.getServletContext servlet)})
 
 ;; Functions to set data in the response object
 
@@ -108,7 +109,7 @@
   [[servlet request response] routes]
   (do (.setCharacterEncoding response "UTF-8")
       (update-response response
-        (routes (create-request request)))))
+        (routes (create-request request servlet)))))
 
 (definline servlet
   "Create a servlet from a sequence of routes. Automatically updates if
