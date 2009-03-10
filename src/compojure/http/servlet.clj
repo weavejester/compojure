@@ -103,16 +103,18 @@
 
 ;; Functions that combine request and response handling
 
-(defn- http-handler
+(defn request-handler
   "Handle incoming HTTP requests from a servlet."
   [[servlet request response] routes]
   (do (.setCharacterEncoding response "UTF-8")
       (update-response response
         (routes (create-request request)))))
 
-(defn servlet
-  "Create a servlet from a sequence of routes."
+(definline servlet
+  "Create a servlet from a sequence of routes. Automatically updates if
+  the routes binding is redefined."
   [routes]
-  (proxy [HttpServlet] []
-    (service [request response]
-       (http-handler [this request response] routes))))
+  `(proxy [HttpServlet] []
+     (~'service [request# response#]
+       (request-handler [~'this request# response#]
+         ~routes))))
