@@ -60,6 +60,10 @@
   (if (not= kw :next)
     (response-from (str kw))))
 
+(defmethod response-from nil
+  [_]
+  {})
+
 (defvar default-response
   {:status 200, :headers {}}
   "Default HTTP response map.")
