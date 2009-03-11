@@ -7,3 +7,8 @@
   []
   (= (create-response nil)
      {:status 200, :headers {}}))
+
+(fact "An integer value sets the response status code"
+  [status #(random-int 100 599)]
+  (= (:status (create-response status))
+     status))
