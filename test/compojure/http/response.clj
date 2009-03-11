@@ -12,3 +12,7 @@
   [status #(random-int 100 599)]
   (= (:status (create-response status))
      status))
+
+(fact "The :next keyword generates a nil response"
+  []
+  (nil? (create-response :next)))

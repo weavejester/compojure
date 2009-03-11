@@ -20,7 +20,7 @@
 (defn urlencode
   "Encode a urlencoded string using the default encoding."
   [s]
-  (URLDecoder/decode (str* s) *default-encoding*))
+  (URLEncoder/encode (str* s) *default-encoding*))
 
 (defn set-cookie
   "Return a Set-Cookie header."

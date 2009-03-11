@@ -71,4 +71,5 @@
 (defn create-response
   "Create a new response map from a Clojure object, x."
   [x]
-  (merge default-response (response-from x)))
+  (if-let [response (response-from x)]
+    (merge default-response response)))
