@@ -20,20 +20,26 @@
   (:import java.net.URL)
   (:import clojure.lang.Keyword))
 
+(defn merge-response
+  "Intelligently merge two response maps together."
+  [to from]
+  (-> to
+    (assoc :headers (merge (:headers to) (:headers from)))
+    (merge from)))
+
 (defmulti response-from class)
 
 (defmethod response-from IPersistentVector
   [updates]
-  (apply merge
-    (map response-from updates)))
+  (reduce merge-response (map response-from updates)))
 
 (defmethod response-from String
   [string]
   {:body string})
 
 (defmethod response-from Map
-  [headers]
-  {:headers (into {} headers)})
+  [response]
+  response)
 
 (defmethod response-from Integer
   [status]

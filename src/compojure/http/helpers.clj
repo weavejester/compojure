@@ -25,12 +25,13 @@
 (defn set-cookie
   "Return a Set-Cookie header."
   [name value]
-  {"Set-Cookie" (str (urlencode name) "=" (urlencode value))})
+  (let [cookie (str (urlencode name) "=" (urlencode value))]
+    {:headers {"Set-Cookie" cookie}}))
 
 (defn redirect-to
   "A shortcut for a '302 Moved' HTTP redirect."
   [location]
-  [302 {"Location" location}])
+  [302 {:headers {"Location" location}}])
  
 (defn page-not-found
   "A shortcut to create a '404 Not Found' HTTP response."
