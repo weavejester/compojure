@@ -13,7 +13,7 @@
 (ns compojure.http.request
   (:use compojure.control)
   (:use compojure.str-utils)
-  (:use compojure.seq-utils)
+  (:use compojure.map-utils)
   (:use clojure.contrib.duck-streams)
   (:use clojure.contrib.str-utils)
   (:import java.net.URLDecoder)

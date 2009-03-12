@@ -16,7 +16,7 @@
   (:use compojure.http.request)
   (:use compojure.http.response)
   (:use compojure.str-utils)
-  (:use compojure.seq-utils)
+  (:use compojure.map-utils)
   (:use compojure.control))
 
 ;; Functions for lexing a string

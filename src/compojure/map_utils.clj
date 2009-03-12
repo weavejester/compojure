@@ -8,9 +8,9 @@
 
 ;; compojure.seq-utils
 ;;
-;; Utility functions for handling sequences
+;; Utility functions for manipulating maps
 
-(ns compojure.seq-utils)
+(ns compojure.map-utils)
 
 (defn assoc-vec
   "Associate a key with a value. If the key already exists in the map, create a
