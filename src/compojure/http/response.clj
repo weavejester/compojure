@@ -31,7 +31,7 @@
 
 (defmethod response-from IPersistentVector
   [updates]
-  (reduce merge-response (map response-from updates)))
+  (reduce merge-response {} (map response-from updates)))
 
 (defmethod response-from String
   [string]

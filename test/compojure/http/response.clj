@@ -32,4 +32,8 @@
 (fact "A vector of responses get merged together"
   [responses #(random-seq random-response)]
   (= (create-response (vec responses))
-     (last responses)))
+     (or (last responses) default-response)))
+
+(fact "A string gets added to the response body"
+  [body random-str]
+  (= (:body (create-response body)) body))
