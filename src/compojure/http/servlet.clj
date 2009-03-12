@@ -147,6 +147,8 @@
   "Handle incoming HTTP requests from a servlet."
   [[servlet request response] & routes]
   `(do (.setCharacterEncoding ~response "UTF-8")
+       (when-not (.getCharacterEncoding ~request)
+         (.setCharacterEncoding ~request "UTF-8"))
        (update-response ~servlet ~response
          (with-servlet-vars [~servlet ~request]
            ((combine-routes ~@routes)
