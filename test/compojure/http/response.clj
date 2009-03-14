@@ -29,11 +29,16 @@
   [response random-response]
   (= (create-response response) response))
 
-(fact "A vector of responses get merged together"
-  [responses #(random-seq random-response)]
-  (= (create-response (vec responses))
-     (or (last responses) default-response)))
-
 (fact "A string gets added to the response body"
   [body random-str]
   (= (:body (create-response body)) body))
+
+(fact "Strings in a vector get concatenated together"
+  [body #(random-seq random-str)]
+  (= (:body (create-response (vec body)))
+     (apply str body)))
+
+(fact "The last integer in a vector is used as the status code"
+  [statuses #(random-seq random-status)]
+  (= (:status (create-response (vec statuses)))
+     (last statuses)))

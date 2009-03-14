@@ -24,8 +24,9 @@
   "Intelligently merge two response maps together."
   [to from]
   (-> to
+    (merge from)
     (assoc :headers (merge (:headers to) (:headers from)))
-    (merge from)))
+    (assoc :body    (str (:body to) (:body from))))) 
 
 (defmulti response-from class)
 
