@@ -15,30 +15,47 @@
   (:use compojure.http.helpers)
   (:use compojure.http.response))
 
+;; Override these mulitmethods to create your own session storage
+
+(defmulti create-session  (fn [type] type))
+(defmulti get-session     (fn [type id] type))
+(defmulti destroy-session (fn [type id] type))
+
+;; In memory sessions
+
 (def memory-sessions (ref {}))
 
-(defn- create-session
-  "Create a new in-memory session and return the session ID."
-  []
+(defmethod create-session :memory [_]
   (dosync
     (let [id (gen-uuid)]
       (alter memory-sessions assoc id (ref {}))
       id)))
 
+(defmethod get-session :memory [_ id]
+  (@memory-sessions id))
+
+(defmethod destroy-session :memory [_ id]
+  (dosync
+    (alter memory-sessions dissoc id)))
+
+;; General methods for handling sessions
+
+(def *store* :memory)
+
 (defn- get-session-id
   "Get the session ID from the request or create a new session."
   [request]
-  (let [id (get-in request [:cookies :session-id])]
-    (if (contains? @memory-sessions id)
-      id
-      (create-session))))
+  (let [session-id (get-in request [:cookies :session-id])]
+    (if (get-session *store* session-id)
+      session-id
+      (create-session *store*))))
 
 (defn- set-session-id
   "Create a response with a session ID."
   [response session-id]
   (merge-response
     response
-    (set-cookie "session-id" session-id)))
+    (set-cookie :session-id session-id)))
 
 (defn with-session
   "Wrap a handler in a session."
@@ -49,7 +66,7 @@
           response   (handler request)]
       (set-session-id response session-id))))
 
-(defn get-session
-  "Get an in-memory session via a request map augmented by with-session."
+(defn get-request-session
+  "Get a session map via a request augmented by with-session."
   [request]
-  (@memory-sessions (:session-id request)))
+  (get-session *store* (:session-id request)))

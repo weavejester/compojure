@@ -131,7 +131,7 @@
   `(let [~'request ~request
          ~'params  (get-params ~'request)
          ~'cookies (:cookies ~'request)
-         ~'session (get-session ~'request)]
+         ~'session (get-request-session ~'request)]
      ~@body))
 
 (defn compile-route
