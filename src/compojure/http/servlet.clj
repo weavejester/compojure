@@ -119,3 +119,16 @@
      (~'service [request# response#]
        (request-handler [~'this request# response#]
          ~routes))))
+
+(defmacro defservice
+  "Defines a service method with an optional prefix suitable for being used by
+  genclass to compile a HttpServlet class.
+  e.g. (defservice my-routes)
+       (defservice \"my-prefix-\" my-routes)"
+  ([routes]
+   `(defservice "-" ~routes))
+  ([prefix routes]
+   `(defn ~(symbol (str prefix "service"))
+      [servlet# request# response#]
+      (request-handler [servlet# request# response#]
+        ~routes))))
