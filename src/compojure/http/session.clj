@@ -28,8 +28,10 @@
 (defn- get-session-id
   "Get the session ID from the request or create a new session."
   [request]
-  (or (get-in request [:cookies "session-id"])
-      (create-session)))
+  (let [id (get-in request [:cookies :session-id])]
+    (if (contains? @memory-sessions id)
+      id
+      (create-session))))
 
 (defn- set-session-id
   "Create a response with a session ID."

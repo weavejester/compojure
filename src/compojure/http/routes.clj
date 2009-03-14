@@ -15,6 +15,7 @@
 (ns compojure.http.routes
   (:use compojure.http.request)
   (:use compojure.http.response)
+  (:use compojure.http.session)
   (:use compojure.str-utils)
   (:use compojure.map-utils)
   (:use compojure.control))
@@ -124,6 +125,15 @@
 ;; Functions and macros for generating routing functions. A routing function
 ;; returns :next if it doesn't match, and any other value if it does.
 
+(defmacro with-request-bindings
+  "Add shortcut bindings for the keys in a request map."
+  [request & body]
+  `(let [~'request ~request
+         ~'params  (get-params ~'request)
+         ~'cookies (:cookies ~'request)
+         ~'session (get-session ~'request)]
+     ~@body))
+
 (defn compile-route
   "Compile a route in the form (method path & body) into a function."
   [method path body]
@@ -139,8 +149,12 @@
   "Create a Ring handler by combining several routes into one."
   [& routes]
   (fn [request]
-    (let [request (with-common-extensions request)]
-      (some #(% request) routes))))
+    (let [request (-> request
+                    assoc-parameters
+                    assoc-cookies)]
+      (some 
+        (fn [route] (route request))
+        (map with-session routes)))))
 
 ;; Macros for easily creating a compiled routing table
 
