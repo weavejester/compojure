@@ -58,9 +58,10 @@
 (defn- set-session-id
   "Create a response with a session ID."
   [response session-id]
-  (merge-response
-    response
-    (set-cookie :session-id session-id)))
+  (when-not (nil? response)
+    (merge-response
+     (set-cookie "session-id" session-id)
+     response)))
 
 (defn with-session
   "Wrap a handler in a session."
