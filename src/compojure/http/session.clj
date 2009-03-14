@@ -21,7 +21,7 @@
   "Create a new in-memory session and return the session ID."
   []
   (dosync
-    (let [id (uuid)]
+    (let [id (gen-uuid)]
       (alter memory-sessions assoc id (ref {}))
       id)))
 

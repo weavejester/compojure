@@ -76,7 +76,7 @@
   [re coll]
   (filter (partial re-find re) coll))
 
-(defn uuid
+(defn gen-uuid
   "Generate a random UUID."
   []
   (str (UUID/randomUUID)))
