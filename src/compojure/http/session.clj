@@ -15,20 +15,28 @@
   (:use compojure.http.helpers)
   (:use compojure.http.response))
 
-(def memory-sessions {})
+(def memory-sessions (ref {}))
 
-(defn get-session-id
-  "Get the session ID from the request."
+(defn- create-session
+  "Create a new in-memory session and return the session ID."
+  []
+  (dosync
+    (let [id (uuid)]
+      (alter memory-sessions assoc id (ref {}))
+      id)))
+
+(defn- get-session-id
+  "Get the session ID from the request or create a new session."
   [request]
   (or (get-in request [:cookies "session-id"])
-      (uuid)))
+      (create-session)))
 
-(defn set-session-id
+(defn- set-session-id
   "Create a response with a session ID."
   [response session-id]
-  (merge response
-    (response-from
-      (set-cookie "session-id" session-id))))
+  (merge-response
+    response
+    (set-cookie "session-id" session-id)))
 
 (defn with-session
   "Wrap a handler in a session."
@@ -38,3 +46,8 @@
           request    (assoc request :session-id session-id)
           response   (handler request)]
       (set-session-id response session-id))))
+
+(defn get-session
+  "Get an in-memory session via a request map augmented by with-session."
+  [request]
+  (@memory-sessions (:session-id request)))
