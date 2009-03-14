@@ -40,15 +40,20 @@
 
 ;; General methods for handling sessions
 
-(def *store* :memory)
+(def *session-store* :memory)
+
+(defn set-session-store!
+  "Set the global session store type (defaults to :memory)."
+  [store]
+  (def *session-store* store))
 
 (defn- get-session-id
   "Get the session ID from the request or create a new session."
   [request]
   (let [session-id (get-in request [:cookies :session-id])]
-    (if (get-session *store* session-id)
+    (if (get-session *session-store* session-id)
       session-id
-      (create-session *store*))))
+      (create-session *session-store*))))
 
 (defn- set-session-id
   "Create a response with a session ID."
@@ -69,4 +74,4 @@
 (defn get-request-session
   "Get a session map via a request augmented by with-session."
   [request]
-  (get-session *store* (:session-id request)))
+  (get-session *session-store* (:session-id request)))

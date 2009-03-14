@@ -18,3 +18,8 @@
   (let [handler  (fn [req] {})
         response ((with-session handler) request)]
     (contains? (:headers response) "Set-Cookie")))
+
+(fact "You can set the global session store type with set-session-store!"
+  [store-type #"\w{1,20}"]
+  (set-session-store! store-type)
+  (= *session-store* store-type))
