@@ -60,8 +60,8 @@
   [response session-id]
   (when-not (nil? response)
     (merge-response
-     (set-cookie "session-id" session-id)
-     response)))
+      response
+      (set-cookie :session-id session-id))))
 
 (defn with-session
   "Wrap a handler in a session."

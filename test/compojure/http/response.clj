@@ -36,9 +36,10 @@
 (fact "Strings in a vector get concatenated together"
   [body #(random-seq random-str)]
   (= (:body (create-response (vec body)))
-     (apply str body)))
+     (if (seq body)
+       (apply str body))))
 
 (fact "The last integer in a vector is used as the status code"
   [statuses #(random-seq random-status)]
   (= (:status (create-response (vec statuses)))
-     (last statuses)))
+     (or (last statuses) 200)))

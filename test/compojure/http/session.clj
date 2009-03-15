@@ -15,11 +15,18 @@
 
 (fact "The with-session wrapper adds a Set-Cookie header"
   [request random-request]
-  (let [handler  (fn [req] {})
-        response ((with-session handler) request)]
+  (let [handler  (with-session (constantly {}))
+        response (handler request)]
     (contains? (:headers response) "Set-Cookie")))
 
 (fact "You can set the global session store type with set-session-store!"
   [store-type #"\w{1,20}"]
   (set-session-store! store-type)
-  (= *session-store* store-type))
+  (= *session-store* store-type)
+  (set-session-store! :memory))
+
+(fact "Sessions work with nil responses"
+  [request random-request]
+  (let [handler  (with-session (constantly nil))
+        response (handler request)]
+    (nil? response)))
