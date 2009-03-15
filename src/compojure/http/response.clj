@@ -20,13 +20,19 @@
   (:import java.net.URL)
   (:import clojure.lang.Keyword))
 
+(defn- merge-body
+  [to from]
+  (if (and (string? to) (string? from))
+    (str to from)
+    to))
+
 (defn merge-response
   "Intelligently merge two response maps together."
   [to from]
   (-> to
     (merge from)
     (assoc :headers (merge (:headers to) (:headers from)))
-    (assoc :body    (str (:body to) (:body from))))) 
+    (assoc :body    (merge-body (:body to) (:body from)))))
 
 (defmulti response-from class)
 
