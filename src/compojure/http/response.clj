@@ -24,7 +24,7 @@
   [to from]
   (if (and (string? to) (string? from))
     (str to from)
-    to))
+    (or to from)))
 
 (defn merge-response
   "Intelligently merge two response maps together."
