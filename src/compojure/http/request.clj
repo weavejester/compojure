@@ -70,13 +70,20 @@
     {:query-params (get-query-params request)
      :form-params  (get-form-params request)}))
 
+(defn get-route-params
+  "Get a map of the route parameters, or nil if not a map."
+  [request]
+  (let [params (request :route-params)]
+    (if (map? params)
+      params)))
+
 (defn get-params
   "Merge all parameters in the request map."
   [request]
   (merge
-    (request :query-params)
-    (request :form-params)
-    (request :route-params)))
+    (:query-params request)
+    (:form-params request)
+    (get-route-params request)))
 
 (defn get-cookies
   "Pull out a map of cookies from a request map."

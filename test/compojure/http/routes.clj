@@ -98,3 +98,18 @@
         request  {:request-method :get, :uri path}
         response (route request)]
     (nil? response)))
+
+(fact "Routes can use regular expressions"
+  [path #"/\w+"]
+  (let [regex    (re-pattern path)
+        route    (GET regex "lorem")
+        request  {:request-method :get, :uri path}
+        response (route request)]
+    (= (:body response) "lorem")))
+
+(fact "Regular expressions return route parameters as a vector of groups"
+  [[path regex] {"/foo/bar" #"/foo/(.*)"}]
+  (let [route    (GET regex ((request :route-params) 0))
+        request  {:request-method :get, :uri path}
+        response (route request)]
+    (= (:body response) "bar")))

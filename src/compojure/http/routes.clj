@@ -18,7 +18,9 @@
   (:use compojure.http.session)
   (:use compojure.str-utils)
   (:use compojure.map-utils)
-  (:use compojure.control))
+  (:use compojure.control)
+  (:import java.util.regex.Pattern)
+  (:import java.util.Map))
 
 ;; Functions for lexing a string
 
@@ -84,6 +86,16 @@
 ;; Don't compile paths more than once.
 (decorate-with memoize compile-uri-matcher)
 
+(defmulti compile-matcher class)
+
+(defmethod compile-matcher String
+  [path]
+  (compile-uri-matcher path))
+
+(defmethod compile-matcher Pattern
+  [re]
+  re)
+
 (defn- assoc-keywords-with-groups
   "Create a hash-map from a series of regex match groups and a collection of
   keywords."
@@ -93,15 +105,23 @@
     {}
     (map vector keywords (rest groups))))
 
-(defn match-uri
-  "Match a URI against a compiled matcher. Returns a map of keywords and
-  their matching URL values."
+(defmulti match-uri (fn [matcher uri] (class matcher)))
+
+(defmethod match-uri Map
   [uri-matcher uri]
   (let [matcher (re-matcher (uri-matcher :regex) (or uri "/"))]
     (if (.matches matcher)
       (assoc-keywords-with-groups
         (re-groups matcher)
         (uri-matcher :keywords)))))
+
+(defmethod match-uri Pattern
+  [uri-pattern uri]
+  (let [matches (re-matches uri-pattern (or uri "/"))]
+    (if matches
+      (if (vector? matches)
+        (subvec matches 1)
+        []))))
 
 (defn match-method
   "True if the method from the route matches the method from the request."
@@ -114,9 +134,9 @@
   and path template. Returns a map of the route parameters if the is a match,
   nil otherwise. Precompiles the route when supplied with a literal string."
   [method path]
-  (let [matcher (if (string? path)
-                  (compile-uri-matcher path)
-                 `(compile-uri-matcher ~path))]
+  (let [matcher (if (or (string? path) (instance? Pattern path))
+                  (compile-matcher path)
+                 `(compile-matcher ~path))]
    `(fn [request#]
       (and
         (match-method ~method  (request# :request-method))
@@ -160,12 +180,12 @@
 
 (defmacro defroutes
   "Create a Ring handler function from a sequence of routes."
-  [name doc? & routes]
-  (if (string? doc?)
-    `(def ~(with-meta name (assoc ^name :doc doc?))
+  [name doc-or-route & routes]
+  (if (string? doc-or-route)
+    `(def ~(with-meta name (assoc ^name :doc doc-or-route))
        (routes ~@routes))
     `(def ~name
-       (routes ~doc? ~@routes))))
+       (routes ~doc-or-route ~@routes))))
 
 (defmacro GET "Generate a GET route."
   [path & body]
