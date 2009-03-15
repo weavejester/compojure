@@ -17,8 +17,8 @@
 
 ;; Override these mulitmethods to create your own session storage
 
-(defmulti create-session  (fn [type] type))
-(defmulti get-session     (fn [type id] type))
+(defmulti create-session  (fn [type] type))    ; returns new session id
+(defmulti get-session     (fn [type id] type)) ; returns session ref
 (defmulti destroy-session (fn [type id] type))
 
 ;; In memory sessions
