@@ -18,7 +18,7 @@
 ;; Override these mulitmethods to create your own session storage
 
 (defmulti create-session  (fn [type] type))    ; returns new session id
-(defmulti get-session     (fn [type id] type)) ; returns session ref
+(defmulti read-session    (fn [type id] type)) ; returns session ref
 (defmulti destroy-session (fn [type id] type))
 
 ;; In memory sessions
@@ -31,7 +31,7 @@
       (alter memory-sessions assoc id (ref {}))
       id)))
 
-(defmethod get-session :memory [_ id]
+(defmethod read-session :memory [_ id]
   (@memory-sessions id))
 
 (defmethod destroy-session :memory [_ id]
@@ -51,7 +51,7 @@
   "Get the session ID from the request or create a new session."
   [request]
   (let [session-id (get-in request [:cookies :session-id])]
-    (if (get-session *session-store* session-id)
+    (if (read-session *session-store* session-id)
       session-id
       (create-session *session-store*))))
 
@@ -72,7 +72,7 @@
           response   (handler request)]
       (set-session-id response session-id))))
 
-(defn get-request-session
-  "Get a session map via a request augmented by with-session."
+(defn read-request-session
+  "Reads a session map from a request augmented by with-session."
   [request]
-  (get-session *session-store* (:session-id request)))
+  (read-session *session-store* (:session-id request)))
