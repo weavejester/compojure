@@ -42,7 +42,8 @@
   "Parse parameters from the query string."
   [request]
   (if-let [query (request :query-string)]
-    (parse-params query #"&")))
+    (parse-params query #"&")
+    {}))
 
 (defn get-character-encoding
   "Get the character encoding, or use the default from duck-streams."
@@ -61,7 +62,9 @@
   [request]
   (if (= (request :content-type) "application/x-www-form-urlencoded")
     (if-let [body (slurp-body request)]
-      (parse-params body #"&"))))
+      (parse-params body #"&")
+      {})
+    {}))
 
 (defn assoc-parameters
   "Add urlencoded parameters to a request map."
