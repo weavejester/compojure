@@ -1,7 +1,16 @@
 #!/bin/bash
 
-EXT="$(find deps -mindepth 1 -maxdepth 1 -print0 | tr \\0 \:)"
-CLASSPATH="${EXT%:}${CLASSPATH:+:${CLASSPATH}}:src:."
+if [ $(uname | cut -c -6) = 'CYGWIN' ]
+then
+    EXT="$(find deps -mindepth 1 -maxdepth 1 | xargs cygpath -aw | tr \\n \;)"
+    CLASSPATH="${EXT%;}${CLASSPATH:+;${CLASSPATH}};$(cygpath -aw src);$(cygpath -aw .)"
+    TESTS="$(find test -name '*.clj' | xargs cygpath -w)"
+else
+    EXT="$(find deps -mindepth 1 -maxdepth 1 -print0 | tr \\0 \:)"
+    CLASSPATH="${EXT%:}${CLASSPATH:+:${CLASSPATH}}:src:."
+    TESTS="$(find test -name '*.clj')"
+fi
+
 export CLASSPATH
 
-java fact.main $(find test -name '*.clj') $@
+java fact.main $TESTS $@
