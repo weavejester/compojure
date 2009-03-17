@@ -1,10 +1,18 @@
 (ns test.compojure.http.request
   (:use fact.core)
   (:use fact.random-utils)
+  (:use re-rand)
+  (:use clojure.contrib.str-utils)
   (:use compojure.http.request)
   (:import java.io.ByteArrayInputStream))
 
-(def single-param-pair #"(\w+)=(\w+)")
+(defn- random-params []
+  (random-map random-keyword #(re-rand #"\w+")))
+
+(defn- naively-encode
+  "Encode a map of parameters without urlencoding them first."
+  [params sep]
+  (str-join sep (for [[k v] params] (str (name k) "=" v))))
 
 (defn- input-stream
   "Create an input stream from a string"
@@ -12,21 +20,26 @@
   (ByteArrayInputStream. (.getBytes s)))
 
 (fact "Parameters can be passed via the query string"
-  [[params name value] single-param-pair]
-  (= (get-query-params {:query-string params})
-     {(keyword name) value}))
+  [params random-params]
+  (let [query   (naively-encode params "&")
+        request {:query-string query}]
+    (= (get-query-params request)
+       params)))
 
 (fact "Parameters can be passed via the body"
-  [[params name value] single-param-pair]
-  (let [request {:content-type "application/x-www-form-urlencoded"
-                 :body         (input-stream params)}]
+  [params random-params]
+  (let [body    (input-stream (naively-encode params "&"))
+        type    "application/x-www-form-urlencoded"
+        request {:content-type type, :body body}]
     (= (get-form-params request)
-       {(keyword name) value})))
+       params)))
 
 (fact "Cookies can be passed via the 'cookie' HTTP header"
-  [[cookie name value] single-param-pair]
-  (= (get-cookies {:headers {"cookie" cookie}})
-     {(keyword name) value}))
+  [cookies random-params]
+  (let [headers {"cookie" (naively-encode cookies "; ")}
+        request {:headers headers}]
+    (= (get-cookies request)
+       cookies)))
 
 (fact "get-query-params returns empty map if no parameters found"
   []
@@ -37,19 +50,17 @@
   (= (get-query-params {}) {}))
 
 (fact "get-query-params preserves parameters from request"
-  [[_ key1 val1]     single-param-pair
-   [query key2 val2] single-param-pair]
-  (let [params1 {(keyword key1) val1}
-        params2 {(keyword key2) val2}
+  [params1 random-params
+   params2 random-params]
+  (let [query   (naively-encode params2 "&")
         request {:query-params params1, :query-string query}]
     (= (get-query-params request)
        (merge params1 params2))))
 
 (fact "get-form-params preserves parameters from request"
-  [[_ key1 val1]    single-param-pair
-   [body key2 val2] single-param-pair]
-  (let [params1 {(keyword key1) val1}
-        params2 {(keyword key2) val2}
+  [params1 random-params
+   params2 random-params]
+  (let [body    (naively-encode params2 "&")
         request {:form-params  params1
                  :content-type "application/x-www-form-urlencoded"
                  :body         (input-stream body)}]

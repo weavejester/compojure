@@ -8,7 +8,7 @@
 
 (defn random-response []
   {:status  (random-status)
-   :headers {}
+   :headers (random-map random-keyword random-str)
    :body    (random-str)})
 
 (fact "A nil value generates a blank '200 OK' response"
@@ -34,12 +34,12 @@
   (= (:body (create-response body)) body))
 
 (fact "Strings in a vector get concatenated together"
-  [body #(random-seq random-str)]
-  (= (:body (create-response (vec body)))
+  [body #(random-vec random-str)]
+  (= (:body (create-response body))
      (if (seq body)
        (apply str body))))
 
 (fact "The last integer in a vector is used as the status code"
-  [statuses #(random-seq random-status)]
-  (= (:status (create-response (vec statuses)))
+  [statuses #(random-vec random-status)]
+  (= (:status (create-response statuses))
      (or (last statuses) 200)))
