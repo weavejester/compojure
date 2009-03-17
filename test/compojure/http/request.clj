@@ -7,7 +7,7 @@
   (:import java.io.ByteArrayInputStream))
 
 (defn- random-params []
-  (random-map random-keyword #(re-rand #"\w+")))
+  (random-map random-keyword #(re-rand #"\w+") 1 10))
 
 (defn- naively-encode
   "Encode a map of parameters without urlencoding them first."
