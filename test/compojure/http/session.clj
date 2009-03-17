@@ -30,3 +30,7 @@
   (let [handler  (with-session (constantly nil))
         response (handler request)]
     (nil? response)))
+
+(fact "A response with the :session key modifies the session")
+
+(fact "Responses without :session keys do not modify the session")

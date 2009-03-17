@@ -74,13 +74,15 @@
   "Wrap a handler in a session."
   [handler]
   (fn [request]
-    (let [session-id (get-session-id request)
-          session    (read-session *session-store* session-id)
+    (let [store      *session-store*
+          session-id (get-session-id request)
+          session    (read-session store session-id)
           request    (assoc request
                        :session-id session-id
                        :session    session)
           response   (handler request)]
-      (write-session *session-store* session-id (:session response))
+      (when (contains? response :session)
+        (write-session store session-id (response :session)))
       (set-session-id response session-id))))
 
 (defn set-session
