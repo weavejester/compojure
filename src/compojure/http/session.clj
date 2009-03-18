@@ -22,7 +22,7 @@
 (defmulti create-session  first-arg) ; [type]    -> session
 (defmulti read-session    first-arg) ; [type id] -> session
 (defmulti write-session   first-arg) ; [type session]
-(defmulti destroy-session first-arg) ; [type id]
+(defmulti destroy-session first-arg) ; [type session]
 
 ;; In memory sessions
 
@@ -39,9 +39,10 @@
     (alter memory-sessions
       assoc (session :id) session)))
 
-(defmethod destroy-session :memory [_ id]
+(defmethod destroy-session :memory [_ session]
   (dosync
-    (alter memory-sessions dissoc id)))
+    (alter memory-sessions
+      dissoc (session :id))))
 
 ;; General methods for handling sessions
 

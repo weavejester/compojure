@@ -19,6 +19,12 @@
     (= (read-session :memory (session :id))
        updated-session)))
 
+(fact "Sessions can be destroyed"
+  [session #(create-session :memory)]
+  (write-session :memory session)
+  (destroy-session :memory session)
+  (nil? (read-session :memory (session :id))))
+
 (fact "The with-session wrapper adds a Set-Cookie header"
   [request random-request]
   (let [handler  (with-session (constantly {}))
