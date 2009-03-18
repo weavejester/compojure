@@ -33,7 +33,7 @@
       (let [[key val] (re-split #"=" s)]
         (assoc-vec param-map
           (keyword (urldecode key))
-          (urldecode val))))
+          (urldecode (or val "")))))
     {}
     (remove blank?
       (re-split separator param-string))))
