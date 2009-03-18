@@ -7,11 +7,17 @@
   {:request-method :get
    :uri "/"})
 
-(fact "The with-session wrapper adds a :session-id key to the request"
-  [request random-request]
-  (let [handler  (fn [req] {:body (req :session-id)})
-        response ((with-session handler) request)]
-    (not-empty (:body response))))
+(fact "Sessions are created with their id"
+  [session #(create-session :memory)]
+  (contains? session :id))
+
+(fact "Sessions can be written and read"
+  [session #(create-session :memory)
+   update  #(random-map random-keyword random-str 1 10)]
+  (let [updated-session (merge update session)]
+    (write-session :memory updated-session)
+    (= (read-session :memory (session :id))
+       updated-session)))
 
 (fact "The with-session wrapper adds a Set-Cookie header"
   [request random-request]

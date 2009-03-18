@@ -19,9 +19,9 @@
 
 (defn- first-arg [x & _] x)
 
-(defmulti create-session  first-arg) ; [type]    -> id
+(defmulti create-session  first-arg) ; [type]    -> session
 (defmulti read-session    first-arg) ; [type id] -> session
-(defmulti write-session   first-arg) ; [type id session]
+(defmulti write-session   first-arg) ; [type session]
 (defmulti destroy-session first-arg) ; [type id]
 
 ;; In memory sessions
@@ -29,17 +29,15 @@
 (def memory-sessions (ref {}))
 
 (defmethod create-session :memory [_]
-  (dosync
-    (let [id (gen-uuid)]
-      (alter memory-sessions assoc id (ref {}))
-      id)))
+  {:id (gen-uuid)})
 
 (defmethod read-session :memory [_ id]
   (@memory-sessions id))
 
-(defmethod write-session :memory [_ id session]
+(defmethod write-session :memory [_ session]
   (dosync
-    (alter memory-sessions assoc id session)))
+    (alter memory-sessions
+      assoc (session :id) session)))
 
 (defmethod destroy-session :memory [_ id]
   (dosync
@@ -54,36 +52,41 @@
   [store]
   (def *session-store* store))
 
-(defn- get-session-id
-  "Get the session ID from the request or create a new session."
+(defn- get-request-session
+  "Retrieve the session using the 'session-id' cookie in the request."
   [request]
-  (let [session-id (get-in request [:cookies :session-id])]
-    (if (read-session *session-store* session-id)
-      session-id
-      (create-session *session-store*))))
+  (if-let [session-id (get-in request [:cookies :session-id])]
+    (read-session *session-store* session-id)))
 
-(defn- set-session-id
-  "Create a response with a session ID."
-  [response session-id]
+(defn- assoc-session
+  "Associate the session with the request."
+  [request]
+  (if-let [session (get-request-session request)]
+    (assoc request
+      :session session)
+    (assoc request
+      :session      (create-session *session-store*)
+      :new-session? true)))
+
+(defn- set-session-cookie
+  "Set the session cookie for the response."
+  [response]
   (when-not (nil? response)
     (merge-response
       response
-      (set-cookie :session-id session-id))))
+      (set-cookie :session-id (-> response :session :id)))))
 
 (defn with-session
   "Wrap a handler in a session."
   [handler]
   (fn [request]
-    (let [store      *session-store*
-          session-id (get-session-id request)
-          session    (read-session store session-id)
-          request    (assoc request
-                       :session-id session-id
-                       :session    session)
-          response   (handler request)]
+    (let [request  (assoc-session request)
+          response (handler request)]
       (when (contains? response :session)
-        (write-session store session-id (response :session)))
-      (set-session-id response session-id))))
+        (write-session *session-store* (response :session)))
+      (if (request :new-session?)
+        (set-session-cookie response)
+        response))))
 
 (defn set-session
   "Return a response map with the session set."
