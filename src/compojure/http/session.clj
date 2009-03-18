@@ -59,7 +59,7 @@
   (if-let [session-id (get-in request [:cookies :session-id])]
     (read-session *session-store* session-id)))
 
-(defn- assoc-session
+(defn- assoc-request-session
   "Associate the session with the request."
   [request]
   (if-let [session (get-request-session request)]
@@ -71,25 +71,42 @@
 
 (defn- set-session-cookie
   "Set the session cookie for the response."
-  [response]
-  (when-not (nil? response)
-    (merge-response
-      response
-      (set-cookie :session-id (-> response :session :id)))))
+  [response session-id]
+  (merge-response
+    response
+    (set-cookie :session-id session-id)))
+
+(defn- write-response-session
+  "Save the session in the response."
+  [session id]
+  (let [session (assoc session :id id)]
+    (write-session *session-store* session)))
 
 (defn with-session
   "Wrap a handler in a session."
   [handler]
   (fn [request]
-    (let [request  (assoc-session request)
-          response (handler request)]
-      (when (contains? response :session)
-        (write-session *session-store* (response :session)))
-      (if (request :new-session?)
-        (set-session-cookie response)
-        response))))
+    (let [request    (assoc-request-session request)
+          session-id (-> request :session :id)
+          response   (handler request)]
+      (when-not (nil? response)
+        (if-let [session (response :session)]
+          (write-response-session session session-id))
+        (if (request :new-session?)
+          (set-session-cookie response session-id)
+          response)))))
 
 (defn set-session
   "Return a response map with the session set."
   [session]
   {:session session})
+
+(defn session-assoc
+  "Associate key value pairs with the session."
+  [session & keyvals]
+  (set-session (apply assoc session keyvals)))
+
+(defn session-dissoc
+  "Dissociate keys from the session."
+  [session & keys]
+  (set-session (apply dissoc session keys)))
