@@ -12,7 +12,7 @@
 
 (ns compojure.http.response
   (:use clojure.contrib.def)
-  (:import clojure.lang.IFn)
+  (:import clojure.lang.Fn)
   (:import clojure.lang.IPersistentVector)
   (:import java.util.Map)
   (:import clojure.lang.ISeq)
@@ -86,14 +86,9 @@
   (if (not= kw :next)
     (response-from (str kw))))
 
-(defmethod response-from IFn
+(defmethod response-from Fn
   [func]
   func)
-
-;; Don't treat keywords, maps or vectors as functions
-(prefer-method response-from Keyword IFn)
-(prefer-method response-from Map IFn)
-(prefer-method response-from IPersistentVector IFn)
 
 (defmethod response-from nil
   [_]
