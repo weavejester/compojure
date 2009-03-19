@@ -12,6 +12,7 @@
 
 (ns compojure.http.response
   (:use clojure.contrib.def)
+  (:import clojure.lang.IFn)
   (:import clojure.lang.IPersistentVector)
   (:import java.util.Map)
   (:import clojure.lang.ISeq)
@@ -20,19 +21,31 @@
   (:import java.net.URL)
   (:import clojure.lang.Keyword))
 
-(defn- merge-body
+(defn merge-bodies
+  "Merge the bodies of two responses together."
   [to from]
-  (if (and (string? to) (string? from))
-    (str to from)
-    (or to from)))
+  (if-let [from-body (:body from)]
+    (assoc to :body
+      (if (and (string? (:body to)) (string? from-body))
+        (str (:body to) from-body)
+        from-body))
+    to))
+
+(defn- merge-headers
+  "Merge headers from two responses together."
+  [to from]
+  (merge to (select-keys from [:headers])))
 
 (defn merge-response
   "Intelligently merge two response maps together."
   [to from]
-  (-> to
-    (merge from)
-    (assoc :headers (merge (:headers to) (:headers from)))
-    (assoc :body    (merge-body (:body to) (:body from)))))
+  (cond
+    (map? from)
+      (-> to (merge-headers from)
+             (merge-bodies from)
+             (merge (dissoc from :headers :body)))
+    (ifn? from)
+      (from to)))
 
 (defmulti response-from class)
 
@@ -73,6 +86,15 @@
   (if (not= kw :next)
     (response-from (str kw))))
 
+(defmethod response-from IFn
+  [func]
+  func)
+
+;; Don't treat keywords, maps or vectors as functions
+(prefer-method response-from Keyword IFn)
+(prefer-method response-from Map IFn)
+(prefer-method response-from IPersistentVector IFn)
+
 (defmethod response-from nil
   [_]
   {})
@@ -85,4 +107,4 @@
   "Create a new response map from a Clojure object, x."
   [x]
   (if-let [response (response-from x)]
-    (merge default-response response)))
+    (merge-response default-response response)))
