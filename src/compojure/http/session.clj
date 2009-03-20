@@ -17,29 +17,55 @@
 
 ;; Override these mulitmethods to create your own session storage
 
-(defn- first-arg [x & _] x)
+(defmulti create-session
+  "Create a session map that's blank except for an :id. Should not attempt to
+  save the session."
+  (fn [type] type))
+  
+(defmulti read-session
+  "Read in the session matching the ID from the session store and return the
+  session map."
+  (fn [type id] type))
+                    
+(defmulti write-session
+  "Write a new or existing session to the session store."
+  (fn [type session] type))
 
-(defmulti create-session  first-arg) ; [type]    -> session
-(defmulti read-session    first-arg) ; [type id] -> session
-(defmulti write-session   first-arg) ; [type session]
-(defmulti destroy-session first-arg) ; [type session]
+(defmulti destroy-session
+  "Remove the session from the session store."
+  (fn [type session] type))
+
+(defmulti set-session-cookie
+  "Add the session cookie to the given response."
+  (fn [type response session] type))
+
+;; Default implementations of create-session and set-session-cookie
+
+(defmethod create-session :default
+  [_]
+  {:id (gen-uuid)})
+
+(defmethod set-session-cookie :default
+  [_ response session]
+  (update-response {} response
+    (set-cookie :session-id (session :id))))
 
 ;; In memory sessions
 
 (def memory-sessions (ref {}))
 
-(defmethod create-session :memory [_]
-  {:id (gen-uuid)})
-
-(defmethod read-session :memory [_ id]
+(defmethod read-session :memory
+  [_ id]
   (@memory-sessions id))
 
-(defmethod write-session :memory [_ session]
+(defmethod write-session :memory
+  [_ session]
   (dosync
     (alter memory-sessions
       assoc (session :id) session)))
 
-(defmethod destroy-session :memory [_ session]
+(defmethod destroy-session :memory
+  [_ session]
   (dosync
     (alter memory-sessions
       dissoc (session :id))))
@@ -69,29 +95,25 @@
       :session      (create-session *session-store*)
       :new-session? true)))
 
-(defn- set-session-cookie
-  "Set the session cookie for the response."
-  [response session-id]
-  (merge-with merge response (set-cookie :session-id session-id)))
-
-(defn- write-response-session
-  "Save the session in the response."
-  [session id]
-  (let [session (assoc session :id id)]
-    (write-session *session-store* session)))
+(defn- get-response-session
+  "Retrieve the session from the response map, ensuring the session ID remains
+  the same as the request."
+  [request response]
+  (if-let [session (:session response)]
+    (assoc session :id (-> request :session :id))))
 
 (defn with-session
   "Wrap a handler in a session."
   [handler]
   (fn [request]
-    (let [request    (assoc-request-session request)
-          session-id (-> request :session :id)
-          response   (handler request)]
-      (when-not (nil? response)
-        (if-let [session (response :session)]
-          (write-response-session session session-id))
-        (if (request :new-session?)
-          (set-session-cookie response session-id)
+    (let [request  (assoc-request-session request)
+          response (handler request)
+          session  (get-response-session request response)]
+      (when response
+        (when session
+          (write-session *session-store* session))
+        (if (and session (:new-session? request))
+          (set-session-cookie *session-store* response session)
           response)))))
 
 (defn set-session

@@ -73,7 +73,7 @@
 (defn- merge-headers
   "Merge the headers in 'from' into 'to'."
   [to from]
-  (merge to (select-keys from [:headers])))
+  (merge-with merge to (select-keys from [:headers])))
 
 (defn- merge-bodies
   "Merge the bodies in 'from' into 'to'."

@@ -25,9 +25,9 @@
   (destroy-session :memory session)
   (nil? (read-session :memory (session :id))))
 
-(fact "The with-session wrapper adds a Set-Cookie header"
+(fact "Sessions add a cookie if the response has the :session key."
   [request random-request]
-  (let [handler  (with-session (constantly {}))
+  (let [handler  (with-session (constantly {:session {}}))
         response (handler request)]
     (contains? (:headers response) "Set-Cookie")))
 
