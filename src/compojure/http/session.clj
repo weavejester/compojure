@@ -101,10 +101,14 @@
 
 (defn session-assoc
   "Associate key value pairs with the session."
-  [session & keyvals]
-  (set-session (apply assoc session keyvals)))
+  [& keyvals]
+  (fn [request]
+    (let [session (request :session)]
+      (set-session (apply assoc session keyvals)))))
 
 (defn session-dissoc
   "Dissociate keys from the session."
-  [session & keys]
-  (set-session (apply dissoc session keys)))
+  [& keys]
+  (fn [request]
+    (let [session (request :session)]
+      (set-session (apply dissoc session keys)))))
