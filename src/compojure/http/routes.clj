@@ -162,7 +162,7 @@
   `(let [matcher# (request-matcher ~method ~path)]
      (fn [request#]
        (if-let [route-params# (matcher# request#)]
-         (create-response
+         (create-response request#
            (with-request-bindings
              (assoc request# :route-params route-params#)
              ~@body))))))

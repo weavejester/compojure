@@ -72,9 +72,7 @@
 (defn- set-session-cookie
   "Set the session cookie for the response."
   [response session-id]
-  (merge-response
-    response
-    (set-cookie :session-id session-id)))
+  (merge-with merge response (set-cookie :session-id session-id)))
 
 (defn- write-response-session
   "Save the session in the response."
