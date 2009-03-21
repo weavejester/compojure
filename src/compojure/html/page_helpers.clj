@@ -12,7 +12,7 @@
 
 (ns compojure.html.page-helpers
   (:use compojure.control)
-  (:use compojure.html)
+  (:use compojure.html.gen)
   (:use compojure.str-utils)
   (:use clojure.contrib.str-utils)
   (:import java.net.URLEncoder))

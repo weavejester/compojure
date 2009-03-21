@@ -11,7 +11,7 @@
 ;; Functions for generating HTML forms and input fields.
 
 (ns compojure.html.form-helpers
-  (:use compojure.html)
+  (:use compojure.html.gen)
   (:use compojure.control)
   (:use compojure.str-utils)
   (:use clojure.contrib.def)

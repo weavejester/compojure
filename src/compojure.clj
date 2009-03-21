@@ -18,13 +18,15 @@
 (immigrate
   'compojure.control
   'compojure.file-utils
-  'compojure.html
+  'compojure.html.gen
   'compojure.html.page-helpers
   'compojure.html.form-helpers
   'compojure.http.helpers
   'compojure.http.routes
   'compojure.http.servlet
+  'compojure.http.session
   'compojure.json
   'compojure.server.jetty
   'compojure.str-utils
+  'compojure.map-utils
   'compojure.validation)
