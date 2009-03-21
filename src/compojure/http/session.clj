@@ -15,6 +15,15 @@
   (:use compojure.http.helpers)
   (:use compojure.http.response))
 
+;; Global session store type
+
+(def *session-store* :memory)
+
+(defn set-session-store!
+  "Set the global session store type (defaults to :memory)."
+  [store]
+  (def *session-store* store))
+
 ;; Override these mulitmethods to create your own session storage
 
 (defmulti create-session
@@ -70,19 +79,12 @@
     (alter memory-sessions
       dissoc (session :id))))
 
-;; General methods for handling sessions
-
-(def *session-store* :memory)
-
-(defn set-session-store!
-  "Set the global session store type (defaults to :memory)."
-  [store]
-  (def *session-store* store))
+;; Session middleware
 
 (defn- get-request-session
   "Retrieve the session using the 'session-id' cookie in the request."
   [request]
-  (if-let [session-id (get-in request [:cookies :session-id])]
+  (if-let [session-id (-> request :cookies :session-id)]
     (read-session *session-store* session-id)))
 
 (defn- assoc-request-session
@@ -95,42 +97,66 @@
       :session      (create-session *session-store*)
       :new-session? true)))
 
+(defn- assoc-request-flash
+  "Associate the session flash with the request and remove it from the
+  session."
+  [request]
+  (let [session (:session request)]
+    (-> request 
+      (assoc :flash   (session :flash {}))
+      (assoc :session (dissoc session :flash)))))
+
 (defn- get-response-session
-  "Retrieve the session from the response map, ensuring the session ID remains
-  the same as the request."
+  "Retrieve the current session from the response map."
   [request response]
-  (if-let [session (:session response)]
-    (assoc session :id (-> request :session :id))))
+  (assoc (:session response)
+    :id (-> request :session :id)))
 
 (defn with-session
   "Wrap a handler in a session."
   [handler]
   (fn [request]
-    (let [request  (assoc-request-session request)
+    (let [request  (-> request
+                     assoc-request-session
+                     assoc-request-flash)
           response (handler request)
           session  (get-response-session request response)]
-      (when response
-        (when session
-          (write-session *session-store* session))
-        (if (and session (:new-session? request))
-          (set-session-cookie *session-store* response session)
-          response)))))
+      ; Save session
+      (if (:session response)
+        (write-session *session-store* session)
+        (if (not-empty (:flash request))
+          (write-session *session-store* (:session request))))
+
+      ; Set cookie
+      (if (and response (:new-session? request))
+        (set-session-cookie *session-store* response session)
+        response))))
+
+;; User functions for modifying the session
 
 (defn set-session
   "Return a response map with the session set."
   [session]
   {:session session})
 
+(defn alter-session
+  "Use a function to alter the session."
+  [func & args]
+  (fn [request]
+    (set-session
+      (apply func (request :session) args))))
+
 (defn session-assoc
   "Associate key value pairs with the session."
   [& keyvals]
-  (fn [request]
-    (let [session (request :session)]
-      (set-session (apply assoc session keyvals)))))
+  (apply alter-session assoc keyvals))
 
 (defn session-dissoc
   "Dissociate keys from the session."
   [& keys]
-  (fn [request]
-    (let [session (request :session)]
-      (set-session (apply dissoc session keys)))))
+  (apply alter-session dissoc keys))
+
+(defn flash-assoc
+  "Associate key value pairs with the session flash."
+  [& keyvals]
+  (alter-session merge {:flash (apply hash-map keyvals)}))

@@ -70,10 +70,10 @@
   [request response _]
   response)
 
-(defn- merge-headers
-  "Merge the headers in 'from' into 'to'."
-  [to from]
-  (merge-with merge to (select-keys from [:headers])))
+(defn- merge-map
+  "Merges an inner map in 'from' into 'to'"
+  [to key from]
+  (merge-with merge to (select-keys from [key])))
 
 (defn- merge-bodies
   "Merge the bodies in 'from' into 'to'."
@@ -84,16 +84,17 @@
       (merge to from))))
 
 (defn- merge-rest
-  "Merge everything but the headers and body."
+  "Merge everything but the headers, session and body."
   [to from]
-  (merge to (dissoc from :headers :body)))
+  (merge to (dissoc from :headers :session :body)))
 
 (defmethod update-response Map
   [request response update-map]
   (-> response
-    (merge-headers update-map)
-    (merge-bodies  update-map)
-    (merge-rest    update-map)))
+    (merge-map :headers update-map)
+    (merge-map :session update-map)
+    (merge-bodies update-map)
+    (merge-rest update-map)))
 
 (defvar default-response
   {:status 200, :headers {}}

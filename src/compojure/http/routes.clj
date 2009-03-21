@@ -152,8 +152,7 @@
          ~'params  (get-params ~'request)
          ~'cookies (:cookies ~'request)
          ~'session (:session ~'request)
-         ~'session-assoc  (partial session-assoc  ~'session)
-         ~'session-dissoc (partial session-dissoc ~'session)]
+         ~'flash   (:flash ~'request)]
      ~@body))
 
 (defn compile-route
