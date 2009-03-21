@@ -31,8 +31,8 @@ To run Compojure, you'll need:
 
 And to run Compojure's unit tests, you'll need:
 
-* [Fact](http://github.com/weavejester/fact)
-* [Re-rand](http://github.com/weavejester/re-rand)
+* The [Fact](http://github.com/weavejester/fact) unit test framework
+* The [Re-rand](http://github.com/weavejester/re-rand) library
 
 Documentation
 -------------
