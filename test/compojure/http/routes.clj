@@ -1,28 +1,33 @@
 (ns test.compojure.http.routes
-  (:use fact)
+  (:use fact.core)
+  (:use fact.random-utils)
   (:use compojure.http.routes))
 
-(fact "Routes can match HTTP method"
-  [method `(GET POST PUT HEAD DELETE)]
-  (let [route `(~method "/" "passed")]
-    (= ((eval route) (name method) "/")
-       "passed")))
+(def http-methods [:get :post :put :delete])
+(def http-macros `(GET POST PUT DELETE))
+
+(fact "Routes can match HTTP methods"
+  [method http-methods
+   macro  http-macros
+   body   random-str]
+  (let [route    (eval `(~macro "/" ~body))
+        response (route {:request-method method, :uri "/"})]
+    (= (:body response) body)))
 
 (fact "The ANY route matches any HTTP method"
-  [method '(GET POST PUT HEAD DELETE)]
-  (= ((ANY "/" "passed") (name method) "/")
-     "passed"))
+  [method http-methods
+   body   random-str]
+  (let [route    (ANY "/" body)
+        response (route {:request-method method, :uri "/"})]
+    (= (:body response) body)))
 
 (fact "Routes can match fixed paths"
-  [path ["/"
-         "/foo"
-         "/foo/bar"
-         "/foo.txt"]]
-  (match-path (compile-path-matcher path) path))
+  [[path & _] #"/(\w+)(/\w+)*(\.\w+)?"]
+  (match-uri (compile-uri-matcher path) path))
 
 (fact "Nil routes are treated as '/'"
   []
-  (match-path (compile-path-matcher "/") nil))
+  (match-uri (compile-uri-matcher "/") nil))
 
 (fact "Routes can contain keywords"
   [[route path] {"/:x"         "/foo"
@@ -31,24 +36,24 @@
                  "/bar/:x/baz" "/bar/foo/baz"
                  "/:x.txt"     "/foo.txt"
                  "/bar.:x"     "/bar.foo"}]
-  (= (match-path (compile-path-matcher route) path)
+  (= (match-uri (compile-uri-matcher route) path)
      {:x "foo"}))
 
 (fact "Routes can contain keywords containing hyphens"
-  [[route path] {"/:foo-bar"                "/baz"
-		 "/aaa/:foo-bar/bbb"        "/aaa/baz/bbb"}]
-  (= (match-path (compile-path-matcher route) path)
+  [[route path] {"/:foo-bar"         "/baz"
+                 "/aaa/:foo-bar/bbb" "/aaa/baz/bbb"}]
+  (= (match-uri (compile-uri-matcher route) path)
      {:foo-bar "baz"}))
 
 (fact "Routes can contain keywords containing hyphens many times"
-  [[route path] {"/:foo-bar/bbb/:foo-bar"   "/baz/bbb/baz"}]
-  (= (match-path (compile-path-matcher route) path)
+  [[route path] {"/:foo-bar/bbb/:foo-bar" "/baz/bbb/baz"}]
+  (= (match-uri (compile-uri-matcher route) path)
      {:foo-bar ["baz" "baz"]}))
 
 (fact "Routes can contain the same keyword many times"
   [[route path] {"/:x/:x/:x"     "/foo/bar/baz"
                  "/a/:x/b/:x.:x" "/a/foo/b/bar.baz"}]
-  (= (match-path (compile-path-matcher route) path)
+  (= (match-uri (compile-uri-matcher route) path)
      {:x ["foo" "bar" "baz"]}))
 
 (fact "Routes can match wildcards"
@@ -57,22 +62,54 @@
                  "/*/baz" "/foo/bar.txt/baz"
                  "/a/*/b" "/a/foo/bar.txt/b"
                  "*"      "foo/bar.txt"}]
-  (= (match-path (compile-path-matcher route) path)
+  (= (match-uri (compile-uri-matcher route) path)
      {:* "foo/bar.txt"}))
-
-(fact "Keywords are stored in the route map"
-  [keyword [:foo :bar :baz]]
-  (let [route `(GET ~(str "/" keyword) (~'route ~keyword))]
-    (= ((eval route) "GET" "/foo")
-       "foo")))
-
-(fact "Wildcards are stored in the route map"
-  [path ["" "foo" "foo/bar" "foo.bar"]]
-  (let [route `(GET "/*" (~'route :*))]
-    (= ((eval route) "GET" (str "/" path))
-       path)))
 
 (fact "Routes can match paths in vars"
   [path ["/foo" "/bar" "/foo/bar"]]
-  (= ((GET path "passed") "GET" path)
-     "passed"))
+  (let [route    (GET path "passed")
+        response (route {:request-method :get, :uri path})]
+    (= (:body response) "passed")))
+
+(fact "Keywords are stored in (request :route-params)"
+  [kw [:foo :bar :baz]]
+  (let [route    (GET (str "/" kw) (-> request :route-params kw))
+        request  {:request-method :get, :uri "/lorem"}
+        response (route request)]
+    (= (:body response) "lorem")))
+
+(fact "Wildcards are stored in (request :route-params)"
+  [path ["" "foo" "foo/bar" "foo.bar"]]
+  (let [route    (GET "/*" (-> request :route-params :*))
+        request  {:request-method :get, :uri (str "/" path)}
+        response (route request)]
+    (= (:body response) path)))
+
+(fact "A shortcut to route parameters is to use params"
+  [kw [:foo :bar :baz]]
+  (let [route    (GET (str "/" kw) (params kw))
+        request  {:request-method :get, :uri "/ipsum"}
+        response (route request)]
+    (= (:body response) "ipsum")))
+
+(fact "Routes that don't match the path return nil"
+  [path #"/\w+.txt"]
+  (let [route    (GET "/foo.html" "foobar")
+        request  {:request-method :get, :uri path}
+        response (route request)]
+    (nil? response)))
+
+(fact "Routes can use regular expressions"
+  [path #"/\w+"]
+  (let [regex    (re-pattern path)
+        route    (GET regex "lorem")
+        request  {:request-method :get, :uri path}
+        response (route request)]
+    (= (:body response) "lorem")))
+
+(fact "Regular expressions return route parameters as a vector of groups"
+  [[path regex] {"/foo/bar" #"/foo/(.*)"}]
+  (let [route    (GET regex ((request :route-params) 0))
+        request  {:request-method :get, :uri path}
+        response (route request)]
+    (= (:body response) "bar")))

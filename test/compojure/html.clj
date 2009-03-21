@@ -1,30 +1,32 @@
 (ns test.compojure.html
-  (:use fact)
-  (:use fact.utils.random)
+  (:use fact.core)
+  (:use fact.random-utils)
   (:use compojure.html))
 
-(def names
-  '(foo Bar foo-bar foo_bar fooBar foo:bar))
+(def node-name #"[A-Za-z:_\-]{1,10}")
 
 (fact "The first element of a tag vector defines the tag name"
-  [tag names]
+  [tag node-name]
   (= (html [tag "Lorem Ipsum"])
      (str "<" tag ">Lorem Ipsum</" tag ">")))
 
 (fact "Tag vectors can be empty"
-  [tag names]
-  (= (html [tag])
-     (str "<" tag " />")))
+  [tag node-name]
+  (let [empty-tag (html [tag])]
+    (or (= empty-tag (str "<" tag " />"))
+        (= empty-tag (str "<" tag "></" tag ">")))))
 
 (fact "Tags can be specified by keywords, symbols or strings"
-  [tag [:xml 'xml "xml"]]
-  (= (html [tag "Lorem Ipsum"])
-     "<xml>Lorem Ipsum</xml>"))
+  [tag     node-name
+   content random-str]
+  (= (html [(str tag)     content])
+     (html [(keyword tag) content])
+     (html [(symbol tag)  content])))
 
 (fact "Tag vectors can contain strings"
-  [content String]
-   (= (html [:xml content])
-      (str "<xml>" content "</xml>")))
+  [content random-str]
+  (= (html [:tag content])
+     (str "<tag>" content "</tag>")))
 
 (fact "Tag vectors concatenate their contents"
   [contents #(random-seq random-str 1 100)]
@@ -84,7 +86,7 @@
 
 (fact "HTML tag vectors have CSS syntax sugar for class attributes"
   [tag   tags
-   class names]
+   class node-name]
   (= (html [tag {:class class}])
      (html [(str tag "." class)])))
 
@@ -97,7 +99,7 @@
 
 (fact "HTML tag vectors have CSS syntax sugar for id attributes"
   [tag tags
-   id  names]
+   id  node-name]
   (= (html [tag {:id id}])
      (html [(str tag "#" id)])))
 
@@ -107,13 +109,13 @@
   (not (re-find #"[ \t]" (html [tag content]))))
 
 (fact "Boolean true attribute values are rendered as key=\"key\""
-  [attr names]
+  [attr node-name]
   (= (html [:p {attr true}])
      (str "<p " attr "=\"" attr "\" />")))
 
 (fact "Boolean false or nil attribute values are not displayed"
   [value [false nil]
-   attr  names]
+   attr  node-name]
   (= (html [:p {attr value}])
      "<p />"))
 

@@ -13,8 +13,14 @@
 ;; keyword :next if they don't match.
 
 (ns compojure.http.routes
-  (:use [compojure.str-utils :only (re-escape)])
-  (:use [compojure.control   :only (decorate-with)]))
+  (:use compojure.http.request)
+  (:use compojure.http.response)
+  (:use compojure.http.session)
+  (:use compojure.str-utils)
+  (:use compojure.map-utils)
+  (:use compojure.control)
+  (:import java.util.regex.Pattern)
+  (:import java.util.Map))
 
 ;; Functions for lexing a string
 
@@ -50,104 +56,158 @@
           results
           (recur results src clauses))))))
 
-;; Functions for matching paths using a syntax borrowed from Ruby frameworks
+;; Functions for matching URIs using a syntax borrowed from Ruby frameworks
 ;; like Sinatra and Rails.
 
-(defstruct path-matcher
+(defstruct uri-matcher
   :regex
   :keywords)
 
-(defn compile-path-matcher
-  "Compile a string using the routes syntax into a url-route struct."
-  [matcher]
-  (let [splat #"\*"
-        word  #":([-\w]+)"
-        path  #"[^:*]+"]
-    (struct path-matcher
+(defn compile-uri-matcher
+  "Compile a path string using the routes syntax into a uri-matcher struct."
+  [path]
+  (let [splat   #"\*"
+        word    #":([-\w]+)"
+        literal #"[^:*]+"]
+    (struct uri-matcher
       (re-pattern
         (apply str
-          (lex matcher
-            splat "(.*?)"
-            word  "([^/.,;?]+)"
-            path  #(re-escape (.group %)))))
+          (lex path
+            splat   "(.*?)"
+            word    "([^/.,;?]+)"
+            literal #(re-escape (.group %)))))
       (vec
-        (filter (complement nil?)
-          (lex matcher
-            splat :*
-            word  #(keyword (.group % 1))
-            path  nil))))))
+        (remove nil?
+          (lex path
+            splat   :*
+            word    #(keyword (.group % 1))
+            literal nil))))))
 
 ;; Don't compile paths more than once.
-(decorate-with memoize compile-path-matcher)
+(decorate-with memoize compile-uri-matcher)
+
+(defmulti compile-matcher class)
+
+(defmethod compile-matcher String
+  [path]
+  (compile-uri-matcher path))
+
+(defmethod compile-matcher Pattern
+  [re]
+  re)
 
 (defn- assoc-keywords-with-groups
   "Create a hash-map from a series of regex match groups and a collection of
   keywords."
   [groups keywords]
   (reduce
-    (partial merge-with
-      #(if (vector? %1)
-         (conj %1 %2)
-         (vector %1 %2)))
+    (fn [m [k v]] (assoc-vec m k v))
     {}
-    (map hash-map keywords (rest groups))))
+    (map vector keywords (rest groups))))
 
-(defn match-path
-  "Match a path against a compiled matcher. Returns a map of keywords and
-  their matching path values."
-  [path-matcher path]
-  (let [matcher (re-matcher (path-matcher :regex) (or path "/"))]
+(defmulti match-uri (fn [matcher uri] (class matcher)))
+
+(defmethod match-uri Map
+  [uri-matcher uri]
+  (let [matcher (re-matcher (uri-matcher :regex) (or uri "/"))]
     (if (.matches matcher)
       (assoc-keywords-with-groups
         (re-groups matcher)
-        (path-matcher :keywords)))))
+        (uri-matcher :keywords)))))
+
+(defmethod match-uri Pattern
+  [uri-pattern uri]
+  (let [matches (re-matches uri-pattern (or uri "/"))]
+    (if matches
+      (if (vector? matches)
+        (subvec matches 1)
+        []))))
+
+(defn match-method
+  "True if the method from the route matches the method from the request."
+  [route-method request-method]
+  (or (nil? route-method)
+      (= route-method request-method)))
+
+(defmacro request-matcher
+  "Compiles a function to match a HTTP request against the supplied method
+  and path template. Returns a map of the route parameters if the is a match,
+  nil otherwise. Precompiles the route when supplied with a literal string."
+  [method path]
+  (let [matcher (if (or (string? path) (instance? Pattern path))
+                  (compile-matcher path)
+                 `(compile-matcher ~path))]
+   `(fn [request#]
+      (and
+        (match-method ~method  (request# :request-method))
+        (match-uri    ~matcher (request# :uri))))))
 
 ;; Functions and macros for generating routing functions. A routing function
 ;; returns :next if it doesn't match, and any other value if it does.
 
+(defmacro with-request-bindings
+  "Add shortcut bindings for the keys in a request map."
+  [request & body]
+  `(let [~'request ~request
+         ~'params  (get-params ~'request)
+         ~'cookies (:cookies ~'request)
+         ~'session (:session ~'request)
+         ~'flash   (:flash ~'request)]
+     ~@body))
+
 (defn compile-route
   "Compile a route in the form (method path & body) into a function."
   [method path body]
-  (let [matcher (if (string? path)
-                  (compile-path-matcher path)
-                  `(compile-path-matcher ~path))]
-   `(fn [method# path#]
-      (if (or (nil? ~method) (= method# ~method))
-        (if-let [~'route (match-path ~matcher path#)]
-          (do ~@body)
-          :next)
-        :next))))
+  `(let [matcher# (request-matcher ~method ~path)]
+     (fn [request#]
+       (if-let [route-params# (matcher# request#)]
+         (create-response request#
+           (with-request-bindings
+             (assoc request# :route-params route-params#)
+             ~@body))))))
+
+(defn routes
+  "Create a Ring handler by combining several routes into one."
+  [& routes]
+  (fn [request]
+    (let [request (-> request
+                    assoc-parameters
+                    assoc-cookies)]
+      (some 
+        (fn [route] (route request))
+        (map with-session routes)))))
+
+;; Macros for easily creating a compiled routing table
+
+(defmacro defroutes
+  "Create a Ring handler function from a sequence of routes."
+  [name doc-or-route & routes]
+  (if (string? doc-or-route)
+    `(def ~(with-meta name (assoc ^name :doc doc-or-route))
+       (routes ~@routes))
+    `(def ~name
+       (routes ~doc-or-route ~@routes))))
 
 (defmacro GET "Generate a GET route."
   [path & body]
-  (compile-route "GET" path body))
+  (compile-route :get path body))
 
 (defmacro POST "Generate a POST route."
   [path & body]
-  (compile-route "POST" path body))
+  (compile-route :post path body))
 
 (defmacro PUT "Generate a PUT route."
   [path & body]
-  (compile-route "PUT" path body))
+  (compile-route :put path body))
 
 (defmacro DELETE "Generate a DELETE route."
   [path & body]
-  (compile-route "DELETE" path body))
+  (compile-route :delete path body))
 
 (defmacro HEAD "Generate a HEAD route."
   [path & body]
-  (compile-route "HEAD" path body))
+  (compile-route :head path body))
 
 (defmacro ANY "Generate a route that matches any method."
   [path & body]
   (compile-route nil path body))
-
-(defn combine-routes
-  "Create a new route by combine a sequences of routes into one."
-  [& routes]
-  (fn [method path]
-    (loop [[route & routes] routes]
-      (let [ret (route method path)]
-        (if (and (= ret :next) routes)
-          (recur routes)
-          ret)))))
