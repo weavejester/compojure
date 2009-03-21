@@ -2,8 +2,7 @@ Compojure is an open source web framework for the [Clojure](http://clojure.org)
 programming language. It emphasizes a thin I/O layer and a functional approach
 to web development.
 
-Compojure is still in active development, but it is rapidly approaching version
-0.1.
+Compojure is still in active development. Version 0.1 is now available.
 
 Sample Code
 -----------
@@ -20,6 +19,20 @@ Here's a small web application written in Compojure:
 
     (run-server {:port 8080}
       "/*" my-servlet)
+
+Dependencies
+------------
+
+To run Compojure, you'll need:
+
+* The [Clojure](http://clojure.org) programming language
+* The [Clojure-Contrib](http://code.google.com/p/clojure-contrib/) library
+* A Java servlet container like [Jetty](http://www.mortbay.org/jetty/)
+
+And to run Compojure's unit tests, you'll need:
+
+* [Fact](http://github.com/weavejester/fact)
+* [Re-rand](http://github.com/weavejester/re-rand)
 
 Documentation
 -------------
