@@ -15,5 +15,5 @@
 
 (immigrate
   'compojure.html.gen
-  'compojure.http.page-helpers
-  'compojure.http.form-helpers)
+  'compojure.html.page-helpers
+  'compojure.html.form-helpers)
