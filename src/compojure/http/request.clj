@@ -12,7 +12,7 @@
 
 (ns compojure.http.request
   (:use compojure.control)
-  (:use compojure.http.session)
+  (:use compojure.http.multipart)
   (:use compojure.map-utils)
   (:use compojure.str-utils)
   (:use clojure.contrib.duck-streams)
@@ -74,8 +74,9 @@
   "Add urlencoded parameters to a request map."
   [request]
   (merge request
-    {:query-params (get-query-params request)
-     :form-params  (get-form-params request)}))
+    {:query-params     (get-query-params request)
+     :form-params      (get-form-params request)
+     :multipart-params (get-multipart-params request)}))
 
 (defn get-route-params
   "Get a map of the route parameters, or nil if not a map."
@@ -90,6 +91,7 @@
   (merge
     (:query-params request)
     (:form-params request)
+    (:multipart-params request)
     (get-route-params request)))
 
 (defn get-cookies

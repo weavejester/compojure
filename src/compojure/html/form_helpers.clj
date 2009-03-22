@@ -98,6 +98,11 @@
   ([name value]
     [:textarea {:name (str* name) :id (str* name)} value]))
 
+(defn file-upload
+  "Creates a file upload input."
+  [name]
+  [:input {:type "file", :name (str* name), :id (str* name)}])
+
 (defn label
   "Create a label for an input field with the supplied name."
   [name text]
@@ -140,6 +145,7 @@
   check-box
   drop-down
   text-area
+  file-upload
   label
   submit-button
   reset-button
@@ -153,5 +159,6 @@
       password-field
       check-box
       drop-down
-      text-area]
+      text-area
+      file-upload]
     (list ~@body)))
