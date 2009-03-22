@@ -11,16 +11,11 @@
 ;; Helper functions for things like redirection, serving files, 404s, etc.
 
 (ns compojure.http.helpers
+  (:use compojure.crypto)
   (:use compojure.str-utils)
   (:use clojure.contrib.def)
   (:use clojure.contrib.duck-streams)
-  (:import java.io.File)
-  (:import java.net.URLEncoder))
-
-(defn urlencode
-  "Encode a urlencoded string using the default encoding."
-  [s]
-  (URLEncoder/encode (str* s) *default-encoding*))
+  (:import java.io.File))
 
 (defn set-cookie
   "Return a Set-Cookie header."

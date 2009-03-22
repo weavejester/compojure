@@ -79,6 +79,10 @@
     (alter memory-sessions
       dissoc (session :id))))
 
+;; Cookie sessions
+
+
+
 ;; Session middleware
 
 (defn- get-request-session

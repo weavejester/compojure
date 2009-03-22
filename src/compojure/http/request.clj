@@ -12,6 +12,7 @@
 
 (ns compojure.http.request
   (:use compojure.control)
+  (:use compojure.crypto)
   (:use compojure.http.multipart)
   (:use compojure.map-utils)
   (:use compojure.str-utils)
@@ -19,11 +20,6 @@
   (:use clojure.contrib.str-utils)
   (:import java.net.URLDecoder)
   (:import java.io.InputStreamReader))
-
-(defn urldecode
-  "Decode a urlencoded string using the default encoding."
-  [s]
-  (URLDecoder/decode s *default-encoding*))
 
 (defn- parse-params
   "Parse parameters from a string into a map."
