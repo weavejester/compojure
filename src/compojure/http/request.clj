@@ -12,7 +12,7 @@
 
 (ns compojure.http.request
   (:use compojure.control)
-  (:use compojure.crypto)
+  (:use compojure.encodings)
   (:use compojure.http.multipart)
   (:use compojure.map-utils)
   (:use compojure.str-utils)

@@ -11,7 +11,7 @@
 ;; Helper functions for things like redirection, serving files, 404s, etc.
 
 (ns compojure.http.helpers
-  (:use compojure.crypto)
+  (:use compojure.encodings)
   (:use compojure.str-utils)
   (:use clojure.contrib.def)
   (:use clojure.contrib.duck-streams)
@@ -40,7 +40,7 @@
   [dir]
   (first
     (filter
-      #(.startsWith "index." (.toLowerCase (.getName %)))
+      #(.startsWith (.toLowerCase (.getName %)) "index.")
        (.listFiles dir))))
 
 (defn serve-file

@@ -93,7 +93,7 @@
         (.flush out))
     (instance? File body)
       (with-open [stream (FileInputStream. body)]
-        (set-body stream))))
+        (set-body response stream))))
 
 (defn update-response
   "Update the HttpServletResponse using a response map."
