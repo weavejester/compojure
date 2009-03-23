@@ -13,7 +13,10 @@
 (ns compojure.http.session
   (:use compojure.str-utils)
   (:use compojure.http.helpers)
-  (:use compojure.http.response))
+  (:use compojure.http.response)
+  (:use compojure.encodings)
+  (:use compojure.crypto)
+  (:use clojure.contrib.except))
 
 ;; Global session store type
 
@@ -27,14 +30,13 @@
 ;; Override these mulitmethods to create your own session storage
 
 (defmulti create-session
-  "Create a session map that's blank except for an :id. Should not attempt to
-  save the session."
+  "Create a new session map. Should not attempt to save the session."
   (fn [type] type))
   
 (defmulti read-session
-  "Read in the session matching the ID from the session store and return the
-  session map."
-  (fn [type id] type))
+  "Read in the session using the supplied data. Usually the data is a key used
+  to find the session in a store."
+  (fn [type data] type))
                     
 (defmulti write-session
   "Write a new or existing session to the session store."
@@ -44,9 +46,10 @@
   "Remove the session from the session store."
   (fn [type session] type))
 
-(defmulti set-session-cookie
-  "Add the session cookie to the given response."
-  (fn [type response session] type))
+(defmulti session-cookie
+  "Return the session data to be stored in the cookie. This is usually the
+  session ID."
+  (fn [type new? session] type))
 
 ;; Default implementations of create-session and set-session-cookie
 
@@ -54,10 +57,10 @@
   [_]
   {:id (gen-uuid)})
 
-(defmethod set-session-cookie :default
-  [_ response session]
-  (update-response {} response
-    (set-cookie :session-id (session :id))))
+(defmethod session-cookie :default
+  [_ new? session]
+  (if (not new?)
+    (session :id)))
 
 ;; In memory sessions
 
@@ -81,14 +84,39 @@
 
 ;; Cookie sessions
 
+; Random secret key
+(def *session-secret-key* (gen-uuid))
 
+(defn- session-hmac
+  "Calculate a HMAC for a marshalled session"
+  [cookie-data]
+  (hmac *session-secret-key* "HmacSHA256" cookie-data))
+
+(defmethod create-session :cookie [_] {})
+
+(defmethod session-cookie :cookie
+  [_ _ session]
+  (let [cookie-data (marshal session)]
+    (if (> (count cookie-data) 4000)
+      (throwf "Session data exceeds 4K")
+      (str cookie-data "--" (session-hmac cookie-data)))))
+
+(defmethod read-session :cookie
+  [_ data]
+  (let [[session mac] (.split data "--")]
+    (if (= mac (session-hmac session))
+      (unmarshal session))))
+
+; Do nothing for write or destroy
+(defmethod write-session :cookie [_ _])
+(defmethod destroy-session :cookie [_ _])
 
 ;; Session middleware
 
 (defn- get-request-session
   "Retrieve the session using the 'session-id' cookie in the request."
   [request]
-  (if-let [session-id (-> request :cookies :session-id)]
+  (if-let [session-id (-> request :cookies :session)]
     (read-session *session-store* session-id)))
 
 (defn- assoc-request-session
@@ -113,8 +141,17 @@
 (defn- get-response-session
   "Retrieve the current session from the response map."
   [request response]
-  (assoc (:session response)
-    :id (-> request :session :id)))
+  (if-let [id (-> request :session :id)]
+    (assoc (:session response) :id id)
+    (:session response)))
+
+(defn- set-session-cookie
+  "Set the session cookie on the response."
+  [request response session]
+  (let [new?   (:new-session? request)
+        cookie (session-cookie *session-store* new? session)
+        update (set-cookie :session cookie)]
+    (update-response {} response update)))
 
 (defn with-session
   "Wrap a handler in a session."
@@ -130,10 +167,9 @@
         (write-session *session-store* session)
         (if (not-empty (:flash request))
           (write-session *session-store* (:session request))))
-
       ; Set cookie
-      (if (and response (:new-session? request))
-        (set-session-cookie *session-store* response session)
+      (if response
+        (set-session-cookie request response session)
         response))))
 
 ;; User functions for modifying the session
