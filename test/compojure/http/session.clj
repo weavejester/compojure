@@ -8,22 +8,22 @@
    :uri "/"})
 
 (fact "Sessions are created with their id"
-  [session #(create-session :memory)]
+  [session #(create-session)]
   (contains? session :id))
 
 (fact "Sessions can be written and read"
-  [session #(create-session :memory)
+  [session #(create-session)
    update  #(random-map random-keyword random-str 1 10)]
   (let [updated-session (merge update session)]
-    (write-session :memory updated-session)
-    (= (read-session :memory (session :id))
+    (write-session updated-session)
+    (= (read-session (session :id))
        updated-session)))
 
 (fact "Sessions can be destroyed"
-  [session #(create-session :memory)]
-  (write-session :memory session)
-  (destroy-session :memory session)
-  (nil? (read-session :memory (session :id))))
+  [session #(create-session)]
+  (write-session session)
+  (destroy-session session)
+  (nil? (read-session (session :id))))
 
 (fact "Sessions add a cookie if the response has the :session key."
   [request random-request]

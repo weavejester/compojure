@@ -31,35 +31,35 @@
 
 (defmulti create-session
   "Create a new session map. Should not attempt to save the session."
-  (fn [type] type))
+  (fn [] *session-store*))
   
 (defmulti read-session
   "Read in the session using the supplied data. Usually the data is a key used
   to find the session in a store."
-  (fn [type data] type))
+  (fn [data] *session-store*))
                     
 (defmulti write-session
   "Write a new or existing session to the session store."
-  (fn [type session] type))
+  (fn [session] *session-store*))
 
 (defmulti destroy-session
   "Remove the session from the session store."
-  (fn [type session] type))
+  (fn [session] *session-store*))
 
 (defmulti session-cookie
   "Return the session data to be stored in the cookie. This is usually the
   session ID."
-  (fn [type new? session] type))
+  (fn [new? session] *session-store*))
 
 ;; Default implementations of create-session and set-session-cookie
 
 (defmethod create-session :default
-  [_]
+  []
   {:id (gen-uuid)})
 
 (defmethod session-cookie :default
-  [_ new? session]
-  (if (not new?)
+  [new? session]
+  (if new?
     (session :id)))
 
 ;; In memory sessions
@@ -67,57 +67,56 @@
 (def memory-sessions (ref {}))
 
 (defmethod read-session :memory
-  [_ id]
+  [id]
   (@memory-sessions id))
 
 (defmethod write-session :memory
-  [_ session]
+  [session]
   (dosync
     (alter memory-sessions
       assoc (session :id) session)))
 
 (defmethod destroy-session :memory
-  [_ session]
+  [session]
   (dosync
     (alter memory-sessions
       dissoc (session :id))))
 
 ;; Cookie sessions
 
-; Random secret key
-(def *session-secret-key* (gen-uuid))
+(def *session-secret-key* (gen-uuid))   ; Random secret key
 
 (defn- session-hmac
   "Calculate a HMAC for a marshalled session"
   [cookie-data]
   (hmac *session-secret-key* "HmacSHA256" cookie-data))
 
-(defmethod create-session :cookie [_] {})
+(defmethod create-session :cookie [] {})
 
 (defmethod session-cookie :cookie
-  [_ _ session]
+  [new? session]
   (let [cookie-data (marshal session)]
     (if (> (count cookie-data) 4000)
       (throwf "Session data exceeds 4K")
       (str cookie-data "--" (session-hmac cookie-data)))))
 
 (defmethod read-session :cookie
-  [_ data]
+  [data]
   (let [[session mac] (.split data "--")]
     (if (= mac (session-hmac session))
       (unmarshal session))))
 
 ; Do nothing for write or destroy
-(defmethod write-session :cookie [_ _])
-(defmethod destroy-session :cookie [_ _])
+(defmethod write-session :cookie [session])
+(defmethod destroy-session :cookie [session])
 
 ;; Session middleware
 
 (defn- get-request-session
-  "Retrieve the session using the 'session-id' cookie in the request."
+  "Retrieve the session using the 'session' cookie in the request."
   [request]
   (if-let [session-id (-> request :cookies :session)]
-    (read-session *session-store* session-id)))
+    (read-session session-id)))
 
 (defn- assoc-request-session
   "Associate the session with the request."
@@ -126,7 +125,7 @@
     (assoc request
       :session session)
     (assoc request
-      :session      (create-session *session-store*)
+      :session      (create-session)
       :new-session? true)))
 
 (defn- assoc-request-flash
@@ -148,10 +147,10 @@
 (defn- set-session-cookie
   "Set the session cookie on the response."
   [request response session]
-  (let [new?   (:new-session? request)
-        cookie (session-cookie *session-store* new? session)
-        update (set-cookie :session cookie)]
-    (update-response {} response update)))
+  (let [new? (:new-session? request)]
+    (if-let [cookie (session-cookie new? session)]
+      (update-response {} response (set-cookie :session cookie))
+      response)))
 
 (defn with-session
   "Wrap a handler in a session."
@@ -164,9 +163,9 @@
           session  (get-response-session request response)]
       ; Save session
       (if (:session response)
-        (write-session *session-store* session)
+        (write-session session)
         (if (not-empty (:flash request))
-          (write-session *session-store* (:session request))))
+          (write-session (:session request))))
       ; Set cookie
       (if response
         (set-session-cookie request response session)
