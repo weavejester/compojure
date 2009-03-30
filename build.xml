@@ -7,6 +7,8 @@
   <property name="deps.dir" location="deps"/>
   <property name="source.dir" location="src"/>
   <property name="compojure.jar" location="compojure.jar"/>
+  <property name="deps.file" value="deps.zip"/>
+  <property name="deps.url" value="http://cloud.github.com/downloads/weavejester/compojure/${deps.file}"/>
 
   <target name="clean" description="Remove generated files">
     <delete file="${compojure.jar}"/>
@@ -64,5 +66,10 @@
         </fileset>
       </classpath>
     </java>
+  </target>
+
+  <target name="deps" description="Download dependencies and unzip">
+    <get usetimestamp="true" description="Clojure dependencies." src="${deps.url}" dest="${deps.file}"/>
+    <unzip src="${deps.file}" dest="."/>
   </target>
 </project>
