@@ -68,14 +68,10 @@
 
 (defmethod read-session :memory
   [id]
-  (print "READ: ")
-  (prn (@memory-sessions id))
   (@memory-sessions id))
 
 (defmethod write-session :memory
   [session]
-  (print "WRITE: ")
-  (prn session)
   (dosync
     (alter memory-sessions
       assoc (session :id) session)))
