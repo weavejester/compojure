@@ -68,10 +68,14 @@
 
 (defmethod read-session :memory
   [id]
+  (print "READ: ")
+  (prn (@memory-sessions id))
   (@memory-sessions id))
 
 (defmethod write-session :memory
   [session]
+  (print "WRITE: ")
+  (prn session)
   (dosync
     (alter memory-sessions
       assoc (session :id) session)))
@@ -161,15 +165,12 @@
                      assoc-request-flash)
           response (handler request)
           session  (get-response-session request response)]
-      ; Save session
-      (if (:session response)
-        (write-session session)
-        (if (not-empty (:flash request))
-          (write-session (:session request))))
-      ; Set cookie
-      (if response
-        (set-session-cookie request response session)
-        response))))
+      (when response
+        (if (:session response)
+          (write-session session)
+          (if (not-empty (:flash request))
+            (write-session (:session request))))
+        (set-session-cookie request response session)))))
 
 ;; User functions for modifying the session
 
