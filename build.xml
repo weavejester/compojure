@@ -54,20 +54,6 @@
     </jar>
   </target>
 
-  <target name="test" description="Run Compojure unit tests">
-    <java classname="clojure.lang.Script">
-      <arg value="test/test.clj"/>
-      <classpath>
-        <path location="."/>
-        <path location="${source.dir}"/>
-        <path location="${deps.dir}"/>
-        <fileset dir="${deps.dir}">
-          <include name="*.jar"/>
-        </fileset>
-      </classpath>
-    </java>
-  </target>
-
   <target name="deps" description="Download dependencies and unzip">
     <get usetimestamp="true" description="Clojure dependencies." src="${deps.url}" dest="${deps.file}"/>
     <unzip src="${deps.file}" dest="."/>
