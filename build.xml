@@ -10,6 +10,14 @@
   <property name="deps.file" value="deps.zip"/>
   <property name="deps.url" value="http://cloud.github.com/downloads/weavejester/compojure/${deps.file}"/>
 
+  <path id="classpath">
+    <path location="${build.dir}"/>
+    <path location="${source.dir}"/>
+    <fileset dir="${deps.dir}">
+      <include name="*.jar"/>
+    </fileset>
+  </path>
+  
   <target name="clean" description="Remove generated files">
     <delete file="${compojure.jar}"/>
     <delete dir="${build.dir}"/>
@@ -20,16 +28,12 @@
     <mkdir dir="${build.dir}"/>
   </target>
 
-  <target name="compile" depends="init" description="Compile sources">
-    <java classname="clojure.lang.Compile">
-      <classpath>
-        <path location="${build.dir}"/>
-        <path location="${source.dir}"/>
-        <fileset dir="${deps.dir}">
-          <include name="*.jar"/>
-        </fileset>
-      </classpath>
+  <target name="compile" depends="compile-compojure, compile-grizzly-server" description="Compile sources."/>
+
+  <target name="compile-compojure" depends="init" description="Compile compojure sources">
+    <java classname="clojure.lang.Compile" fork="true">
       <sysproperty key="clojure.compile.path" value="${build.dir}"/>
+      <classpath refid="classpath"/>
       <arg value="compojure"/>
       <arg value="compojure.control"/>
       <arg value="compojure.file-utils"/>
@@ -39,10 +43,19 @@
       <arg value="compojure.http.servlet"/>
       <arg value="compojure.http.helpers"/>
       <arg value="compojure.ns-utils"/>
+      <arg value="compojure.server.common"/>
       <arg value="compojure.server.jetty"/>
       <arg value="compojure.json"/>
       <arg value="compojure.str-utils"/>
       <arg value="compojure.validation"/>
+    </java>
+  </target>
+
+  <target name="compile-grizzly-server" depends="compile-compojure" description="Compile Grizzly server" if="with.grizzly">
+    <java classname="clojure.lang.Compile">
+      <sysproperty key="clojure.compile.path" value="${build.dir}"/>
+      <classpath refid="classpath"/>
+      <arg value="compojure.server.grizzly"/>
     </java>
   </target>
 
@@ -52,20 +65,6 @@
       <fileset dir="${source.dir}" includes="**/*.clj"/>
       <fileset dir="${build.dir}" includes="**/*.class"/>
     </jar>
-  </target>
-
-  <target name="test" description="Run Compojure unit tests">
-    <java classname="clojure.lang.Script">
-      <arg value="test/test.clj"/>
-      <classpath>
-        <path location="."/>
-        <path location="${source.dir}"/>
-        <path location="${deps.dir}"/>
-        <fileset dir="${deps.dir}">
-          <include name="*.jar"/>
-        </fileset>
-      </classpath>
-    </java>
   </target>
 
   <target name="deps" description="Download dependencies and unzip">
