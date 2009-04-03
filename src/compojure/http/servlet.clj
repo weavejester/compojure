@@ -11,7 +11,6 @@
 ;; Functions for interfacing Compojure with the Java servlet standard.
 
 (ns compojure.http.servlet
-  (:use compojure.file-utils)
   (:use compojure.http.routes)
   (:use compojure.http.request)
   (:import java.io.File)
@@ -22,7 +21,8 @@
   (:import javax.servlet.http.HttpServlet)
   (:import javax.servlet.http.HttpServletRequest)
   (:import javax.servlet.http.HttpServletResponse)
-  (:import javax.servlet.ServletContext))
+  (:import javax.servlet.ServletContext)
+  (:import org.apache.commons.io.IOUtils))
 
 ;; Functions to pull information from the request object
 
@@ -88,7 +88,7 @@
           (.print writer (str chunk))))
     (instance? InputStream body)
       (with-open [out (.getOutputStream response)]
-        (copy-stream body out)
+        (IOUtils/copy body out)
         (.close body)
         (.flush out))
     (instance? File body)

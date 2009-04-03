@@ -32,10 +32,15 @@
       <sysproperty key="clojure.compile.path" value="${build.dir}"/>
       <arg value="compojure"/>
       <arg value="compojure.control"/>
-      <arg value="compojure.file-utils"/>
       <arg value="compojure.html"/>
+      <arg value="compojure.html.gen"/>
+      <arg value="compojure.html.form-helpers"/>
+      <arg value="compojure.html.page-helpers"/>
       <arg value="compojure.http"/>
       <arg value="compojure.http.routes"/>
+      <arg value="compojure.http.request"/>
+      <arg value="compojure.http.response"/>
+      <arg value="compojure.http.session"/>
       <arg value="compojure.http.servlet"/>
       <arg value="compojure.http.helpers"/>
       <arg value="compojure.ns-utils"/>

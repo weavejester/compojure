@@ -17,7 +17,6 @@
 
 (immigrate
   'compojure.control
-  'compojure.file-utils
   'compojure.html.gen
   'compojure.html.page-helpers
   'compojure.html.form-helpers
