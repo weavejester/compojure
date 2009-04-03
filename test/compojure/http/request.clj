@@ -26,6 +26,11 @@
     (= (get-query-params request)
        params)))
 
+(fact "The form-urlencoded content-type can have an charset"
+  [charset #"\w+"]
+  (let [type (str "application/x-www-form-urlencoded; charset=" charset)]
+    (urlencoded-form? {:content-type type})))
+
 (fact "Parameters can be passed via the body"
   [params random-params]
   (let [body    (input-stream (naively-encode params "&"))

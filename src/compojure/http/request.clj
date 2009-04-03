@@ -56,7 +56,7 @@
 (defn urlencoded-form?
   "Does a request have a urlencoded form?"
   [request]
-  (= (request :content-type) "application/x-www-form-urlencoded"))
+  (.startsWith (request :content-type) "application/x-www-form-urlencoded"))
 
 (defn get-form-params
   "Parse urlencoded form parameters from the request body."
