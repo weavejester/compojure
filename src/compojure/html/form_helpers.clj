@@ -34,10 +34,12 @@
 (defn- input-field
   "Creates a form input field."
   [type name value]
-  [:input {:type  type
-           :name  (str* name)
-           :id    (str* name)
-           :value value}])
+  (let [name  (str* name)
+        attrs {:type type, :name name, :id name}
+        attrs (if value
+                (assoc attrs :value value)
+                attrs)]
+    [:input attrs]))
 
 (defn hidden-field
   "Creates a hidden input field."
