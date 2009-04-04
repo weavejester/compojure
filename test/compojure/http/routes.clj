@@ -35,88 +35,63 @@
     "/:x/:x/:x" "/a/b/c" {:x ["a" "b" "c"]}
     "/:x/b/:x"  "/a/b/c" {:x ["a" "c"]}))
 
+(deftest wildcard-paths
+  (are (= (match-uri (compile-uri-matcher _1) _2) _3)
+    "/*"     "/foo"         {:* "foo"}
+    "/*"     "/foo.txt"     {:* "foo.txt"}
+    "/*"     "/foo/bar"     {:* "foo/bar"}
+    "/foo/*" "/foo/bar/baz" {:* "bar/baz"}
+    "/a/*/d" "/a/b/c/d"     {:* "b/c"}))
 
-(deftest route-get-method
-  (let [route    (GET "/" "foobar")
+(deftest unmatched-paths
+  (is (nil? (match-uri (compile-uri-matcher "/foo") "/bar"))))
+
+(deftest regex-paths
+  (is (match-uri #"/[A-Z][a-z]" "/Ab"))
+  (is (not (match-uri  #"/[A-Z][a-z]" "/ab"))))
+
+(deftest regex-path-params
+  (are (= (match-uri _1 _2) _3)
+    #"/foo/(\w+)"   "/foo/bar" ["bar"]
+    #"/(\w+)/(\d+)" "/foo/10"  ["foo" "10"]))
+
+(deftest route-response
+  (let [route    (GET "/" "Lorem Ipsum")
         request  {:request-method :get, :uri "/"}
         response (route request)]
-    (is (= (:body response) "foobar"))))
+    (is (= response {:status 200, :headers {}, :body "Lorem Ipsum"}))))
 
-(comment
-(def http-methods [:get :post :put :delete])
-(def http-macros `(GET POST PUT DELETE))
+(defn- route-body
+  [route method uri]
+  (:body (route {:request-method method, :uri uri})))
 
-(fact "Routes can match HTTP methods"
-  [method http-methods
-   macro  http-macros
-   body   random-str]
-  (let [route    (eval `(~macro "/" ~body))
-        response (route {:request-method method, :uri "/"})]
-    (= (:body response) body)))
+(deftest route-methods
+  (are (= (route-body _1 _2 "/") _3)
+    (GET    "/" "a") :get    "a"
+    (POST   "/" "b") :post   "b"
+    (PUT    "/" "c") :put    "c"
+    (HEAD   "/" "d") :head   "d"
+    (DELETE "/" "e") :delete "e"))
 
-(fact "The ANY route matches any HTTP method"
-  [method http-methods
-   body   random-str]
-  (let [route    (ANY "/" body)
-        response (route {:request-method method, :uri "/"})]
-    (= (:body response) body)))
+(deftest route-any
+  (are (= (route-body (ANY "/" _2) _1 "/") _2)
+    :get    "a"
+    :post   "b"
+    :put    "c"
+    :delete "d"))
 
-(fact "Routes can match wildcards"
-  [[route path] {"/*"     "/foo/bar.txt"
-                 "/baz/*" "/baz/foo/bar.txt"
-                 "/*/baz" "/foo/bar.txt/baz"
-                 "/a/*/b" "/a/foo/bar.txt/b"
-                 "*"      "foo/bar.txt"}]
-  (= (match-uri (compile-uri-matcher route) path)
-     {:* "foo/bar.txt"}))
+(deftest route-var-paths
+  (let [path "/foo/bar"]
+    (is (= (route-body (GET path "pass") :get path)
+           "pass"))))
 
-(fact "Routes can match paths in vars"
-  [path ["/foo" "/bar" "/foo/bar"]]
-  (let [route    (GET path "passed")
-        response (route {:request-method :get, :uri path})]
-    (= (:body response) "passed")))
+(deftest route-not-match
+  (let [route   (GET "/" "Lorem Ipsum")
+        request {:request-method :get, :uri "/foo"}]
+    (is (nil? (route request)))))
 
-(fact "Keywords are stored in (request :route-params)"
-  [kw [:foo :bar :baz]]
-  (let [route    (GET (str "/" kw) (-> request :route-params kw))
-        request  {:request-method :get, :uri "/lorem"}
-        response (route request)]
-    (= (:body response) "lorem")))
-
-(fact "Wildcards are stored in (request :route-params)"
-  [path ["" "foo" "foo/bar" "foo.bar"]]
-  (let [route    (GET "/*" (-> request :route-params :*))
-        request  {:request-method :get, :uri (str "/" path)}
-        response (route request)]
-    (= (:body response) path)))
-
-(fact "A shortcut to route parameters is to use params"
-  [kw [:foo :bar :baz]]
-  (let [route    (GET (str "/" kw) (params kw))
-        request  {:request-method :get, :uri "/ipsum"}
-        response (route request)]
-    (= (:body response) "ipsum")))
-
-(fact "Routes that don't match the path return nil"
-  [path #"/\w+.txt"]
-  (let [route    (GET "/foo.html" "foobar")
-        request  {:request-method :get, :uri path}
-        response (route request)]
-    (nil? response)))
-
-(fact "Routes can use regular expressions"
-  [path #"/\w+"]
-  (let [regex    (re-pattern path)
-        route    (GET regex "lorem")
-        request  {:request-method :get, :uri path}
-        response (route request)]
-    (= (:body response) "lorem")))
-
-(fact "Regular expressions return route parameters as a vector of groups"
-  [[path regex] {"/foo/bar" #"/foo/(.*)"}]
-  (let [route    (GET regex ((request :route-params) 0))
-        request  {:request-method :get, :uri path}
-        response (route request)]
-    (= (:body response) "bar")))
-
-  )
+(deftest route-keywords
+  (let [route (GET "/:foo"
+                (is (= (:route-params request) {:foo "bar"}))
+                "")]
+    (route {:request-method :get, :uri "/bar"})))
