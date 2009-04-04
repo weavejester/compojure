@@ -17,6 +17,10 @@
   (is (= (:body (create-response {} "Lorem Ipsum"))
          "Lorem Ipsum")))
 
+(deftest seq-response
+  (is (= (:body (create-response {} (list "a" "b" "c")))
+         (list "a" "b" "c"))))
+
 (deftest map-response
   (let [response {:status  200
                   :headers {"Content-Type" "text/plain"}
