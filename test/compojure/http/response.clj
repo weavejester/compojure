@@ -1,45 +1,32 @@
 (ns test.compojure.http.response
-  (:use fact.core)
-  (:use fact.random-utils)
-  (:use compojure.http.response))
+  (:use compojure.http.response)
+  (:use clojure.contrib.test-is))
 
-(defn random-status []
-  (random-int 100 599))
+(deftest nil-response
+  (is (= (create-response {} nil)
+         {:status 200, :headers {}})))
 
-(defn random-response []
-  {:status  (random-status)
-   :headers (random-map random-keyword random-str)
-   :body    (random-str)})
+(deftest int-response
+  (is (= (:status (create-response {} 404))
+         404)))
+         
+(deftest next-response
+  (is (nil? (create-response {} :next))))
 
-(fact "A nil value generates a blank '200 OK' response"
-  []
-  (= (create-response {} nil)
-     {:status 200, :headers {}}))
+(deftest string-response
+  (is (= (:body (create-response {} "Lorem Ipsum"))
+         "Lorem Ipsum")))
 
-(fact "An integer value sets the response status code"
-  [status random-status]
-  (= (:status (create-response {} status))
-     status))
+(deftest map-response
+  (let [response {:status  200
+                  :headers {"Content-Type" "text/plain"}
+                  :body    "Lorem Ipsum"}]
+    (is (= (create-response {} response) response))))
 
-(fact "The :next keyword generates a nil response"
-  []
-  (nil? (create-response {} :next)))
+(deftest vector-string-response
+  (is (= (:body (create-response {} ["Foo" "Bar" "Baz"]))
+         "FooBarBaz")))
 
-(fact "A response map gets passed straight through"
-  [response random-response]
-  (= (create-response {} response) response))
-
-(fact "A string gets added to the response body"
-  [body random-str]
-  (= (:body (create-response {} body)) body))
-
-(fact "Strings in a vector get concatenated together"
-  [body #(random-vec random-str)]
-  (= (:body (create-response {} body))
-     (if (seq body)
-       (apply str body))))
-
-(fact "The last integer in a vector is used as the status code"
-  [statuses #(random-vec random-status)]
-  (= (:status (create-response {} statuses))
-     (or (last statuses) 200)))
+(deftest vector-int-response
+  (is (= (:status (create-response {} [200 500 403]))
+         403)))
