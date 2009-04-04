@@ -1,8 +1,48 @@
 (ns test.compojure.http.routes
-  (:use fact.core)
-  (:use fact.random-utils)
-  (:use compojure.http.routes))
+  (:use compojure.http.routes)
+  (:use clojure.contrib.test-is))
 
+(deftest fixed-path
+  (are (match-uri (compile-uri-matcher _1) _1)
+    "/"
+    "/foo"
+    "/foo/bar"
+    "/foo/bar.html"))
+
+(deftest nil-paths
+  (is (match-uri (compile-uri-matcher "/") nil)))
+
+(deftest keyword-paths
+  (are (= (match-uri (compile-uri-matcher _1) _2) _3)
+    "/:x"       "/foo"     {:x "foo"}
+    "/foo/:x"   "/foo/bar" {:x "bar"}
+    "/a/b/:c"   "/a/b/c"   {:c "c"}
+    "/:a/b/:c"  "/a/b/c"   {:a "a", :c "c"}))
+
+(deftest keywords-match-extensions
+  (are (= (match-uri (compile-uri-matcher _1) _2) _3)
+    "/foo.:ext" "/foo.txt" {:ext "txt"}
+    "/:x.:y"    "/foo.txt" {:x "foo", :y "txt"}))
+
+(deftest hyphen-keywords
+  (are (= (match-uri (compile-uri-matcher _1) _2) _3)
+    "/:foo-bar" "/baz" {:foo-bar "baz"}
+    "/:foo-"    "/baz" {:foo- "baz"}
+    "/:-foo"    "/baz" {:-foo "baz"}))
+
+(deftest same-keyword-many-times
+  (are (= (match-uri (compile-uri-matcher _1) _2) _3)
+    "/:x/:x/:x" "/a/b/c" {:x ["a" "b" "c"]}
+    "/:x/b/:x"  "/a/b/c" {:x ["a" "c"]}))
+
+
+(deftest route-get-method
+  (let [route    (GET "/" "foobar")
+        request  {:request-method :get, :uri "/"}
+        response (route request)]
+    (is (= (:body response) "foobar"))))
+
+(comment
 (def http-methods [:get :post :put :delete])
 (def http-macros `(GET POST PUT DELETE))
 
@@ -20,41 +60,6 @@
   (let [route    (ANY "/" body)
         response (route {:request-method method, :uri "/"})]
     (= (:body response) body)))
-
-(fact "Routes can match fixed paths"
-  [[path & _] #"/(\w+)(/\w+)*(\.\w+)?"]
-  (match-uri (compile-uri-matcher path) path))
-
-(fact "Nil routes are treated as '/'"
-  []
-  (match-uri (compile-uri-matcher "/") nil))
-
-(fact "Routes can contain keywords"
-  [[route path] {"/:x"         "/foo"
-                 "/bar/:x"     "/bar/foo"
-                 "/:x/bar"     "/foo/bar"
-                 "/bar/:x/baz" "/bar/foo/baz"
-                 "/:x.txt"     "/foo.txt"
-                 "/bar.:x"     "/bar.foo"}]
-  (= (match-uri (compile-uri-matcher route) path)
-     {:x "foo"}))
-
-(fact "Routes can contain keywords containing hyphens"
-  [[route path] {"/:foo-bar"         "/baz"
-                 "/aaa/:foo-bar/bbb" "/aaa/baz/bbb"}]
-  (= (match-uri (compile-uri-matcher route) path)
-     {:foo-bar "baz"}))
-
-(fact "Routes can contain keywords containing hyphens many times"
-  [[route path] {"/:foo-bar/bbb/:foo-bar" "/baz/bbb/baz"}]
-  (= (match-uri (compile-uri-matcher route) path)
-     {:foo-bar ["baz" "baz"]}))
-
-(fact "Routes can contain the same keyword many times"
-  [[route path] {"/:x/:x/:x"     "/foo/bar/baz"
-                 "/a/:x/b/:x.:x" "/a/foo/b/bar.baz"}]
-  (= (match-uri (compile-uri-matcher route) path)
-     {:x ["foo" "bar" "baz"]}))
 
 (fact "Routes can match wildcards"
   [[route path] {"/*"     "/foo/bar.txt"
@@ -113,3 +118,5 @@
         request  {:request-method :get, :uri path}
         response (route request)]
     (= (:body response) "bar")))
+
+  )
