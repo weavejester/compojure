@@ -30,11 +30,9 @@ To run Compojure, you'll need:
 * The [Clojure](http://clojure.org) programming language
 * The [Clojure-Contrib](http://code.google.com/p/clojure-contrib/) library
 * A Java servlet container like [Jetty](http://www.mortbay.org/jetty/)
-
-And to run Compojure's unit tests, you'll need:
-
-* The [Fact](http://github.com/weavejester/fact) unit test framework
-* The [Re-rand](http://github.com/weavejester/re-rand) library
+* Apache Commons [FileUpload](http://commons.apache.org/fileupload),
+  [IO](http://commons.apache.org/io) and
+  [Codec](http://commons.apache.org/codec).
 
 Documentation
 -------------
