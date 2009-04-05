@@ -2,6 +2,8 @@
   (:use compojure.http.session)
   (:use clojure.contrib.test-is))
 
+;; Memory sessions
+
 (deftest create-memory-session
   (binding [*session-store* :memory]
     (contains? (create-session) :id)))
@@ -32,6 +34,8 @@
       (destroy-session mock-session)
       (is (not (contains? @memory-sessions ::mock-id))))))
 
+;; Session routes
+
 (deftest session-nil-response
   (let [handler  (with-session (constantly nil))
         response (handler {})]
@@ -42,16 +46,28 @@
 
 (defmethod write-session ::mock [session])
 
+(defmethod read-session ::mock [id]
+  (is (= id ::mock-id))
+  {:id ::mock-id})
+
 (defmethod session-cookie ::mock [new? session]
   "mock-session-cookie")
 
+(defn- mock-session-response
+  [request response]
+  (let [handler (with-session (constantly response))]
+    (handler request)))
+
+(deftest new-session-cookie
+  (binding [*session-store* ::mock]
+    (let [response (mock-session-response {} {})]
+      (is (= (get-in response [:headers "Set-Cookie"])
+             "session=mock-session-cookie")))))
+
 (deftest response-session-cookie
   (binding [*session-store* ::mock]
-    (let [handler  (with-session (constantly {:session {}}))
-          response (handler {})
-          headers  (:headers response)]
-      (is (contains? headers "Set-Cookie"))
-      (is (= (headers "Set-Cookie")
+    (let [response (mock-session-response {} {:session {}})]
+      (is (= (get-in response [:headers "Set-Cookie"])
              "session=mock-session-cookie")))))
 
 (deftest session-store-test
