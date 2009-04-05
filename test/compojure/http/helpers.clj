@@ -1,11 +1,8 @@
 (ns test.compojure.http.helpers
-  (:use fact.core)
-  (:use fact.random-utils)
-  (:use compojure.http.helpers))
+  (:use compojure.http.helpers)
+  (:use clojure.contrib.test-is))
 
-(fact "A cookie can be set with set-cookie"
-  [name  #"\w+"
-   value #"\w+"]
-  (let [response (set-cookie name value)]
+(deftest test-set-cookie
+  (let [response (set-cookie :foo "bar")]
     (= (get-in response [:headers "Set-Cookie"])
-       (str name "=" value))))
+       "foo=bar")))
