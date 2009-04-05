@@ -4,11 +4,13 @@
   (:require test.compojure.html.form-helpers)
   (:require test.compojure.http.routes)
   (:require test.compojure.http.request)
-  (:require test.compojure.http.response))
+  (:require test.compojure.http.response)
+  (:require test.compojure.http.session))
 
 (run-tests 
   'test.compojure.html.gen
   'test.compojure.html.form-helpers
   'test.compojure.http.routes
   'test.compojure.http.request
-  'test.compojure.http.response)
+  'test.compojure.http.response
+  'test.compojure.http.session)
