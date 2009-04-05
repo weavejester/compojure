@@ -6,7 +6,8 @@
   (:require test.compojure.http.request)
   (:require test.compojure.http.response)
   (:require test.compojure.http.session)
-  (:require test.compojure.http.helpers))
+  (:require test.compojure.http.helpers)
+  (:require test.compojure.validation))
 
 (run-tests 
   'test.compojure.html.gen
@@ -15,4 +16,5 @@
   'test.compojure.http.request
   'test.compojure.http.response
   'test.compojure.http.session
-  'test.compojure.http.helpers)
+  'test.compojure.http.helpers
+  'test.compojure.validation)

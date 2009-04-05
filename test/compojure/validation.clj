@@ -1,56 +1,37 @@
 (ns test.compojure.validation
-  (:use fact.core)
   (:use compojure.html.form-helpers)
-  (:use compojure.validation))
+  (:use compojure.validation)
+  (:use clojure.contrib.test-is))
 
-(fact "Parameters that pass validation return empty maps"
-  []
-  (= (validate {:a 1} :a (constantly true) "fail")
-     {}))
+(deftest passes-validate
+  (is (= (validate {:a 1} :a (constantly true) "fail")
+         {})))
 
-(fact "Parameters that fail validation return error message maps"
-  [[param message] {:a  "fail"
-                    'b  "error"
-                    "c" ""}]
-  (= (validate {param 1} param (constantly false) message)
-     {param [message]}))
+(deftest fails-validate
+  (is (= (validate {:a 1} :a (constantly false) "fail")
+         {:a ["fail"]})))
 
-(fact "Error message maps can be merged with merge-errors"
-  [[in out] {[{}]                     {}
-             [{} {} {}]               {}
-             [{:a ["f"]}]             {:a ["f"]}
-             [{:a ["f"]} {:b ["g"]}]  {:a ["f"], :b ["g"]}
-             [{:a ["f"]} {:a ["g"]}]  {:a ["f" "g"]}}]
-  (= (apply merge-errors in)
-     out))
-
-(fact "The validation function is a short for merge-errors and many validates"
-  [params [{:a 1, :b 2, :c 3}
-           {}
-           {:a 1, :c 3}
-           {:a 3, :c 1}
-           {:a 3, :c 1, :b 2}
-           {:foo 10}
-           {:a "foo"}]]
-  (= (validation params
-       [:a (partial = 1) "a isn't 1"]
-       [:b (partial = 2) "b isn't 2"]
-       [:c (partial = 3) "c isn't 3"]
-       [#(= (count %) 3) "size isn't 3"])
-     (merge-errors
-       (validate params :a (partial = 1) "a isn't 1")
-       (validate params :b (partial = 2) "b isn't 2")
-       (validate params :c (partial = 3) "c isn't 3")
-       (validate params #(= (count %) 3) "size isn't 3"))))
-
-(fact "error-class wraps elements in an error div when errors exist"
-  [func [text-field check-box text-area]]
+(deftest error-class-errors
   (binding [*errors* {:foo "bar"}]
-    (= ((error-class func) :foo)
-       [:div.error (func :foo)])))
+    (is (= ((error-class text-field) :foo)
+           [:div.error (text-field :foo)]))))
 
-(fact "error-class does nothing div when errors don't exist"
-  [func [text-field check-box text-area]]
+(deftest error-class-no-errors
   (binding [*errors* {}]
-    (= ((error-class func) :foo)
-       (func :foo))))
+    (is (= ((error-class text-field) :foo)
+           (text-field :foo)))))
+
+(deftest merge-errors-test
+  (are (= (apply merge-errors _1) _2)
+    [{}]                     {}
+    [{} {} {}]               {}
+    [{:a ["f"]}]             {:a ["f"]}
+    [{:a ["f"]} {:b ["g"]}]  {:a ["f"], :b ["g"]}
+    [{:a ["f"]} {:a ["g"]}]  {:a ["f" "g"]}))
+
+(deftest validation-test
+  (let [params {:a 1, :b 2}
+        pred   #(= % 2)
+        mesg   "isn't 2"]
+    (is (= (validation params [:a pred mesg] [:b pred mesg])
+           {:a ["isn't 2"]}))))
