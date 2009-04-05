@@ -147,10 +147,9 @@
 (defn- set-session-cookie
   "Set the session cookie on the response."
   [request response session]
-  (let [new? (:new-session? request)]
-    (if-let [cookie (session-cookie new? session)]
-      (update-response {} response (set-cookie :session cookie))
-      response)))
+  (if-let [cookie (session-cookie (:new-session? request) session)]
+    (update-response request response (set-cookie :session cookie))
+    response))
 
 (defn with-session
   "Wrap a handler in a session."
@@ -162,7 +161,7 @@
           response (handler request)
           session  (get-response-session request response)]
       (when response
-        (if (:session response)
+        (if (or (:session response) (:new-session? request))
           (write-session session)
           (if (not-empty (:flash request))
             (write-session (:session request))))
