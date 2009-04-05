@@ -14,14 +14,23 @@
   (:use compojure.encodings)
   (:use compojure.str-utils)
   (:use clojure.contrib.def)
+  (:use clojure.contrib.str-utils)
   (:use clojure.contrib.duck-streams)
   (:import java.io.File))
 
+(defn- encode-cookie
+  "Encode sequence of key/value pairs a cookie."
+  [keyvals]
+  (str-join "; "
+    (map (fn [[k v]] (str* k "=" v)) keyvals)))
+
 (defn set-cookie
   "Return a Set-Cookie header."
-  [name value]
-  (let [cookie (str (urlencode name) "=" (urlencode value))]
-    {:headers {"Set-Cookie" cookie}}))
+  ([name value]
+    {:headers {"Set-Cookie" (encode-cookie [[name value]])}})
+  ([name value & attrs]
+    (let [attrs (concat [[name value]] (partition 2 attrs))]
+      {:headers {"Set-Cookie" (encode-cookie attrs)}})))
 
 (defn redirect-to
   "A shortcut for a '302 Moved' HTTP redirect."

@@ -62,13 +62,13 @@
   (binding [*session-store* ::mock]
     (let [response (mock-session-response {} {})]
       (is (= (get-in response [:headers "Set-Cookie"])
-             "session=mock-session-cookie")))))
+             "session=mock-session-cookie; path=/")))))
 
 (deftest response-session-cookie
   (binding [*session-store* ::mock]
     (let [response (mock-session-response {} {:session {}})]
       (is (= (get-in response [:headers "Set-Cookie"])
-             "session=mock-session-cookie")))))
+             "session=mock-session-cookie; path=/")))))
 
 (deftest session-store-test
   (set-session-store! ::mock)

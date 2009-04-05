@@ -3,6 +3,9 @@
   (:use clojure.contrib.test-is))
 
 (deftest test-set-cookie
-  (let [response (set-cookie :foo "bar")]
-    (= (get-in response [:headers "Set-Cookie"])
-       "foo=bar")))
+  (is (= (set-cookie :foo "bar")
+         {:headers {"Set-Cookie" "foo=bar"}})))
+
+(deftest test-set-cookie-path
+  (is (= (set-cookie :a "b", :path "/")
+         {:headers {"Set-Cookie" "a=b; path=/"}})))
