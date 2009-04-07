@@ -12,7 +12,7 @@
 
 (ns compojure.server.jetty
   (:use compojure.control)
-  (:import java.net.URL)
+  (:use compojure.server.common)
   (:import org.mortbay.jetty.Server)
   (:import org.mortbay.jetty.servlet.Context)
   (:import org.mortbay.jetty.servlet.ServletHolder)
@@ -29,7 +29,7 @@
     holder))
 
 (defn get-context
-  "Get a Context instant for a server and hostname."
+  "Get a Context instance for a server and hostname."
   ([server]
     (get-context server nil))
   ([server host]
@@ -39,14 +39,6 @@
         context))))
 
 (decorate-with memoize get-context)
-
-(defn get-host-and-path
-  "Splits a path or URL into its hostname and path."
-  [url-or-path]
-  (if (re-find #"^\w+://" url-or-path)
-    (let [url (URL. url-or-path)]
-      [(.getHost url) (.getPath url)])
-    [nil url-or-path]))
 
 (defn add-servlet!
   "Add a servlet to a Jetty server. Servlets can be connected to a relative
@@ -71,17 +63,15 @@
       (add-servlet! server url-or-path servlet))
     server))
 
-(defn http-server
+(defn jetty-server
   "Create a new Jetty HTTP server with the supplied options and servlets."
   [options & servlets]
-  (if (map? options)
-    (create-server options servlets)
-    (create-server {} (cons options servlets))))
+  (apply-optional-map create-server options servlets))
 
 (defmacro defserver
   "Shortcut for (def name (http-server args))"
   [name & args]
-  `(def ~name (http-server ~@args)))
+  `(def ~name (jetty-server ~@args)))
 
 (defn start "Start a HTTP server."
   [server]
@@ -94,4 +84,4 @@
 (defn run-server
   "Create and start a new Jetty HTTP server."
   [& server-args]
-  (.start (apply http-server server-args)))
+  (.start (apply jetty-server server-args)))
