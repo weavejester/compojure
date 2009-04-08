@@ -105,7 +105,10 @@
     {}
     (map vector keywords (rest groups))))
 
-(defmulti match-uri (fn [matcher uri] (class matcher)))
+(defmulti match-uri
+  "Match a URL against a compiled URI-matcher or a regular expression. Returns
+  the matched URI keywords as a map, or the matched regex groups as a vector."
+  (fn [matcher uri] (class matcher)))
 
 (defmethod match-uri Map
   [uri-matcher uri]
