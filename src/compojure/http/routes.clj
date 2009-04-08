@@ -67,8 +67,8 @@
   "Compile a path string using the routes syntax into a uri-matcher struct."
   [path]
   (let [splat   #"\*"
-        word    #":([\w-]+)"
-        literal #"(:[^\w-]|[^:*])+"]
+        word    #":([A-Za-z][\w-]*)"
+        literal #"(:[^A-Za-z*]|[^:*])+"]
     (struct uri-matcher
       (re-pattern
         (apply str

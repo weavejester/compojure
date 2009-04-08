@@ -27,8 +27,7 @@
 (deftest hyphen-keywords
   (are (= (match-uri (compile-uri-matcher _1) _2) _3)
     "/:foo-bar" "/baz" {:foo-bar "baz"}
-    "/:foo-"    "/baz" {:foo- "baz"}
-    "/:-foo"    "/baz" {:-foo "baz"}))
+    "/:foo-"    "/baz" {:foo- "baz"}))
 
 (deftest same-keyword-many-times
   (are (= (match-uri (compile-uri-matcher _1) _2) _3)
@@ -46,6 +45,11 @@
 (deftest url-paths
   (is (match-uri (compile-uri-matcher "http://localhost")
                  "http://localhost")))
+
+(deftest url-port-paths
+  (let [matcher (compile-uri-matcher "localhost:8080")]
+    (is (match-uri matcher "localhost:8080"))
+    (is (not (match-uri matcher "localhost:7070")))))
 
 (deftest unmatched-paths
   (is (nil? (match-uri (compile-uri-matcher "/foo") "/bar"))))
