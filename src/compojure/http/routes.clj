@@ -67,8 +67,8 @@
   "Compile a path string using the routes syntax into a uri-matcher struct."
   [path]
   (let [splat   #"\*"
-        word    #":([-\w]+)"
-        literal #"[^:*]+"]
+        word    #":([\w-]+)"
+        literal #"(:[^\w-]|[^:*])+"]
     (struct uri-matcher
       (re-pattern
         (apply str
@@ -129,6 +129,27 @@
   (or (nil? route-method)
       (= route-method request-method)))
 
+(defn request-url
+  "Return the complete URL for the request."
+  [request]
+  (str
+    (name (:scheme request))
+    "://"
+    (get-in request [:headers "host"])
+    (:uri request)))
+
+(defn absolute-url?
+  "True if the string is an absolute URL."
+  [s]
+  (re-find #"^[a-z+.-]+://" s))
+
+(defn get-matcher-uri
+  "Get the appropriate request URI for the given path pattern."
+  [path request]
+  (if (and (string? path) (absolute-url? path))
+    (request-url request)
+    (:uri request)))
+
 (defmacro request-matcher
   "Compiles a function to match a HTTP request against the supplied method
   and path template. Returns a map of the route parameters if the is a match,
@@ -139,8 +160,8 @@
                  `(compile-matcher ~path))]
    `(fn [request#]
       (and
-        (match-method ~method  (request# :request-method))
-        (match-uri    ~matcher (request# :uri))))))
+        (match-method ~method (request# :request-method))
+        (match-uri ~matcher (get-matcher-uri ~path request#))))))
 
 ;; Functions and macros for generating routing functions. A routing function
 ;; returns :next if it doesn't match, and any other value if it does.

@@ -43,6 +43,10 @@
     "/foo/*" "/foo/bar/baz" {:* "bar/baz"}
     "/a/*/d" "/a/b/c/d"     {:* "b/c"}))
 
+(deftest url-paths
+  (is (match-uri (compile-uri-matcher "http://localhost")
+                 "http://localhost")))
+
 (deftest unmatched-paths
   (is (nil? (match-uri (compile-uri-matcher "/foo") "/bar"))))
 
