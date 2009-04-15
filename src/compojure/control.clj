@@ -35,7 +35,7 @@
   [name value]
   `(let [m# (meta #'~name)
          v# (def ~name ~value)]
-     (.setMeta v# (merge m# (meta #'~name)))
+     (.setMeta v# (merge (meta #'~name) m#))
      v#))
 
 (defmacro decorate-with
