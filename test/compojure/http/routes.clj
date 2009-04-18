@@ -103,3 +103,10 @@
                 (is (= (:route-params request) {:foo "bar"}))
                 "")]
     (route {:request-method :get, :uri "/bar"})))
+
+(deftest combine-routes
+  (let [r1 (fn [req] (if (= (:uri req) "/") {:body "x"}))
+        r2 (fn [req] {:body "y"})
+        rs (routes r1 r2)]
+    (is (rs {:uri "/"}) "x")
+    (is (rs {:uri "/foo"}) "y")))
