@@ -173,10 +173,10 @@
   "Add shortcut bindings for the keys in a request map."
   [request & body]
   `(let [~'request ~request
-         ~'params  (get-params ~'request)
+         ~'params  (:params  ~'request)
          ~'cookies (:cookies ~'request)
          ~'session (:session ~'request)
-         ~'flash   (:flash ~'request)]
+         ~'flash   (:flash   ~'request)]
      ~@body))
 
 (defn compile-route
@@ -190,16 +190,19 @@
              (assoc request# :route-params route-params#)
              ~@body))))))
 
-(defn routes
-  "Create a Ring handler by combining several routes into one."
-  [& routes]
+(defn routes*
+  "Create a Ring handler by combining several handlers into one."
+  [& handlers]
   (fn [request]
-    (let [request (-> request
-                    assoc-parameters
-                    assoc-cookies)]
-      (some 
-        (fn [route] (route request))
-        (map with-session routes)))))
+    (some #(% request) handlers)))
+
+(defn routes
+  "Create a Ring handler by combining several routes into one. Adds parameters
+  and cookies to the request."
+  [& handlers]
+  (-> (apply routes* handlers)
+    with-params
+    with-cookies))
 
 ;; Macros for easily creating a compiled routing table
 

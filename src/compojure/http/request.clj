@@ -13,7 +13,6 @@
 (ns compojure.http.request
   (:use compojure.control)
   (:use compojure.encodings)
-  (:use compojure.http.multipart)
   (:use compojure.map-utils)
   (:use compojure.str-utils)
   (:use clojure.contrib.duck-streams)
@@ -67,14 +66,6 @@
       (if-let [body (slurp-body request)]
         (parse-params body #"&")))))
 
-(defn assoc-parameters
-  "Add urlencoded parameters to a request map."
-  [request]
-  (merge request
-    {:query-params     (get-query-params request)
-     :form-params      (get-form-params request)
-     :multipart-params (get-multipart-params request)}))
-
 (defn get-route-params
   "Get a map of the route parameters, or nil if not a map."
   [request]
@@ -82,14 +73,23 @@
     (if (map? params)
       params)))
 
-(defn get-params
-  "Merge all parameters in the request map."
-  [request]
-  (merge
-    (:query-params request)
-    (:form-params request)
-    (:multipart-params request)
-    (get-route-params request)))
+(defn with-params
+  "Decorator that adds urlencoded parameters to the request map. The following
+  keys are added:
+    :query-params
+    :form-params
+    :params"
+  [handler]
+  (fn [request]
+    (let [query-params (get-query-params request)
+          form-params  (get-form-params request)
+          route-params (get-route-params request)
+          params       (merge form-params query-params route-params)]
+      (handler
+        (merge request
+          {:query-params query-params
+           :form-params  form-params
+           :params       params})))))
 
 (defn get-cookies
   "Pull out a map of cookies from a request map."
@@ -97,8 +97,8 @@
   (if-let [cookies (get-in request [:headers "cookie"])]
     (parse-params cookies #";\s*")))
 
-(defn assoc-cookies
-  "Parse the cookies from a request map and add them back in under the
-  :cookies key."
-  [request]
-  (assoc request :cookies (get-cookies request)))
+(defn with-cookies
+  "Decorator that adds the :cookies key to a request map."
+  [handler]
+  (fn [request]
+    (handler (assoc request :cookies (get-cookies request)))))
