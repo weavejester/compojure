@@ -76,8 +76,8 @@
   "Decorate a Ring handler with multipart parameters."
   [handler]
   (fn [request]
-    (handler
-      (-> request
-        (assoc :multipart-params (get-multipart-params request))
-        (assoc :params (merge (request :multipart-params)
-                              (request :params)))))))
+    (let [params  (get-multipart-params request)
+          request (-> request
+                    (assoc :multipart-params params)
+                    (assoc :params (merge (request :params) params)))]
+      (handler request))))
