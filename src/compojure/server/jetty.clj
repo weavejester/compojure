@@ -15,7 +15,8 @@
   (:use compojure.server.common)
   (:import org.mortbay.jetty.Server)
   (:import org.mortbay.jetty.servlet.Context)
-  (:import org.mortbay.jetty.servlet.ServletHolder))
+  (:import org.mortbay.jetty.servlet.ServletHolder)
+  (:import org.mortbay.jetty.security.SslSocketConnector))
 
 (defn servlet-holder
   "Wrap a servlet in a ServletHolder object with a supplied set of parameters
@@ -52,12 +53,28 @@
                       (ServletHolder. servlet))]
     (.addServlet context holder path)))
 
+(defn- add-ssl-connector!
+  "Add an SslSocketConnector to a Jetty server."
+  [server options]
+  (let [ssl-connector (SslSocketConnector.)]
+    (doto ssl-connector
+      (.setPort        (options :ssl-port))
+      (.setKeystore    (options :keystore))
+      (.setKeyPassword (options :key-password)))
+    (when (options :truststore)
+      (.setTruststore ssl-connector (options :truststore)))
+    (when (options :trust-password)
+      (.setTrustPassword ssl-connector (options :trust-password)))
+    (.addConnector server ssl-connector)))
+
 (defn- create-server
   "Construct a Jetty Server instance."
   [options servlets]
   (let [port     (or (options :port) 8080)
         server   (Server. port)
         servlets (partition 2 servlets)]
+    (when (options :ssl-port)
+      (add-ssl-connector! server options))
     (doseq [[url-or-path servlet] servlets]
       (add-servlet! server url-or-path servlet))
     server))
