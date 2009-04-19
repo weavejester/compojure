@@ -45,7 +45,7 @@
   [request]
   (or (request :character-encoding) *default-encoding*))
 
-(defn slurp-body
+(defn- slurp-body
   "Slurp the request body into a string."
   [request]
   (let [encoding (get-character-encoding request)]
@@ -97,8 +97,13 @@
   (if-let [cookies (get-in request [:headers "cookie"])]
     (parse-params cookies #";\s*")))
 
+(defn assoc-cookies
+  "Associate cookies with a request map."
+  [request]
+  (assoc request :cookies (get-cookies request)))
+
 (defn with-cookies
-  "Decorator that adds the :cookies key to a request map."
+  "Decorator that adds cookies to a request map."
   [handler]
   (fn [request]
-    (handler (assoc request :cookies (get-cookies request)))))
+    (handler (assoc-cookies request))))

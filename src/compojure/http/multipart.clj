@@ -71,3 +71,13 @@
   (if (multipart-form? request)
     (parse-multipart-params request)
     {}))
+
+(defn with-multipart
+  "Decorate a Ring handler with multipart parameters."
+  [handler]
+  (fn [request]
+    (handler
+      (-> request
+        (assoc :multipart-params (get-multipart-params request))
+        (assoc :params (merge (request :multipart-params)
+                              (request :params)))))))

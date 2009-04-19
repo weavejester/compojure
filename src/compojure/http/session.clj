@@ -13,6 +13,7 @@
 (ns compojure.http.session
   (:use compojure.str-utils)
   (:use compojure.http.helpers)
+  (:use compojure.http.request)
   (:use compojure.http.response)
   (:use compojure.encodings)
   (:use compojure.crypto)
@@ -132,13 +133,6 @@
       (assoc :flash   (session :flash {}))
       (assoc :session (dissoc session :flash)))))
 
-(defn- get-response-session
-  "Retrieve the current session from the response map."
-  [request response]
-  (if-let [id (-> request :session :id)]
-    (assoc (:session response) :id id)
-    (:session response)))
-
 (defn- set-session-cookie
   "Set the session cookie on the response."
   [request response session]
@@ -158,12 +152,13 @@
     (fn [request]
       (binding [*session-type* session-type]
         (let [request  (-> request
+                         assoc-cookies
                          assoc-request-session
                          assoc-request-flash)
               response (handler request)
-              session  (get-response-session request response)]
+              session  (:session response)]
           (when response
-            (if (or (:session response) (:new-session? request))
+            (if (or session (:new-session? request))
               (write-session session)
               (if (not-empty (:flash request))
                 (write-session (:session request))))

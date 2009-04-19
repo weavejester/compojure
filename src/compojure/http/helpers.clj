@@ -20,17 +20,17 @@
 
 (defn- encode-cookie
   "Encode sequence of key/value pairs a cookie."
-  [keyvals]
+  [name value attrs]
   (str-join "; "
-    (map (fn [[k v]] (str* k "=" v)) keyvals)))
+    (cons (str (urlencode name) "=" (urlencode value))
+          (for [[key val] attrs] (str* key "=" val)))))
 
 (defn set-cookie
   "Return a Set-Cookie header."
   ([name value]
-    {:headers {"Set-Cookie" (encode-cookie [[name value]])}})
+    {:headers {"Set-Cookie" (encode-cookie name value nil)}})
   ([name value & attrs]
-    (let [attrs (concat [[name value]] (partition 2 attrs))]
-      {:headers {"Set-Cookie" (encode-cookie attrs)}})))
+    {:headers {"Set-Cookie" (encode-cookie name value (partition 2 attrs))}}))
 
 (defn redirect-to
   "A shortcut for a '302 Moved' HTTP redirect."
