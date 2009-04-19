@@ -15,8 +15,7 @@
   (:use compojure.server.common)
   (:import org.mortbay.jetty.Server)
   (:import org.mortbay.jetty.servlet.Context)
-  (:import org.mortbay.jetty.servlet.ServletHolder)
-  (:import org.mortbay.util.ajax.ContinuationSupport))
+  (:import org.mortbay.jetty.servlet.ServletHolder))
 
 (defn servlet-holder
   "Wrap a servlet in a ServletHolder object with a supplied set of parameters
