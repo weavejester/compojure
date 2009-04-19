@@ -24,7 +24,6 @@
   'compojure.http.routes
   'compojure.http.servlet
   'compojure.http.session
-  'compojure.json
   'compojure.server.jetty
   'compojure.str-utils
   'compojure.map-utils
