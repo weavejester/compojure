@@ -38,8 +38,13 @@
      (alter-meta! v# merge m#)
      v#))
 
+(defmacro decorate
+  "Wrap a function in one or more decorators."
+  [func & decorators]
+  `(redef ~func (-> ~func ~@decorators)))
+
 (defmacro decorate-with
-  "Wrap functions in a decorator."
+  "Wrap multiple functions in a decorator."
   [decorator & funcs]
   `(do ~@(for [f funcs]
           `(redef ~f (~decorator ~f)))))
