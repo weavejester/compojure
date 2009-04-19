@@ -9,13 +9,6 @@
 ;; compojure.server.common
 ;;
 ;; Common functions for implementing compojure server wrapper.
-;;
-;; Current implementations define:
-;;
-;; (start server)
-;; (stop server)
-;; (defserver name)
-;; (runserver {:optional options} path1 servlet1 pathn servletn)
 
 (ns compojure.server.common
   (:import java.net.URL))
@@ -28,11 +21,9 @@
       [(.getHost url) (.getPath url)])
     [nil url-or-path]))
 
-(defn apply-optional-map
-  "If options is a map, calls (f options seq).  
-   Otherwise, calls (f {} (cons options seq)).
-   Can be used to define run-server."
-  [f options & seq]
+(defn server-with-options
+  "Create a new server using the supplied function, options and servlets."
+  [creator options servlets]
   (if (map? options)
-    (apply f options seq)
-    (apply f {} (cons options seq))))
+    (creator options servlets)
+    (creator {} (cons options servlets))))

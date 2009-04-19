@@ -29,19 +29,19 @@
 
 (defn add-servlet!
   "Add a servlet to a Grizzly server. Servlets can be connected to a relative
-  path or an absolute URL.  Unlike the Jetty server, no Virtual Hosts
+  path or an absolute URL. Unlike the Jetty server, no Virtual Hosts
   are setup."
   [server url-or-path servlet]
   (let [[host path] (get-host-and-path url-or-path)
-        adapter      (if (instance? ServletAdapter servlet)
-                       servlet
-                       (ServletAdapter. servlet))]
+        adapter     (if (instance? ServletAdapter servlet)
+                      servlet
+                      (ServletAdapter. servlet))]
     (.addGrizzlyAdapter server adapter (into-array [path]))))
 
 (defn- create-server
   "Construct a Grizzly Server instance."
   [options servlets]
-  (let [port     (or (options :port) 8080)
+  (let [port     (options :port 80)
         server   (GrizzlyWebServer. port)
         servlets (partition 2 servlets)]
     (doseq [[url-or-path servlet] servlets]
@@ -51,7 +51,7 @@
 (defn grizzly-server
   "Create a new Grizzly HTTP server with the supplied options and servlets."
   [options & servlets]
-  (apply-optional-map create-server options servlets))
+  (server-with-options create-server options servlets))
 
 (defmacro defserver
   "Shortcut for (def name (http-server args))"

@@ -46,10 +46,11 @@
   use the hostname to set up a virtual host. Wildcards for the domain and path
   are allowed."
   [server url-or-path servlet]
+  (prn (class servlet))
   (let [[host path] (get-host-and-path url-or-path)
         context     (get-context server host)
         holder      (if (instance? ServletHolder servlet)
-                       servlet
+                      servlet
                       (ServletHolder. servlet))]
     (.addServlet context holder path)))
 
@@ -58,7 +59,7 @@
   [server options]
   (let [ssl-connector (SslSocketConnector.)]
     (doto ssl-connector
-      (.setPort        (options :ssl-port))
+      (.setPort        (options :ssl-port 443))
       (.setKeystore    (options :keystore))
       (.setKeyPassword (options :key-password)))
     (when (options :truststore)
@@ -70,10 +71,10 @@
 (defn- create-server
   "Construct a Jetty Server instance."
   [options servlets]
-  (let [port     (or (options :port) 8080)
+  (let [port     (options :port 80)
         server   (Server. port)
         servlets (partition 2 servlets)]
-    (when (options :ssl-port)
+    (when (or (options :ssl) (options :ssl-port))
       (add-ssl-connector! server options))
     (doseq [[url-or-path servlet] servlets]
       (add-servlet! server url-or-path servlet))
@@ -81,8 +82,8 @@
 
 (defn jetty-server
   "Create a new Jetty HTTP server with the supplied options and servlets."
-  [options & servlets]
-  (apply-optional-map create-server options servlets))
+  [options? & servlets]
+  (server-with-options create-server options? servlets))
 
 (defmacro defserver
   "Shortcut for (def name (http-server args))"
