@@ -35,13 +35,13 @@
   [name value]
   `(let [m# (meta #'~name)
          v# (def ~name ~value)]
-     (.setMeta v# (merge (meta #'~name) m#))
+     (alter-meta! v# merge m#)
      v#))
 
 (defmacro decorate-with
   "Wrap functions in a decorator."
   [decorator & funcs]
-  `(do ~@(domap [f funcs]
+  `(do ~@(for [f funcs]
           `(redef ~f (~decorator ~f)))))
 
 (defmacro decorate-bind
