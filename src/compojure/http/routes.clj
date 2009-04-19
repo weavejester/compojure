@@ -78,7 +78,10 @@
 ;; Don't compile paths more than once.
 (decorate-with memoize compile-uri-matcher)
 
-(defmulti compile-matcher class)
+(defmulti compile-matcher
+  "Compile a string or regex into a form suitable for buing passed to the
+  match-uri function."
+  class)
 
 (defmethod compile-matcher String
   [path]
