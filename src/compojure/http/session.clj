@@ -111,8 +111,8 @@
 (defn- get-request-session
   "Retrieve the session using the 'session' cookie in the request."
   [request]
-  (if-let [session-id (-> request :cookies :session)]
-    (read-session session-id)))
+  (if-let [session-data (-> request :cookies :session)]
+    (read-session session-data)))
 
 (defn- assoc-request-session
   "Associate the session with the request."
@@ -135,9 +135,9 @@
 
 (defn- set-session-cookie
   "Set the session cookie on the response."
-  [request response session]
+  [request response]
   (let [new?   (:new-session? request)
-        cookie (session-cookie new? session)
+        cookie (session-cookie new? (:session response))
         update (set-cookie :session cookie, :path "/")]
     (if cookie
       (update-response request response update)
@@ -151,18 +151,16 @@
   ([handler session-type]
     (fn [request]
       (binding [*session-type* session-type]
-        (let [request  (-> request
-                         assoc-cookies
-                         assoc-request-session
-                         assoc-request-flash)
-              response (handler request)
-              session  (:session response)]
+        (let [request  (-> request assoc-cookies
+                                   assoc-request-session
+                                   assoc-request-flash)
+              response (handler request)]
           (when response
-            (if (or session (:new-session? request))
-              (write-session session)
+            (if (or (:session response) (:new-session? request))
+              (write-session (:session response))
               (if (not-empty (:flash request))
                 (write-session (:session request))))
-            (set-session-cookie request response session)))))))
+            (set-session-cookie request response)))))))
 
 ;; User functions for modifying the session
 
