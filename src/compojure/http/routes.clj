@@ -24,14 +24,6 @@
 
 ;; Functions for lexing a string
 
-(defn- apply-action
-  "Apply an action to the matcher if the action is not a function."
-  [action matcher]
-  (if (and (ifn? action)
-           (not (keyword? action)))
-    (action matcher)
-    action))
-
 (defn- lex-1
   "Lex one symbol from a string, and return the symbol and trailing source."
   [src clauses]
@@ -39,7 +31,7 @@
     (fn [[re action]]
       (let [matcher (re-matcher re src)]
         (if (.lookingAt matcher)
-          [(apply-action action matcher)
+          [(if (fn? action) (action matcher) action)
            (.substring src (.end matcher))])))
     (partition 2 clauses)))
 
