@@ -20,36 +20,31 @@
 
 ;; Global session store type
 
-(def *session-store* :memory)
-
-(defn set-session-store!
-  "Set the global session store type (defaults to :memory)."
-  [store]
-  (def *session-store* store))
+(declare *session-type*)
 
 ;; Override these mulitmethods to create your own session storage
 
 (defmulti create-session
   "Create a new session map. Should not attempt to save the session."
-  (fn [] *session-store*))
+  (fn [] *session-type*))
   
 (defmulti read-session
   "Read in the session using the supplied data. Usually the data is a key used
   to find the session in a store."
-  (fn [data] *session-store*))
+  (fn [data] *session-type*))
                     
 (defmulti write-session
   "Write a new or existing session to the session store."
-  (fn [session] *session-store*))
+  (fn [session] *session-type*))
 
 (defmulti destroy-session
   "Remove the session from the session store."
-  (fn [session] *session-store*))
+  (fn [session] *session-type*))
 
 (defmulti session-cookie
   "Return the session data to be stored in the cookie. This is usually the
   session ID."
-  (fn [new? session] *session-store*))
+  (fn [new? session] *session-type*))
 
 ;; Default implementations of create-session and set-session-cookie
 
@@ -155,20 +150,24 @@
       response)))
 
 (defn with-session
-  "Wrap a handler in a session."
-  [handler]
-  (fn [request]
-    (let [request  (-> request
-                     assoc-request-session
-                     assoc-request-flash)
-          response (handler request)
-          session  (get-response-session request response)]
-      (when response
-        (if (or (:session response) (:new-session? request))
-          (write-session session)
-          (if (not-empty (:flash request))
-            (write-session (:session request))))
-        (set-session-cookie request response session)))))
+  "Wrap a handler in a session of the specified type. Session type defaults to
+  :memory if not supplied."
+  ([handler]
+    (with-session handler :memory))
+  ([handler session-type]
+    (fn [request]
+      (binding [*session-type* session-type]
+        (let [request  (-> request
+                         assoc-request-session
+                         assoc-request-flash)
+              response (handler request)
+              session  (get-response-session request response)]
+          (when response
+            (if (or (:session response) (:new-session? request))
+              (write-session session)
+              (if (not-empty (:flash request))
+                (write-session (:session request))))
+            (set-session-cookie request response session)))))))
 
 ;; User functions for modifying the session
 

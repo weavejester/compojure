@@ -5,22 +5,22 @@
 ;; Memory sessions
 
 (deftest create-memory-session
-  (binding [*session-store* :memory]
+  (binding [*session-type* :memory]
     (contains? (create-session) :id)))
 
 (deftest memory-session-cookie
-  (binding [*session-store* :memory]
+  (binding [*session-type* :memory]
     (let [session (create-session)]
       (is (= (session-cookie true session) (session :id)))
       (is (nil? (session-cookie false session))))))
 
 (deftest read-memory-session
-  (binding [*session-store* :memory
+  (binding [*session-type* :memory
             memory-sessions (ref {::mock-id ::mock-session})]
     (is (= (read-session ::mock-id) ::mock-session))))
 
 (deftest write-memory-session
-  (binding [*session-store* :memory]
+  (binding [*session-type* :memory]
     (let [session (create-session)]
       (write-session session)
       (is (= (memory-sessions (session :id))
@@ -28,7 +28,7 @@
 
 (deftest destroy-memory-sessions
   (let [mock-session {:id ::mock-id}]
-    (binding [*session-store* :memory
+    (binding [*session-type* :memory
               memory-sessions (ref {::mock-id mock-session})]
       (is (contains? @memory-sessions ::mock-id))
       (destroy-session mock-session)
@@ -55,22 +55,15 @@
 
 (defn- mock-session-response
   [request response]
-  (let [handler (with-session (constantly response))]
+  (let [handler (-> (constantly response) (with-session ::mock))]
     (handler request)))
 
 (deftest new-session-cookie
-  (binding [*session-store* ::mock]
-    (let [response (mock-session-response {} {})]
-      (is (= (get-in response [:headers "Set-Cookie"])
-             "session=mock-session-cookie; path=/")))))
+  (let [response (mock-session-response {} {})]
+    (is (= (get-in response [:headers "Set-Cookie"])
+           "session=mock-session-cookie; path=/"))))
 
 (deftest response-session-cookie
-  (binding [*session-store* ::mock]
-    (let [response (mock-session-response {} {:session {}})]
-      (is (= (get-in response [:headers "Set-Cookie"])
-             "session=mock-session-cookie; path=/")))))
-
-(deftest session-store-test
-  (set-session-store! ::mock)
-  (is (= *session-store* ::mock))
-  (set-session-store! :memory))
+  (let [response (mock-session-response {} {:session {}})]
+    (is (= (get-in response [:headers "Set-Cookie"])
+           "session=mock-session-cookie; path=/"))))
