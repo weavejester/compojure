@@ -32,6 +32,11 @@
     (let [attrs (concat [[name value]] (partition 2 attrs))]
       {:headers {"Set-Cookie" (encode-cookie attrs)}})))
 
+(defn content-type
+  "Retuns a Content-Type header given a type string."
+  [type]
+  {:headers {"Content-Type" type}})
+
 (defn redirect-to
   "A shortcut for a '302 Moved' HTTP redirect."
   [location]

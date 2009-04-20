@@ -12,6 +12,7 @@
 
 (ns compojure.http.response
   (:use clojure.contrib.def)
+  (:use compojure.http.helpers)
   (:import clojure.lang.Fn)
   (:import clojure.lang.IPersistentVector)
   (:import java.util.Map)
@@ -33,9 +34,11 @@
 
 (defmethod update-response String
   [request response body]
-  (if (string? (:body response))
-    (merge-with str response {:body body})
-    (assoc response :body body)))
+  (let [headers (merge (:headers (content-type "text/html")) (:headers response))
+        response (assoc response :headers headers)]
+    (if (string? (:body response))
+      (merge-with str response {:body body})
+      (assoc response :body body))))
 
 (defmethod update-response ISeq
   [request response sequence]

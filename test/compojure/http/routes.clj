@@ -67,7 +67,9 @@
   (let [route    (GET "/" "Lorem Ipsum")
         request  {:request-method :get, :uri "/"}
         response (route request)]
-    (is (= response {:status 200, :headers {}, :body "Lorem Ipsum"}))))
+    (is (= response {:status 200, 
+                     :headers {"Content-Type" "text/html"}, 
+                     :body "Lorem Ipsum"}))))
 
 (defn- route-body
   [route method uri]
