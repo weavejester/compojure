@@ -9,3 +9,7 @@
 (deftest test-set-cookie-path
   (is (= (set-cookie :a "b", :path "/")
          {:headers {"Set-Cookie" "a=b; path=/"}})))
+
+(deftest test-content-type
+  (is (= (content-type "text/html")
+         {:headers {"Content-Type" "text/html"}})))

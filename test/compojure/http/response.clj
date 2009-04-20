@@ -34,3 +34,13 @@
 (deftest vector-int-response
   (is (= (:status (create-response {} [200 500 403]))
          403)))
+
+(deftest default-content-type
+  (let [response {:headers {"Foo" "Bar"}}]
+    (is (= (:headers (update-response {} response "Foo"))
+           {"Foo" "Bar" "Content-Type" "text/html"}))))
+
+(deftest supplied-content-type
+  (let [response {:headers {"Content-Type" "text/plain" "Foo" "Bar"}}]
+    (is (= (:headers (update-response {} response "Foo"))
+           {"Content-Type" "text/plain" "Foo" "Bar"}))))
