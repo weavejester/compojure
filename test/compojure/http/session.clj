@@ -51,7 +51,7 @@
   {:id ::mock-id})
 
 (defmethod session-cookie ::mock [new? session]
-  "mock-session-cookie")
+  "mock-session-data")
 
 (defn- mock-session-response
   [request response]
@@ -61,9 +61,9 @@
 (deftest new-session-cookie
   (let [response (mock-session-response {} {})]
     (is (= (get-in response [:headers "Set-Cookie"])
-           "session=mock-session-cookie; path=/"))))
+           "compojure-session=mock-session-data; path=/"))))
 
 (deftest response-session-cookie
   (let [response (mock-session-response {} {:session {}})]
     (is (= (get-in response [:headers "Set-Cookie"])
-           "session=mock-session-cookie; path=/"))))
+           "compojure-session=mock-session-data; path=/"))))

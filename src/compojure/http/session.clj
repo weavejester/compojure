@@ -138,7 +138,7 @@
   [request response]
   (let [new?   (:new-session? request)
         cookie (session-cookie new? (:session response))
-        update (set-cookie :session cookie, :path "/")]
+        update (set-cookie :compojure-session cookie, :path "/")]
     (if cookie
       (update-response request response update)
       response)))
