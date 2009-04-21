@@ -120,26 +120,19 @@
   [text]
   [:input {:type "reset" :value text}])
 
-(defn form-to*
-  [[method action] & body]
-  (into []
-    (concat
-      (if (includes? ['GET 'POST] method)
-        [:form {:method method :action action}]
-        [:form {:method "POST" :action action} (hidden-field "_method" method)])
-      body)))
-
-(defmacro form-to
+(defn form-to
   "Create a form that points to a particular method and route.
-  e.g. (form-to [PUT \"/post\"]
+  e.g. (form-to [:put \"/post\"]
          ...)"
-  [handler & body]
-  (if (map? handler)
-    (let [[method action] (first body)
-          body            (rest body)]
-      `(form-to* ~handler ['~method ~action] ~@body))
-    (let [[method action] handler]
-      `(form-to* ['~method ~action] ~@body))))
+  [[method action] & body]
+  (let [method-str (. (name method) toUpperCase)]
+    (into []
+      (concat
+        (if (includes? [:get :post] method)
+          [:form {:method method-str :action action}]
+          [:form {:method "POST" :action action} 
+           (hidden-field "_method" method-str)])
+        body))))
 
 (decorate-with optional-attrs
   hidden-field
@@ -151,7 +144,7 @@
   label
   submit-button
   reset-button
-  form-to*)
+  form-to)
 
 (defmacro decorate-fields
   "Wrap all input field functions in a decorator."
