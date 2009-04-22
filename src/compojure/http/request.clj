@@ -83,11 +83,9 @@
   (fn [request]
     (let [query-params (get-query-params request)
           form-params  (get-form-params request)
-          route-params (get-route-params request)
           params       (merge (request :params)
                               form-params
-                              query-params
-                              route-params)]
+                              query-params)]
       (handler
         (merge request
           {:query-params query-params

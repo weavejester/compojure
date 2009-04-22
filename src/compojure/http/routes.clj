@@ -7,7 +7,7 @@
 ;; this software.
 
 ;; compojure.http.routes:
-;; 
+;;
 ;; Macros and functions for compiling routes in the form (method path & body)
 ;; into stand-alone functions that return the return value of the body, or the
 ;; keyword :next if they don't match.
@@ -182,7 +182,9 @@
        (if-let [route-params# (matcher# request#)]
          (create-response request#
            (with-request-bindings
-             (assoc request# :route-params route-params#)
+             (let [request# (assoc request# :route-params route-params#)
+                   params# (merge (request# :params) route-params#)]
+               (assoc request# :params params#))
              ~@body))))))
 
 (defn routes*
