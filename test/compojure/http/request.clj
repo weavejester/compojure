@@ -1,7 +1,7 @@
 (ns test.compojure.http.request
   (:use compojure.http.request)
   (:use clojure.contrib.test-is)
-  (:import java.io.ByteArrayInputStream))
+  (:use test.helpers))
 
 (deftest query-params
   (are (= (get-query-params {:query-string _1}) _2)
@@ -27,13 +27,6 @@
 (deftest urlencoded-charset
   (is (urlencoded-form?
         {:content-type "application/x-www-form-urlencoded; charset=UTF8"})))
-
-(defn- input-stream [s]
-  (ByteArrayInputStream. (.getBytes s)))
-
-(defn- form-request [body]
-  {:content-type "application/x-www-form-urlencoded"
-   :body (input-stream body)})
 
 (deftest form-params
   (are (= (get-form-params (form-request _1)) _2)
