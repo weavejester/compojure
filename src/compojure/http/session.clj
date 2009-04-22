@@ -111,7 +111,7 @@
 (defn- get-request-session
   "Retrieve the session using the 'session' cookie in the request."
   [request]
-  (if-let [session-data (-> request :cookies :session)]
+  (if-let [session-data (-> request :cookies :compojure-session)]
     (read-session session-data)))
 
 (defn- assoc-request-session
@@ -134,14 +134,22 @@
       (assoc :session (dissoc session :flash)))))
 
 (defn- set-session-cookie
-  "Set the session cookie on the response."
-  [request response]
-  (let [new?   (:new-session? request)
-        cookie (session-cookie new? (:session response))
-        update (set-cookie :compojure-session cookie, :path "/")]
+  "Set the session cookie on the response if required."
+  [request response session]
+  (let [new?    (:new-session? request)
+        cookie  (session-cookie new? session)
+        update  (set-cookie :compojure-session cookie, :path "/")]
     (if cookie
       (update-response request response update)
       response)))
+
+(defn- save-handler-session
+  "Save the session for a handler if required."
+  [request response session]
+  (when (or (:session response)
+            (:new-session? request)
+            (not-empty (:flash request)))
+    (write-session session)))
 
 (defn with-session
   "Wrap a handler in a session of the specified type. Session type defaults to
@@ -154,13 +162,11 @@
         (let [request  (-> request assoc-cookies
                                    assoc-request-session
                                    assoc-request-flash)
-              response (handler request)]
+              response (handler request)
+              session  (or (:session response) (:session request))]
           (when response
-            (if (or (:session response) (:new-session? request))
-              (write-session (:session response))
-              (if (not-empty (:flash request))
-                (write-session (:session request))))
-            (set-session-cookie request response)))))))
+            (save-handler-session request response session)
+            (set-session-cookie   request response session)))))))
 
 ;; User functions for modifying the session
 
