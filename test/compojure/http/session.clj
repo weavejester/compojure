@@ -53,17 +53,38 @@
 (defmethod session-cookie ::mock [new? session]
   "mock-session-data")
 
-(defn- mock-session-response
-  [request response]
+(defn- mock-session-response [response]
   (let [handler (-> (constantly response) (with-session ::mock))]
-    (handler request)))
+    (handler {})))
 
 (deftest new-session-cookie
-  (let [response (mock-session-response {} {})]
+  (let [response (mock-session-response {})]
     (is (= (get-in response [:headers "Set-Cookie"])
            "compojure-session=mock-session-data; path=/"))))
 
 (deftest response-session-cookie
-  (let [response (mock-session-response {} {:session {}})]
+  (let [response (mock-session-response {:session {}})]
     (is (= (get-in response [:headers "Set-Cookie"])
            "compojure-session=mock-session-data; path=/"))))
+
+(declare mock-store)
+
+(derive ::mock-update ::mock)
+
+(defmethod write-session ::mock-update [session]
+  (set! mock-store session))
+
+(defn- mock-session-update [request response]
+  (let [handler (-> (constantly response) (with-session ::mock-update))]
+    (handler {})))
+
+(deftest session-write-new
+  (binding [mock-store nil]
+    (mock-session-update {} {:session {:foo "bar"}})
+    (is (= mock-store {:foo "bar"}))))
+
+(deftest session-write-update
+  (binding [mock-store nil]
+    (mock-session-update {:session {:foo "bar"}}
+                         {:session {:foo "baz"}})
+    (is (= mock-store {:foo "baz"}))))
