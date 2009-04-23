@@ -101,7 +101,9 @@
 (defn assoc-cookies
   "Associate cookies with a request map."
   [request]
-  (assoc request :cookies (get-cookies request)))
+  (if (contains? request :cookies)
+    request
+    (assoc request :cookies (get-cookies request))))
 
 (defn with-cookies
   "Decorator that adds cookies to a request map."
