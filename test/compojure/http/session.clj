@@ -74,9 +74,12 @@
 (defmethod write-session ::mock-update [session]
   (set! mock-store session))
 
+(defmethod read-session ::mock-update [id]
+  mock-store)
+
 (defn- mock-session-update [request response]
   (let [handler (-> (constantly response) (with-session ::mock-update))]
-    (handler {})))
+    (handler request)))
 
 (deftest session-write-new
   (binding [mock-store nil]
@@ -84,7 +87,11 @@
     (is (= mock-store {:foo "bar"}))))
 
 (deftest session-write-update
-  (binding [mock-store nil]
-    (mock-session-update {:session {:foo "bar"}}
-                         {:session {:foo "baz"}})
+  (binding [mock-store {:foo "bar"}]
+    (mock-session-update {} {:session {:foo "baz"}})
     (is (= mock-store {:foo "baz"}))))
+
+(deftest session-write-no-update
+  (binding [mock-store {:foo "bar"}]
+    (mock-session-update {:cookies {:compojure-session "mock-id"}} {})
+    (is (= mock-store {:foo "bar"}))))
