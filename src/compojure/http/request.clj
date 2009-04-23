@@ -36,9 +36,8 @@
 (defn get-query-params
   "Parse parameters from the query string."
   [request]
-  (merge (request :query-params {})
-    (if-let [query (request :query-string)]
-      (parse-params query #"&"))))
+  (if-let [query (request :query-string)]
+    (parse-params query #"&")))
 
 (defn get-character-encoding
   "Get the character encoding, or use the default from duck-streams."
@@ -61,31 +60,32 @@
 (defn get-form-params
   "Parse urlencoded form parameters from the request body."
   [request]
-  (merge (request :form-params {})
-    (if (urlencoded-form? request)
-      (if-let [body (slurp-body request)]
-        (parse-params body #"&")))))
+  (if (urlencoded-form? request)
+    (if-let [body (slurp-body request)]
+      (parse-params body #"&"))))
 
-(defn get-route-params
-  "Get a map of the route parameters, or nil if not a map."
+(defn- get-merged-params
+  "Get a map of all the parameters merged together."
   [request]
-  (let [params (request :route-params)]
-    (if (map? params)
-      params)))
+  (merge (:query-params request)
+         (:form-params request)
+         (:params request)))
+
+(defn- assoc-func
+  "Associate the result of a (func request) with a key on the request map."
+  [request key func]
+  (if (contains? request key)
+    request
+    (assoc request key (or (func request) {}))))
 
 (defn assoc-params
   "Associate urlencoded parameters with a request. The following keys are added
   to the request map: :query-params, :form-params and :params."
   [request]
-  (let [query-params (get-query-params request)
-        form-params  (get-form-params request)
-        params       (merge (request :params)
-                            form-params
-                            query-params)]
-    (merge request
-      {:query-params query-params
-       :form-params  form-params
-       :params       params})))
+  (-> request
+    (assoc-func :query-params get-query-params)
+    (assoc-func :form-params  get-form-params)
+    (assoc-func :params       get-merged-params)))
 
 (defn with-params
   "Decorator that adds urlencoded parameters to the request map."
@@ -102,9 +102,7 @@
 (defn assoc-cookies
   "Associate cookies with a request map."
   [request]
-  (if (contains? request :cookies)
-    request
-    (assoc request :cookies (get-cookies request))))
+  (assoc-func request :cookies get-cookies))
 
 (defn with-cookies
   "Decorator that adds cookies to a request map."
