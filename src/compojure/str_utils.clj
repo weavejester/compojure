@@ -80,3 +80,8 @@
   "Generate a random UUID."
   []
   (str (UUID/randomUUID)))
+
+(defn upcase-name
+  "Upcase a symbol or keyword's name."
+  [sym]
+  (. (name sym) toUpperCase))

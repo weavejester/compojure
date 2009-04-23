@@ -125,12 +125,12 @@
   e.g. (form-to [:put \"/post\"]
          ...)"
   [[method action] & body]
-  (let [method-str (. (name method) toUpperCase)]
+  (let [method-str (upcase-name method)]
     (into []
       (concat
         (if (includes? [:get :post] method)
           [:form {:method method-str :action action}]
-          [:form {:method "POST" :action action} 
+          [:form {:method "POST" :action action}
            (hidden-field "_method" method-str)])
         body))))
 

@@ -101,6 +101,20 @@
         request {:request-method :get, :uri "/foo"}]
     (is (nil? (route request)))))
 
+(deftest route-match-form-method
+  (let [route   (DELETE "/foo" "body")
+        request {:request-method :post,
+                 :uri "/foo",
+                 :content-type "application/x-www-form-urlencoded"
+                 :form-params {:_method "DELETE"}}]
+    (is (= (:status (route request) 200)))))
+
+(deftest route-not-match-form-method
+  (let [route   (DELETE "/foo" "body")
+        request {:request-method :post,
+                 :uri "/foo" }]
+    (is (nil? (route request)))))
+
 (deftest route-keywords
   (let [route (GET "/:foo"
                 (is (= (:route-params request) {:foo "bar"}))
