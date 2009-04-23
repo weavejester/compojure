@@ -73,24 +73,25 @@
     (if (map? params)
       params)))
 
+(defn assoc-params
+  "Associate urlencoded parameters with a request. The following keys are added
+  to the request map: :query-params, :form-params and :params."
+  [request]
+  (let [query-params (get-query-params request)
+        form-params  (get-form-params request)
+        params       (merge (request :params)
+                            form-params
+                            query-params)]
+    (merge request
+      {:query-params query-params
+       :form-params  form-params
+       :params       params})))
+
 (defn with-params
-  "Decorator that adds urlencoded parameters to the request map. The following
-  keys are added:
-    :query-params
-    :form-params
-    :params"
+  "Decorator that adds urlencoded parameters to the request map."
   [handler]
   (fn [request]
-    (let [query-params (get-query-params request)
-          form-params  (get-form-params request)
-          params       (merge (request :params)
-                              form-params
-                              query-params)]
-      (handler
-        (merge request
-          {:query-params query-params
-           :form-params  form-params
-           :params       params})))))
+    (handler (assoc-params request))))
 
 (defn get-cookies
   "Pull out a map of cookies from a request map."

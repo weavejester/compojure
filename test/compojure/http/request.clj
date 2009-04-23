@@ -1,7 +1,8 @@
 (ns test.compojure.http.request
   (:use compojure.http.request)
   (:use clojure.contrib.test-is)
-  (:use test.helpers))
+  (:use test.helpers)
+  (:import java.io.FileInputStream))
 
 (deftest query-params
   (are (= (get-query-params {:query-string _1}) _2)
@@ -40,6 +41,11 @@
   (let [request (merge {:form-params {:a "1"}} (form-request "b=2"))]
     (is (= (get-form-params request)
            {:a "1", :b "2"}))))
+
+(deftest assoc-params-twice
+  (let [request (form-request "a=1")]
+    (is (= (:form-params (assoc-params request))
+           (:form-params (assoc-params request))))))
 
 (deftest request-cookies
   (is (= (get-cookies {:headers {"cookie" "a=1;b=2"}})
