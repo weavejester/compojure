@@ -6,6 +6,7 @@
   <property name="build.dir" location="classes"/>
   <property name="deps.dir" location="deps"/>
   <property name="source.dir" location="src"/>
+  <property name="tests.dir" location="test"/>
   <property name="compojure.jar" location="compojure.jar"/>
   <property name="deps.file" value="deps.zip"/>
   <property name="deps.url" value="http://cloud.github.com/downloads/weavejester/compojure/${deps.file}"/>
@@ -60,6 +61,16 @@
       <sysproperty key="clojure.compile.path" value="${build.dir}"/>
       <classpath refid="classpath"/>
       <arg value="compojure.server.grizzly"/>
+    </java>
+  </target>
+
+  <target name="test" description="Run tests">
+    <java fork="true" classname="clojure.lang.Script">
+      <classpath>
+          <path refid="classpath"/>
+          <path location="."/>
+      </classpath>
+      <arg value="${tests.dir}/run.clj"/>
     </java>
   </target>
 
