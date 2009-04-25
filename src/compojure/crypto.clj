@@ -13,7 +13,8 @@
 (ns compojure.crypto
   (:use compojure.encodings)
   (:import javax.crypto.Mac)
-  (:import javax.crypto.spec.SecretKeySpec))
+  (:import javax.crypto.spec.SecretKeySpec)
+  (:import java.util.UUID))
 
 (defn hmac
   "Generate a hashed message authentication code with the supplied key and
@@ -24,3 +25,8 @@
                 (.init spec))
         bytes (.doFinal mac (.getBytes data))]
     (base64-encode-bytes bytes)))
+
+(defn gen-uuid
+  "Generate a random UUID."
+  []
+  (str (UUID/randomUUID)))
