@@ -187,6 +187,13 @@
          ~'flash   (:flash   ~'request)]
      ~@body))
 
+(defn assoc-route-params
+  "Associate route parameters with the request map."
+  [request params]
+  (-> request
+    (assoc :route-params params)
+    (assoc :params (merge (:params request) params))))
+
 (defn compile-route
   "Compile a route in the form (method path & body) into a function."
   [method path body]
@@ -195,9 +202,7 @@
        (if-let [route-params# (matcher# request#)]
          (create-response request#
            (with-request-bindings
-             (let [request# (assoc request# :route-params route-params#)
-                   params# (merge (request# :params) route-params#)]
-               (assoc request# :params params#))
+             (assoc-route-params request# route-params#)
              ~@body))))))
 
 (defn routes*
