@@ -5,22 +5,22 @@
 ;; Memory sessions
 
 (deftest create-memory-session
-  (binding [*session-type* :memory]
+  (binding [*session-repo* :memory]
     (contains? (create-session) :id)))
 
 (deftest memory-session-cookie
-  (binding [*session-type* :memory]
+  (binding [*session-repo* :memory]
     (let [session (create-session)]
       (is (= (session-cookie true session) (session :id)))
       (is (nil? (session-cookie false session))))))
 
 (deftest read-memory-session
-  (binding [*session-type* :memory
+  (binding [*session-repo* :memory
             memory-sessions (ref {::mock-id ::mock-session})]
     (is (= (read-session ::mock-id) ::mock-session))))
 
 (deftest write-memory-session
-  (binding [*session-type* :memory]
+  (binding [*session-repo* :memory]
     (let [session (create-session)]
       (write-session session)
       (is (= (memory-sessions (session :id))
@@ -28,7 +28,7 @@
 
 (deftest destroy-memory-sessions
   (let [mock-session {:id ::mock-id}]
-    (binding [*session-type* :memory
+    (binding [*session-repo* :memory
               memory-sessions (ref {::mock-id mock-session})]
       (is (contains? @memory-sessions ::mock-id))
       (destroy-session mock-session)

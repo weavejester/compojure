@@ -21,31 +21,36 @@
 
 ;; Global session store type
 
-(declare *session-type*)
+(declare *session-repo*)
 
-;; Override these mulitmethods to create your own session storage
+;; Override these mulitmethods to create your own session storage.
+;; Uses the Compojure repository pattern.
+
+(defn- repository-type
+  [repository]
+  (:type repository repository))
 
 (defmulti create-session
   "Create a new session map. Should not attempt to save the session."
-  (fn [] *session-type*))
+  (fn [] (repository-type *session-repo*)))
   
 (defmulti read-session
   "Read in the session using the supplied data. Usually the data is a key used
   to find the session in a store."
-  (fn [data] *session-type*))
+  (fn [data] (repository-type *session-repo*)))
                     
 (defmulti write-session
   "Write a new or existing session to the session store."
-  (fn [session] *session-type*))
+  (fn [session] (repository-type *session-repo*)))
 
 (defmulti destroy-session
   "Remove the session from the session store."
-  (fn [session] *session-type*))
+  (fn [session] (repository-type *session-repo*)))
 
 (defmulti session-cookie
   "Return the session data to be stored in the cookie. This is usually the
   session ID."
-  (fn [new? session] *session-type*))
+  (fn [new? session] (repository-type *session-repo*)))
 
 ;; Default implementations of create-session and set-session-cookie
 
@@ -156,9 +161,9 @@
   :memory if not supplied."
   ([handler]
     (with-session handler :memory))
-  ([handler session-type]
+  ([handler session-repo]
     (fn [request]
-      (binding [*session-type* session-type]
+      (binding [*session-repo* session-repo]
         (let [request  (-> request assoc-cookies
                                    assoc-request-session
                                    assoc-request-flash)
