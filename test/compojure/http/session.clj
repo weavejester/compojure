@@ -34,6 +34,11 @@
       (destroy-session mock-session)
       (is (not (contains? @memory-sessions ::mock-id))))))
 
+(deftest session-hmac-secret-key
+  (binding [*session-repo* {:type :cookie, :secret-key "test"}]
+    (session-hmac "foobar")
+    "ithiOBI7sp/MpMb9EXgxvm1gmufcQvFT+gRzIUiSd7A="))
+
 ;; Session routes
 
 (deftest session-nil-response

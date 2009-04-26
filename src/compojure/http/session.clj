@@ -85,12 +85,13 @@
 
 ;; Cookie sessions
 
-(def *session-secret-key* (gen-uuid))   ; Random secret key
+(def *default-secret-key* (gen-uuid))   ; Random secret key
 
-(defn- session-hmac
+(defn session-hmac
   "Calculate a HMAC for a marshalled session"
   [cookie-data]
-  (hmac *session-secret-key* "HmacSHA256" cookie-data))
+  (let [secret-key (:secret-key *session-repo* *default-secret-key*)]
+    (hmac secret-key "HmacSHA256" cookie-data)))
 
 (defmethod create-session :cookie [] {})
 
