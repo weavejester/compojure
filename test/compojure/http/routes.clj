@@ -64,6 +64,14 @@
     #"/foo/(\w+)"   "/foo/bar" ["bar"]
     #"/(\w+)/(\d+)" "/foo/10"  ["foo" "10"]))
 
+(deftest assoc-route-map
+  (is (= (assoc-route-params {:params {}} {"foo" "bar"})
+         {:route-params {"foo" "bar"}, :params {"foo" "bar"}})))
+
+(deftest assoc-route-vector
+  (is (= (assoc-route-params {:params {}} ["foo" "bar"])
+         {:route-params ["foo" "bar"], :params {}})))
+
 (deftest route-response
   (let [route    (GET "/" "Lorem Ipsum")
         request  {:request-method :get, :uri "/"}
