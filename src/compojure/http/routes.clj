@@ -192,7 +192,8 @@
   [request params]
   (-> request
     (assoc :route-params params)
-    (assoc :params (merge (:params request) params))))
+    (assoc :params (merge (:params request)
+                          (when (map? params) params)))))
 
 (defn compile-route
   "Compile a route in the form (method path & body) into a function."
