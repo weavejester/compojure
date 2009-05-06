@@ -201,10 +201,9 @@
   `(let [matcher# (request-matcher ~method ~path)]
      (fn [request#]
        (if-let [route-params# (matcher# request#)]
-         (create-response request#
-           (with-request-bindings
-             (assoc-route-params request# route-params#)
-             ~@body))))))
+         (let [request# (assoc-route-params request# route-params#)]
+           (create-response request#
+             (with-request-bindings request# ~@body)))))))
 
 (defn routes*
   "Create a Ring handler by combining several handlers into one."
