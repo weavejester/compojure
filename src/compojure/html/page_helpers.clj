@@ -6,11 +6,8 @@
 ;; terms of this license. You must not remove this notice, or any other, from
 ;; this software.
 
-;; compojure.html.page-helpers:
-;; 
-;; Functions for generating document and header boilerplate.
-
 (ns compojure.html.page-helpers
+  "Functions for generating document and header boilerplate."
   (:use compojure.control)
   (:use compojure.html.gen)
   (:use compojure.str-utils)

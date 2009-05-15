@@ -6,13 +6,10 @@
 ;; terms of this license. You must not remove this notice, or any other, from
 ;; this software.
 
-;; compojure.html.gen:
-;; 
-;; A library for generating HTML output from a tree of vectors. The first item
-;; of the vector is the tag name, the optional second item is a hash of
-;; attributes, and the rest is the body of the tag.
-
 (ns compojure.html.gen
+  "A library for generating HTML output from a tree of vectors. The first item
+   of the vector is the tag name, the optional second item is a hash of
+   attributes, and the rest is the body of the tag."
   (:use compojure.str-utils)
   (:use clojure.contrib.def))
 

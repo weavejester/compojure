@@ -6,11 +6,8 @@
 ;; terms of this license. You must not remove this notice, or any other, from
 ;; this software.
 
-;; compojure.http.response:
-;;
-;; Parse a Compojure route return value into a HTTP response map.
-
 (ns compojure.http.response
+  "Parse a Compojure route return value into a HTTP response map."
   (:use clojure.contrib.def)
   (:use compojure.http.helpers)
   (:import clojure.lang.Fn)

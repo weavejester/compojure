@@ -6,11 +6,8 @@
 ;; terms of this license. You must not remove this notice, or any other, from
 ;; this software.
 
-;; compojure.crypto:
-;;
-;; Functions for cryptographically signing, verifying and encrypting data.
-
 (ns compojure.crypto
+  "Functions for cryptographically signing, verifying and encrypting data."
   (:use compojure.encodings)
   (:import javax.crypto.Mac)
   (:import javax.crypto.spec.SecretKeySpec)

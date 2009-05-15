@@ -6,11 +6,8 @@
 ;; terms of this license. You must not remove this notice, or any other, from
 ;; this software.
 
-;; compojure.http.session:
-;;
-;; Functions for creating and updating HTTP sessions.
-
 (ns compojure.http.session
+  "Functions for creating and updating HTTP sessions."
   (:use compojure.str-utils)
   (:use compojure.http.helpers)
   (:use compojure.http.request)

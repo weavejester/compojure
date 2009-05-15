@@ -6,11 +6,8 @@
 ;; terms of this license. You must not remove this notice, or any other, from
 ;; this software.
 
-;; compojure.server.common
-;;
-;; Common functions for implementing compojure server wrapper.
-
 (ns compojure.server.common
+  "Common functions for implementing compojure server wrapper."
   (:import java.net.URL))
 
 (defn get-host-and-path

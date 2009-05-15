@@ -6,11 +6,8 @@
 ;; terms of this license. You must not remove this notice, or any other, from
 ;; this software.
 
-;; compojure.http.servlet:
-;; 
-;; Functions for interfacing Compojure with the Java servlet standard.
-
 (ns compojure.http.servlet
+  "Functions for interfacing Compojure with the Java servlet standard."
   (:use compojure.http.routes)
   (:use compojure.http.request)
   (:import java.io.File)

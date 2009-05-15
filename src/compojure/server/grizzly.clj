@@ -6,12 +6,9 @@
 ;; terms of this license. You must not remove this notice, or any other, from
 ;; this software.
 
-;; compojure.server.grizzly
-;; 
-;; Clojure interface to start an embedded Grizzly server. To compile, use:
-;;   ant -Dwith.grizzly
-
 (ns compojure.server.grizzly
+  "Clojure interface to start an embedded Grizzly server. To compile, use:
+   ant -Dwith.grizzly"
   (:use compojure.control)
   (:use compojure.server.common)
   (:import com.sun.grizzly.http.embed.GrizzlyWebServer)

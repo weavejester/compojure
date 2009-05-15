@@ -6,13 +6,10 @@
 ;; terms of this license. You must not remove this notice, or any other, from
 ;; this software.
 
-;; compojure.http.routes:
-;;
-;; Macros and functions for compiling routes in the form (method path & body)
-;; into stand-alone functions that return the return value of the body, or the
-;; keyword :next if they don't match.
-
 (ns compojure.http.routes
+  "Macros and functions for compiling routes in the form (method path & body)
+   into stand-alone functions that return the return value of the body, or the
+   keyword :next if they don't match."
   (:use compojure.http.request)
   (:use compojure.http.response)
   (:use compojure.http.session)

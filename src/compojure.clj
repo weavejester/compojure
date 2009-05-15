@@ -6,13 +6,10 @@
 ;; terms of this license. You must not remove this notice, or any other, from
 ;; this software.
 
-;; compojure:
-;; 
-;; Convenience library that includes every compojure.* namespace. If you want
-;; to access Compojure quickly, and don't care about having everything in one
-;; namespace, just use or require 'compojure.
-
 (ns compojure
+  "Convenience library that includes every compojure.* namespace. If you want
+   to access Compojure quickly, and don't care about having everything in one
+   namespace, just use or require 'compojure."
   (:use compojure.ns-utils))
 
 (immigrate

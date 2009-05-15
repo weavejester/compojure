@@ -6,11 +6,8 @@
 ;; terms of this license. You must not remove this notice, or any other, from
 ;; this software.
 
-;; compojure.html:
-;; 
-;; Shortcut to include all compojure.http.* namespaces.
-
 (ns compojure.html
+  "Shortcut to include all compojure.http.* namespaces."
   (:use compojure.ns-utils))
 
 (immigrate

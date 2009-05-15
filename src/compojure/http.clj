@@ -6,12 +6,9 @@
 ;; terms of this license. You must not remove this notice, or any other, from
 ;; this software.
 
-;; compojure.http:
-;;
-;; Shortcut to include compojure.http.routes, compojure.http.helpers and
-;; compojure.http.servlet.
-
 (ns compojure.http
+  "Shortcut to include compojure.http.routes, compojure.http.helpers and
+   compojure.http.servlet."
   (:use compojure.ns-utils))
 
 (immigrate

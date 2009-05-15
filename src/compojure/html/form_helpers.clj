@@ -6,11 +6,8 @@
 ;; terms of this license. You must not remove this notice, or any other, from
 ;; this software.
 
-;; compojure.html.form-helpers:
-;; 
-;; Functions for generating HTML forms and input fields.
-
 (ns compojure.html.form-helpers
+  "Functions for generating HTML forms and input fields."
   (:use compojure.html.gen)
   (:use compojure.control)
   (:use compojure.str-utils)

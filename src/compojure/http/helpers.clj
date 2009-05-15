@@ -6,11 +6,8 @@
 ;; terms of this license. You must not remove this notice, or any other, from
 ;; this software.
 
-;; compojure.http.helper:
-;; 
-;; Helper functions for things like redirection, serving files, 404s, etc.
-
 (ns compojure.http.helpers
+  "Helper functions for things like redirection, serving files, 404s, etc."
   (:use compojure.encodings)
   (:use compojure.str-utils)
   (:use clojure.contrib.def)

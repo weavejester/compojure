@@ -6,11 +6,8 @@
 ;; terms of this license. You must not remove this notice, or any other, from
 ;; this software.
 
-;; compojure.http.request:
-;;
-;; Functions for pulling useful data out of a HTTP request map.
-
 (ns compojure.http.request
+  "Functions for pulling useful data out of a HTTP request map."
   (:use compojure.control)
   (:use compojure.encodings)
   (:use compojure.map-utils)

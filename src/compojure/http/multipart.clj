@@ -6,12 +6,9 @@
 ;; terms of this license. You must not remove this notice, or any other, from
 ;; this software.
 
-;; compojure.http.multipart:
-;;
-;; Add multipart form handling to Compojure. Relies on the Apache Commons
-;; FileUpload library.
-
 (ns compojure.http.multipart
+  "Add multipart form handling to Compojure. Relies on the Apache Commons
+   FileUpload library."
   (:use clojure.contrib.def)
   (:use compojure.map-utils)
   (:import org.apache.commons.fileupload.FileUpload)

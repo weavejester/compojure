@@ -6,11 +6,8 @@
 ;; terms of this license. You must not remove this notice, or any other, from
 ;; this software.
 
-;; compojure.jetty:
-;; 
-;; Clojure interface to start an embedded Jetty server.
-
 (ns compojure.server.jetty
+  "Clojure interface to start an embedded Jetty server."
   (:use compojure.control)
   (:use compojure.server.common)
   (:import org.mortbay.jetty.Server)

@@ -6,11 +6,8 @@
 ;; terms of this license. You must not remove this notice, or any other, from
 ;; this software.
 
-;; compojure.seq-utils
-;;
-;; Utility functions for manipulating maps
-
-(ns compojure.map-utils)
+(ns compojure.map-utils
+  "functions for manipulating maps.")
 
 (defn assoc-vec
   "Associate a key with a value. If the key already exists in the map, create a

@@ -6,11 +6,8 @@
 ;; terms of this license. You must not remove this notice, or any other, from
 ;; this software.
 
-;; compojure.control:
-;; 
-;; Various macros for controling program flow.
-
 (ns compojure.control
+  "Various macros for controling program flow."
   (:use clojure.contrib.seq-utils))
 
 (defmacro return
