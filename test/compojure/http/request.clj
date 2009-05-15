@@ -1,20 +1,19 @@
 (ns test.compojure.http.request
   (:use compojure.http.request)
   (:use clojure.contrib.test-is)
-  (:use test.helpers)
-  (:import java.io.FileInputStream))
+  (:use test.helpers))
 
 (deftest query-params
-  (are (= (get-query-params {:query-string _1}) _2)
+  (are (= (parse-query-params {:query-string _1}) _2)
     "a=1"     {:a "1"}
     "a=1&b=2" {:a "1", :b "2"}))
 
 (deftest query-params-plus
-  (is (= (get-query-params {:query-string "a=1+2"})
+  (is (= (parse-query-params {:query-string "a=1+2"})
          {:a "1 2"})))
 
 (deftest query-params-space
-  (is (= (get-query-params {:query-string "a=1%202"})
+  (is (= (parse-query-params {:query-string "a=1%202"})
          {:a "1 2"})))
 
 (deftest urlencoded-charset
@@ -22,7 +21,7 @@
         {:content-type "application/x-www-form-urlencoded; charset=UTF8"})))
 
 (deftest form-params
-  (are (= (get-form-params (form-request _1)) _2)
+  (are (= (parse-form-params (form-request _1)) _2)
     "a=1"     {:a "1"}
     "a=1&b=2" {:a "1", :b "2"}))
 
@@ -41,5 +40,5 @@
            {:a "1"}))))
 
 (deftest request-cookies
-  (is (= (get-cookies {:headers {"cookie" "a=1;b=2"}})
+  (is (= (parse-cookies {:headers {"cookie" "a=1;b=2"}})
          {:a "1", :b "2"})))

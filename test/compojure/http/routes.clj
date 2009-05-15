@@ -76,8 +76,8 @@
   (let [route    (GET "/" "Lorem Ipsum")
         request  {:request-method :get, :uri "/"}
         response (route request)]
-    (is (= response {:status 200, 
-                     :headers {"Content-Type" "text/html"}, 
+    (is (= response {:status 200,
+                     :headers {"Content-Type" "text/html"},
                      :body "Lorem Ipsum"}))))
 
 (defn- route-body
@@ -110,18 +110,28 @@
     (is (nil? (route request)))))
 
 (deftest route-match-form-method
-  (let [route   (DELETE "/foo" "body")
+  (let [routes  (routes (DELETE "/foo" "body"))
         request {:request-method :post,
                  :uri "/foo",
-                 :content-type "application/x-www-form-urlencoded"
-                 :form-params {:_method "DELETE"}}]
-    (is (= (:status (route request) 200)))))
+                 :content-type "application/x-www-form-urlencoded",
+                 :body (input-stream "_method=DELETE&a=1")}]
+    (is (= (:status (routes request)) 200))))
 
 (deftest route-not-match-form-method
-  (let [route   (DELETE "/foo" "body")
+  (let [routes  (routes (DELETE "/foo" "body"))
         request {:request-method :post,
-                 :uri "/foo" }]
-    (is (nil? (route request)))))
+                 :content-type "application/x-www-form-urlencoded",
+                 :uri "/foo",
+                 :body (input-stream "a=1")}]
+    (is (nil? (routes request)))))
+
+(deftest route-match-form-method-not-post
+  (let [routes  (routes (POST "/foo" "post") (DELETE "/foo" "delete"))
+        request {:request-method :post,
+                 :uri "/foo",
+                 :content-type "application/x-www-form-urlencoded",
+                 :body (input-stream "_method=DELETE&a=1")}]
+    (is (= (:body (routes request)) "delete"))))
 
 (deftest route-keywords
   (let [route (GET "/:foo"
@@ -144,7 +154,7 @@
                  (is (= (params :form)  "yes"))
                  (is (request :params) params)
                  :next))]
-    (site (merge 
+    (site (merge
             {:request-method :get
              :uri "/yes"
              :query-string "query=yes"}
