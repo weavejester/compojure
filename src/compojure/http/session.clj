@@ -33,12 +33,12 @@
 (defmulti create-session
   "Create a new session map. Should not attempt to save the session."
   (fn [] (repository-type *session-repo*)))
-  
+
 (defmulti read-session
   "Read in the session using the supplied data. Usually the data is a key used
   to find the session in a store."
   (fn [data] (repository-type *session-repo*)))
-                    
+
 (defmulti write-session
   "Write a new or existing session to the session store."
   (fn [session] (repository-type *session-repo*)))
@@ -135,7 +135,7 @@
   session."
   [request]
   (let [session (:session request)]
-    (-> request 
+    (-> request
       (assoc :flash   (session :flash {}))
       (assoc :session (dissoc session :flash)))))
 
@@ -152,10 +152,13 @@
 (defn- save-handler-session
   "Save the session for a handler if required."
   [request response session]
-  (when (or (:session response)
+  (cond (and (contains? response :session)
+             (nil? (response :session)))
+        (destroy-session session)
+        (or (:session response)
             (:new-session? request)
             (not-empty (:flash request)))
-    (write-session session)))
+        (write-session session)))
 
 (defn with-session
   "Wrap a handler in a session of the specified type. Session type defaults to
