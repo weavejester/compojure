@@ -100,3 +100,17 @@
   (binding [mock-store {:foo "bar"}]
     (mock-session-update {:cookies {:compojure-session "mock-id"}} {})
     (is (= mock-store {:foo "bar"}))))
+
+(declare deleted-mock)
+
+(derive ::mock-delete ::mock)
+
+(defmethod destroy-session ::mock-delete [session]
+  (set! deleted-mock session))
+
+(deftest session-destroy-existing
+  (binding [deleted-mock nil]
+    (let [handler (-> (constantly {:session nil})
+                      (with-session ::mock-delete))]
+      (handler {})
+      (is (= deleted-mock {:id ::mock-id})))))
