@@ -34,11 +34,18 @@ To run Compojure, you'll need:
   [IO](http://commons.apache.org/io) and
   [Codec](http://commons.apache.org/codec).
 
+These dependencies can be downloaded automatically using:
+
+    ant deps
+
 Documentation
 -------------
 
 For information on how to get started and use Compojure, please see our
 [Wiki](http://en.wikibooks.org/wiki/Compojure).
+
+There is also a rough draft of a [Compojure Tutorial](http://groups.google.com/group/compojure/browse_thread/thread/3c507da23540da6e)
+available to read.
 
 Community
 ---------
