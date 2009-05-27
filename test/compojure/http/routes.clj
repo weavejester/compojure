@@ -43,6 +43,13 @@
     "/foo/*" "/foo/bar/baz" {:* "bar/baz"}
     "/a/*/d" "/a/b/c/d"     {:* "b/c"}))
 
+(deftest ending-slash-paths
+  (are (= (match-uri (compile-uri-matcher _1) _2) _3)
+    "/foo" "/foo"  {}
+    "/foo" "/foo/" {}
+    "/:x"  "/foo"  {:x "foo"}
+    "/:x"  "/foo/" {:x "foo"}))
+
 (deftest url-paths
   (is (match-uri (compile-uri-matcher "http://localhost")
                  "http://localhost")))
