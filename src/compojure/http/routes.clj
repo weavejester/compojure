@@ -60,12 +60,11 @@
         literal #"(:[^A-Za-z*]|[^:*])+"]
     (struct uri-matcher
       (re-pattern
-        (str (apply str
-               (lex path
-                 splat   "(.*?)"
-                 word    "([^/.,;?]+)"
-                 literal #(re-escape (.group %))))
-             "/?"))
+        (apply str
+          (lex path
+            splat   "(.*?)"
+            word    "([^/.,;?]+)"
+            literal #(re-escape (.group %)))))
       (vec
         (remove nil?
           (lex path
