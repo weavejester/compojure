@@ -121,8 +121,7 @@
 (defn match-route-method
   "True if the method from the route matches the method from the request."
   [route-method request-method]
-  (or (nil? route-method)
-      (= route-method request-method)))
+  (= route-method request-method))
 
 (defn match-form-method
   "True if the route-method matches a posted forms _method parameter."
@@ -133,10 +132,11 @@
 (defn match-method
   "True if this request matches the route-method."
   [route-method request]
-  (let [request-method (request :request-method)]
-    (if-let [form-method (:_method (request :form-params))]
-      (match-form-method route-method form-method request-method)
-      (match-route-method route-method request-method))))
+  (or (nil? route-method)
+      (let [request-method (request :request-method)]
+        (if-let [form-method (:_method (request :form-params))]
+          (match-form-method route-method form-method request-method)
+          (match-route-method route-method request-method)))))
 
 (defn request-url
   "Return the complete URL for the request."
