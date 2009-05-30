@@ -92,7 +92,7 @@
       (with-open [stream (FileInputStream. body)]
         (set-body response stream))))
 
-(defn update-response
+(defn update-servlet-response
   "Update the HttpServletResponse using a response map."
   [#^HttpServletResponse response, {:keys [status headers body]}]
   (.setStatus  response status)
@@ -105,7 +105,7 @@
   "Handle incoming HTTP requests from a servlet."
   [[servlet request response] routes]
   (do (.setCharacterEncoding response "UTF-8")
-      (update-response response
+      (update-servlet-response response
         (routes (create-request request servlet)))))
 
 (definline servlet
