@@ -110,6 +110,41 @@
 (defmethod destroy-session :cookie [session])
 
 ;; Session middleware
+(defn- in-seconds
+  "Returns the current time plus seconds as milliseconds."
+  [seconds]
+  (let [current-time (. System currentTimeMillis)]
+    (+ (* seconds 1000) current-time)))
+
+(defn- set-session-expires-at
+  "Updates the session :expires-at if this session has an
+   expires value, otherwise just retuns the session."
+  [session]
+  (if-let [expires (:expires *session-repo*)]
+    (assoc session :expires-at (in-seconds expires))
+    session))
+
+(defn- session-expired?
+  "True if this session's timestamp is in the past."
+  [session]
+  (if-let [expires-at (:expires-at session)]
+    (let [current-time (. System currentTimeMillis)]
+      (< expires-at current-time))
+    false))
+
+(defn- new-session
+  "Returns a new session.  Will set the expires timestamp if needed."
+  []
+  (if (contains? *session-repo* :expires)
+    (set-session-expires-at (create-session))
+    (create-session)))
+
+(defn- new-request-session
+  "Associates a new session with a request."
+  [request]
+  (assoc request
+    :session      (new-session)
+    :new-session? true))
 
 (defn- get-request-session
   "Retrieve the session using the 'session' cookie in the request."
@@ -121,11 +156,12 @@
   "Associate the session with the request."
   [request]
   (if-let [session (get-request-session request)]
-    (assoc request
-      :session session)
-    (assoc request
-      :session      (create-session)
-      :new-session? true)))
+    (if (session-expired? session)
+      (do
+        (destroy-session session)
+        (new-request-session request))
+      (assoc request :session (set-session-expires-at session)))
+    (new-request-session request)))
 
 (defn- assoc-request-flash
   "Associate the session flash with the request and remove it from the
@@ -153,6 +189,7 @@
              (nil? (response :session)))
         (destroy-session session)
         (or (:session response)
+            (contains? *session-repo* :expires)
             (:new-session? request)
             (not-empty (:flash request)))
         (write-session session)))
@@ -161,7 +198,7 @@
   "Wrap a handler in a session of the specified type. Session type defaults to
   :memory if not supplied."
   ([handler]
-    (with-session handler :memory))
+    (with-session handler {:type :memory}))
   ([handler session-repo]
     (fn [request]
       (binding [*session-repo* session-repo]
