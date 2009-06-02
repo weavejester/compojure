@@ -118,25 +118,15 @@
         (subvec matches 1)
         []))))
 
-(defn match-route-method
-  "True if the method from the route matches the method from the request."
-  [route-method request-method]
-  (= route-method request-method))
-
-(defn match-form-method
-  "True if the route-method matches a posted forms _method parameter."
-  [route-method form-method request-method]
-  (and (= request-method :post)
-       (= (upcase-name route-method) form-method)))
-
 (defn match-method
-  "True if this request matches the route-method."
-  [route-method request]
-  (or (nil? route-method)
-      (let [request-method (request :request-method)]
-        (if-let [form-method (:_method (request :form-params))]
-          (match-form-method route-method form-method request-method)
-          (match-route-method route-method request-method)))))
+  "True if this request matches the supplied method."
+  [method request]
+  (let [request-method (request :request-method)
+        form-method    (-> request :form-params :_method)]
+    (or (nil? method)
+        (if (and form-method (= request-method :post))
+          (= (upcase-name method) form-method)
+          (= method request-method)))))
 
 (defn request-url
   "Return the complete URL for the request."
@@ -191,7 +181,7 @@
   (-> request
     (assoc :route-params params)
     (assoc :params (merge (:params request)
-                          (when (map? params) params)))))
+                          (if (map? params) params)))))
 
 (defn compile-route
   "Compile a route in the form (method path & body) into a function."

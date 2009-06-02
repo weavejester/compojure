@@ -111,27 +111,29 @@
 
 (deftest route-match-form-method
   (let [routes  (routes (DELETE "/foo" "body"))
-        request {:request-method :post,
-                 :uri "/foo",
-                 :content-type "application/x-www-form-urlencoded",
-                 :body (input-stream "_method=DELETE&a=1")}]
-    (is (= (:status (routes request)) 200))))
+        request {:request-method :post
+                 :uri            "/foo"
+                 :content-type   "application/x-www-form-urlencoded"
+                 :body           (input-stream "_method=DELETE&a=1")}]
+    (is (= (:status (routes request))
+           200))))
 
 (deftest route-not-match-form-method
   (let [routes  (routes (DELETE "/foo" "body"))
-        request {:request-method :post,
-                 :content-type "application/x-www-form-urlencoded",
-                 :uri "/foo",
-                 :body (input-stream "a=1")}]
+        request {:request-method :post
+                 :uri            "/foo"
+                 :content-type   "application/x-www-form-urlencoded"
+                 :body           (input-stream "a=1")}]
     (is (nil? (routes request)))))
 
 (deftest route-match-form-method-not-post
   (let [routes  (routes (POST "/foo" "post") (DELETE "/foo" "delete"))
-        request {:request-method :post,
-                 :uri "/foo",
-                 :content-type "application/x-www-form-urlencoded",
-                 :body (input-stream "_method=DELETE&a=1")}]
-    (is (= (:body (routes request)) "delete"))))
+        request {:request-method :post
+                 :uri            "/foo"
+                 :content-type   "application/x-www-form-urlencoded",
+                 :body           (input-stream "_method=DELETE&a=1")}]
+    (is (= (:body (routes request))
+           "delete"))))
 
 (deftest route-keywords
   (let [route (GET "/:foo"
