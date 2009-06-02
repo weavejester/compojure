@@ -210,13 +210,12 @@
 ;; Macros for easily creating a compiled routing table
 
 (defmacro defroutes
-  "Create a Ring handler function from a sequence of routes."
-  [name doc-or-route & routes]
-  (if (string? doc-or-route)
-    `(def ~(with-meta name (assoc ^name :doc doc-or-route))
-       (routes ~@routes))
-    `(def ~name
-       (routes ~doc-or-route ~@routes))))
+  "Define a Ring handler function from a sequence of routes. Takes an optional
+  doc-string."
+  [name doc? & routes]
+  (let [[name & routes] (apply-doc name doc? routes)]
+   `(def ~name
+      (routes ~@routes))))
 
 (defmacro GET "Generate a GET route."
   [path & body]

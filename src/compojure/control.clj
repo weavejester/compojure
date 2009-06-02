@@ -53,15 +53,19 @@
      [~@(mapcat (fn [f] [f (list decorator f)]) funcs)]
      ~@body))
 
+(defn apply-doc
+  "Return a symbol and body with an optional docstring applied."
+  [name doc? body]
+  (if (string? doc?)
+    (list* (with-meta name (assoc ^name :doc doc?)) body)
+    (list* name doc? body)))
+
 (defmacro deftmpl
   "Define a template function. Arguments are passed via key-value pairs.
   e.g. (deftmpl foo [bar baz] (+ bar baz))
        (foo :bar 1 :baz 2)"
   [name doc? & body]
-  (let [[doc? params & body]
-          (if (string? doc?)
-            (list* [doc?] body)
-            (list* nil doc? body))]
+  (let [[name params & body] (apply-doc name doc? body)]
    `(defn ~name
       ~@doc?
        [& param-map#]
