@@ -16,10 +16,11 @@
   "Returns a string with each occurance of a character in
   chars escaped."
   [chars #^String string]
-  (apply str
-    (mapcat
-      #(if (includes? chars %) [\\ %] [%])
-      string)))
+  (let [charset (set chars)]
+    (apply str
+      (mapcat
+        #(if (contains? charset %) [\\ %] [%])
+        string))))
 
 (defn map-str
   "Map a function to a collection, then concatenate the results into a
