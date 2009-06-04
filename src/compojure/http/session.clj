@@ -110,40 +110,31 @@
 (defmethod destroy-session :cookie [session])
 
 ;; Session middleware
-(defn- in-seconds
+
+(defn- timestamp-after
   "Returns the current time plus seconds as milliseconds."
   [seconds]
-  (let [current-time (. System currentTimeMillis)]
-    (+ (* seconds 1000) current-time)))
+  (+ (* seconds 1000) (System/currentTimeMillis)))
 
-(defn- set-session-expires-at
-  "Updates the session :expires-at if this session has an
-   expires value, otherwise just retuns the session."
+(defn- assoc-expiry
+  "Associate an :expires-at key with the session if the session repository
+  contains the :expires key."
   [session]
   (if-let [expires (:expires *session-repo*)]
-    (assoc session :expires-at (in-seconds expires))
+    (assoc session :expires-at (timestamp-after expires))
     session))
 
 (defn- session-expired?
   "True if this session's timestamp is in the past."
   [session]
   (if-let [expires-at (:expires-at session)]
-    (let [current-time (. System currentTimeMillis)]
-      (< expires-at current-time))
-    false))
-
-(defn- new-session
-  "Returns a new session.  Will set the expires timestamp if needed."
-  []
-  (if (contains? *session-repo* :expires)
-    (set-session-expires-at (create-session))
-    (create-session)))
+    (< expires-at (System/currentTimeMillis))))
 
 (defn- new-request-session
   "Associates a new session with a request."
   [request]
   (assoc request
-    :session      (new-session)
+    :session (assoc-expiry (create-session))
     :new-session? true))
 
 (defn- get-request-session
@@ -160,7 +151,7 @@
       (do
         (destroy-session session)
         (new-request-session request))
-      (assoc request :session (set-session-expires-at session)))
+      (assoc request :session (assoc-expiry session)))
     (new-request-session request)))
 
 (defn- assoc-request-flash
@@ -175,9 +166,9 @@
 (defn- set-session-cookie
   "Set the session cookie on the response if required."
   [request response session]
-  (let [new?    (:new-session? request)
-        cookie  (session-cookie new? session)
-        update  (set-cookie :compojure-session cookie, :path "/")]
+  (let [new?   (:new-session? request)
+        cookie (session-cookie new? session)
+        update (set-cookie :compojure-session cookie, :path "/")]
     (if cookie
       (update-response request response update)
       response)))
@@ -185,20 +176,20 @@
 (defn- save-handler-session
   "Save the session for a handler if required."
   [request response session]
-  (cond (and (contains? response :session)
+  (when (and (contains? response :session)
              (nil? (response :session)))
-        (destroy-session session)
-        (or (:session response)
+    (destroy-session session))
+  (when (or (:session response)
             (contains? *session-repo* :expires)
             (:new-session? request)
             (not-empty (:flash request)))
-        (write-session session)))
+    (write-session session)))
 
 (defn with-session
   "Wrap a handler in a session of the specified type. Session type defaults to
   :memory if not supplied."
   ([handler]
-    (with-session handler {:type :memory}))
+    (with-session handler :memory))
   ([handler session-repo]
     (fn [request]
       (binding [*session-repo* session-repo]
