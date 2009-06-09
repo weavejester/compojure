@@ -34,11 +34,16 @@
   "Encode a string using base64."
   (base64-encode-bytes (.getBytes unencoded)))
  
+(defn base64-decode-bytes
+  "Decode a string using base64 into an array of bytes."
+  [encoded]
+  (Base64/decodeBase64 (.getBytes encoded)))
+
 (defn base64-decode
   "Decode a string using base64."
   [encoded]
-  (String. (Base64/decodeBase64 (.getBytes encoded))))
-
+  (String. (base64-decode-bytes encoded)))
+  
 (defn marshal
   "Serialize a Clojure object in a base64-encoded string."
   [data]
