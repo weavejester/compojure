@@ -21,25 +21,25 @@
 
 (defmulti create-session
   "Create a new session map. Should not attempt to save the session."
-  (fn [repository] (type repository)))
+  (fn [repository] (:type repository)))
 
 (defmulti read-session
   "Read in the session using the supplied data. Usually the data is a key used
   to find the session in a store."
-  (fn [repository data] (type repository)))
+  (fn [repository data] (:type repository)))
 
 (defmulti write-session
   "Write a new or existing session to the session store."
-  (fn [repository session] (type repository)))
+  (fn [repository session] (:type repository)))
 
 (defmulti destroy-session
   "Remove the session from the session store."
-  (fn [repository session] (type repository)))
+  (fn [repository session] (:type repository)))
 
 (defmulti session-cookie
   "Return the session data to be stored in the cookie. This is usually the
   session ID."
-  (fn [repository new? session] (type repository)))
+  (fn [repository new? session] (:type repository)))
 
 ;; Default implementations of create-session and set-session-cookie
 
@@ -108,11 +108,11 @@
 ;; Session middleware
 
 (defn- timestamp-after
-  "Returns the current time plus seconds as milliseconds."
+  "Return the current time plus seconds as milliseconds."
   [seconds]
   (+ (* seconds 1000) (System/currentTimeMillis)))
 
-(defn- assoc-expiry
+(defn assoc-expiry
   "Associate an :expires-at key with the session if the session repository
   contains the :expires key."
   [repository session]
@@ -120,38 +120,38 @@
     (assoc session :expires-at (timestamp-after expires))
     session))
 
-(defn- session-expired?
+(defn session-expired?
   "True if this session's timestamp is in the past."
   [session]
   (if-let [expires-at (:expires-at session)]
     (< expires-at (System/currentTimeMillis))))
 
-(defn- new-request-session
-  "Associates a new session with a request."
-  [repository request]
-  (assoc request
-    :session (assoc-expiry (create-session repository))
-    :new-session? true))
-
-(defn- get-request-session
+(defn- get-session
   "Retrieve the session using the 'session' cookie in the request."
   [repository request]
   (if-let [session-data (-> request :cookies :compojure-session)]
     (read-session repository session-data)))
 
-(defn- assoc-request-session
+(defn- assoc-new-session
+  "Associate a new session with a request."
+  [repository request]
+  (assoc request
+    :session (assoc-expiry repository (create-session repository))
+    :new-session? true))
+
+(defn assoc-session
   "Associate the session with the request."
   [repository request]
-  (if-let [session (get-request-session repository request)]
+  (if-let [session (get-session repository request)]
     (if (session-expired? session)
       (do
         (destroy-session repository session)
-        (new-request-session repository request))
+        (assoc-new-session repository request))
       (assoc request :session
         (assoc-expiry repository session)))
-    (new-request-session repository request)))
+    (assoc-new-session repository request)))
 
-(defn- assoc-request-flash
+(defn assoc-flash
   "Associate the session flash with the request and remove it from the
   session."
   [request]
@@ -160,7 +160,7 @@
       (assoc :flash   (session :flash {}))
       (assoc :session (dissoc session :flash)))))
 
-(defn- set-session-cookie
+(defn set-session-cookie
   "Set the session cookie on the response if required."
   [repository request response session]
   (let [new?   (:new-session? request)
@@ -171,16 +171,16 @@
       (update-response request response update)
       response)))
 
-(defn- save-handler-session
+(defn save-handler-session
   "Save the session for a handler if required."
   [repository request response session]
   (when (and (contains? response :session)
              (nil? (response :session)))
     (destroy-session repository session))
   (when (or (:session response)
-            (contains? repository :expires)
             (:new-session? request)
-            (not-empty (:flash request)))
+            (not-empty (:flash request))
+            (contains? repository :expires))
     (write-session repository session)))
 
 (defn- keyword->repository
@@ -199,8 +199,8 @@
     (fn [request]
       (let [repo     (keyword->repository repository)
             request  (-> request (assoc-cookies)
-                                 (assoc-request-session repo)
-                                 (assoc-request-flash))
+                                 (assoc-session repo)
+                                 (assoc-flash))
             response (handler request)
             session  (or (:session response) (:session request))]
         (when response

@@ -5,57 +5,66 @@
 ;; Memory sessions
 
 (deftest create-memory-session
-  (binding [*session-repo* :memory]
-    (contains? (create-session) :id)))
+  (contains? (create-session {:type :memory}) :id))
 
 (deftest memory-session-cookie
-  (binding [*session-repo* :memory]
-    (let [session (create-session)]
-      (is (= (session-cookie true session) (session :id)))
-      (is (nil? (session-cookie false session))))))
+  (let [repo    {:type :memory}
+        session (create-session repo)]
+    (is (= (session-cookie repo true session) (session :id)))
+    (is (nil? (session-cookie repo false session)))))
 
 (deftest read-memory-session
-  (binding [*session-repo* :memory
-            memory-sessions (ref {::mock-id ::mock-session})]
-    (is (= (read-session ::mock-id) ::mock-session))))
+  (binding [memory-sessions (ref {::mock-id ::mock-session})]
+    (is (= (read-session {:type :memory} ::mock-id)
+           ::mock-session))))
 
 (deftest write-memory-session
-  (binding [*session-repo* :memory]
-    (let [session (create-session)]
-      (write-session session)
+  (binding [memory-sessions (ref {})]
+    (let [session (create-session {:type :memory})]
+      (write-session {:type :memory} session)
       (is (= (memory-sessions (session :id))
              session)))))
 
 (deftest destroy-memory-sessions
   (let [mock-session {:id ::mock-id}]
-    (binding [*session-repo* :memory
-              memory-sessions (ref {::mock-id mock-session})]
-      (is (contains? @memory-sessions ::mock-id))
-      (destroy-session mock-session)
+    (binding [memory-sessions (ref {::mock-id mock-session})]
+      (destroy-session {:type :memory} mock-session)
       (is (not (contains? @memory-sessions ::mock-id))))))
 
+;; Cookie sessions
+
 (deftest session-hmac-secret-key
-  (binding [*session-repo* {:type :cookie, :secret-key "test"}]
-    (session-hmac "foobar")
-    "ithiOBI7sp/MpMb9EXgxvm1gmufcQvFT+gRzIUiSd7A="))
+  (is (= (session-hmac {:type :cookie, :secret-key "test"} "foobar")
+         "ithiOBI7sp/MpMb9EXgxvm1gmufcQvFT+gRzIUiSd7A=")))
+
+;; Associating session with request
+
+(defmethod create-session ::mock [repository]
+  {:id ::mock-id})
+
+(deftest assoc-session-from-nil
+  (let [request (assoc-session {:type ::mock} {})]
+    (is (:new-session? request))
+    (is (= (:session request) {:id ::mock-id}))))
 
 ;; Session routes
 
+(comment
 (deftest session-nil-response
   (let [handler  (with-session (constantly nil))
         response (handler {})]
     (is (nil? response))))
 
-(defmethod create-session ::mock []
+(defmethod create-session ::mock [repository]
   {:id ::mock-id})
 
-(defmethod write-session ::mock [session])
+(defmethod write-session ::mock [repository session])
 
-(defmethod read-session ::mock [id]
+(defmethod read-session ::mock [repository id]
   (is (= id ::mock-id))
   {:id ::mock-id})
 
-(defmethod session-cookie ::mock [new? session]
+(defmethod session-cookie ::mock [repository new? session]
   "mock-session-data")
 
 (defn- mock-session-response [response]
@@ -114,3 +123,5 @@
                       (with-session ::mock-delete))]
       (handler {})
       (is (= deleted-mock {:id ::mock-id})))))
+
+)
