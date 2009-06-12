@@ -62,3 +62,9 @@
         request (assoc-session {:type ::mock} {:cookies cookies})]
     (is (not (:new-session? request)))
     (is (= (:session request) {:id :current}))))
+
+(deftest assoc-flash-data
+  (let [session {:flash {:message "test"}}
+        request (assoc-flash {:session session})]
+    (is (not (contains? (request :session) :flash)))
+    (is (= (request :flash) {:message "test"}))))
