@@ -34,6 +34,9 @@
 
 ;; Cookie sessions
 
+(deftest create-cookie-session
+  (is (= (create-session {:type :cookie}) {})))
+
 (deftest session-hmac-secret-key
   (is (= (session-hmac {:type :cookie, :secret-key "test"} "foobar")
          "ithiOBI7sp/MpMb9EXgxvm1gmufcQvFT+gRzIUiSd7A=")))
