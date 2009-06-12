@@ -107,7 +107,7 @@
 
 ;; Session middleware
 
-(defn- timestamp-after
+(defn timestamp-after
   "Return the current time plus seconds as milliseconds."
   [seconds]
   (+ (* seconds 1000) (System/currentTimeMillis)))
