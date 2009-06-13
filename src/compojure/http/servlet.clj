@@ -104,9 +104,11 @@
 (defn request-handler
   "Handle incoming HTTP requests from a servlet."
   [[servlet request response] routes]
-  (do (.setCharacterEncoding response "UTF-8")
-      (update-servlet-response response
-        (routes (create-request request servlet)))))
+  (.setCharacterEncoding response "UTF-8")
+  (if-let [response-map (routes (create-request request servlet))]
+    (update-servlet-response response response-map)
+    (throw (NullPointerException. 
+             "Handler returned nil (maybe no routes matched URI)"))))
 
 (definline servlet
   "Create a servlet from a sequence of routes. Automatically updates if
