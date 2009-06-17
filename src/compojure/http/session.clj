@@ -81,20 +81,39 @@
       dissoc (session :id))))
 
 ;; Cookie sessions
-
-(def *default-secret-key* (gen-uuid))   ; Random secret key
+(def *default-encryption*
+     {:algorithm      "AES/CBC/PKCS5Padding"
+      :secret-key     (gen-key "AES" 128)
+      :cbc-params     (gen-iv-param 16)
+      :hash-key       (secure-random-bytes 128)
+      :hash-algorithm "HmacSHA256"})
 
 (defn session-hmac
   "Calculate a HMAC for a marshalled session"
   [cookie-data]
-  (let [secret-key (:secret-key *session-repo* *default-secret-key*)]
-    (hmac secret-key "HmacSHA256" cookie-data)))
+  (let [encryption-opts (merge *default-encryption*
+                              (:encryption *session-repo*))
+        hash-key        (:hash-key encryption-opts)
+        hash-algorithm  (:hash-algorithm encryption-opts)]
+    (hmac hash-key hash-algorithm cookie-data)))
+
+(defn session-crypt
+  [f session]
+  (let [encryption-opts (merge *default-encryption*
+                               (:encryption *session-repo*))
+        key             (:secret-key encryption-opts)
+        algorithm       (:algorithm encryption-opts)
+        params          (:cbc-params encryption-opts)]
+    (f key algorithm params session)))
 
 (defmethod create-session :cookie [] {})
 
 (defmethod session-cookie :cookie
   [new? session]
-  (let [cookie-data (marshal session)]
+  (let [cookie-data
+        (if (contains? *session-repo* :encryption) 
+          (session-crypt encrypt (marshal session))
+          (marshal session))]
     (if (> (count cookie-data) 4000)
       (throwf "Session data exceeds 4K")
       (str cookie-data "--" (session-hmac cookie-data)))))
@@ -103,7 +122,10 @@
   [data]
   (let [[session mac] (.split data "--")]
     (if (= mac (session-hmac session))
-      (unmarshal session))))
+      (if (contains? *session-repo* :encryption)
+        (unmarshal (session-crypt decrypt session))
+        (unmarshal session)))))
+
 
 ; Do nothing for write or destroy
 (defmethod write-session :cookie [session])
