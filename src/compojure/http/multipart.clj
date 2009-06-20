@@ -55,7 +55,9 @@
       (assoc-vec param-map
         (keyword (.getFieldName item))
         (if (.isFormField item)
-          (.getString item)
+          (if (zero? (.getSize item))
+            ""
+            (.getString item))
           (file-map item))))
     {}
     (.parseRequest
