@@ -159,7 +159,7 @@
 
 (defn assoc-session
   "Associate the session with the request."
-  [repository request]
+  [request repository]
   (if-let [session (get-session repository request)]
     (if (session-expired? session)
       (do

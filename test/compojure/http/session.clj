@@ -57,19 +57,19 @@
   {:id :current})
 
 (deftest assoc-nil-session
-  (let [request (assoc-session {:type ::mock} {})]
+  (let [request (assoc-session {} {:type ::mock})]
     (is (:new-session? request))
     (is (= (:session request) {:id :new}))))
 
 (deftest assoc-expired-session
   (let [session {:expires-at (timestamp-after 0)}
-        request (assoc-session {:type ::mock} {:session session})]
+        request (assoc-session {:session session} {:type ::mock})]
     (is (:new-session? request))
     (is (= (:session request) {:id :new}))))
 
 (deftest assoc-existing-session
   (let [cookies {:compojure-session "current"}
-        request (assoc-session {:type ::mock} {:cookies cookies})]
+        request (assoc-session {:cookies cookies} {:type ::mock})]
     (is (not (:new-session? request)))
     (is (= (:session request) {:id :current}))))
 
