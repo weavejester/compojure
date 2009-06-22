@@ -1,20 +1,14 @@
 (ns test.compojure.crypto
-  (:import javax.crypto.spec.SecretKeySpec)
-  (:import org.apache.commons.codec.binary.Hex)
+  (:use compojure.encodings)
   (:use compojure.crypto)
-  (:use clojure.contrib.test-is))
+  (:use clojure.contrib.test-is)
+  (:import javax.crypto.spec.SecretKeySpec))
 
-(defn decode-hex
-  [s]
-  (Hex/decodeHex (.toCharArray s)))
-
-(defn encode-hex
-  [array]
-  (String. (Hex/encodeHex array)))
-
+;;; To test with AES256 you need'll the Unlimited Strength JCE jars.
 (def *algorithm* "AES")
 (def *key-size* 128)
 
+;;; Reference test vectors.
 (def *test-data*
   {128 {:key
         "95A8EE8E89979B9EFDCBC6EB9797528D"

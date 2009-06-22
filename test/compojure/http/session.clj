@@ -1,6 +1,10 @@
 (ns test.compojure.http.session
+  (:use compojure.crypto)
+  (:use compojure.encodings)
   (:use compojure.http.session)
-  (:use clojure.contrib.test-is))
+  (:use clojure.contrib.test-is)
+  (:import javax.crypto.spec.IvParameterSpec)
+  (:import javax.crypto.spec.SecretKeySpec))
 
 ;; Memory sessions
 
@@ -34,10 +38,28 @@
       (destroy-session mock-session)
       (is (not (contains? @memory-sessions ::mock-id))))))
 
+(def *test-key*
+     (decode-hex "7bf5cf06baceab51168eff10d3e665d6ab503504bbce196f653fddc74bce55f7"))
+
+(def *test-secret-key* (SecretKeySpec. (decode-hex "14002697f451c80539728f9c0d656199") "AES"))
+
+(def *test-cbc-params* (IvParameterSpec. (decode-hex "1553043c95cb25e71d9110bfb761197c")))
+
 (deftest session-hmac-secret-key
-  (binding [*session-repo* {:type :cookie, :secret-key "test"}]
-    (session-hmac "foobar")
-    "ithiOBI7sp/MpMb9EXgxvm1gmufcQvFT+gRzIUiSd7A="))
+  (binding [*session-repo* {:type :cookie :encryption {:hash-key *test-key*}}]
+    (is (= (session-hmac "foobar")
+           "R3Bi861ypOw+EooGuQuE/QWsSmcaRU6zgzUQAaDYk+o="))))
+
+(deftest session-encryption
+  (binding [*session-repo* {:type :cookie :encryption {:secret-key *test-secret-key*
+                                                       :hash-key *test-key*
+                                                       :cbc-params *test-cbc-params*}}]
+    (let [session {:foo "bar" :fizz "buzz"}
+          encrypted (session-crypt encrypt (marshal session))
+          decrypted (unmarshal (session-crypt decrypt encrypted))]
+      (is (= encrypted
+             "IrDhZVr1374+1RF44mMsjQI9brh/VJ3yMb8BUMpWhSA8saTWiOEbO9pMGdM6+Q55"))
+      (is (= decrypted session)))))
 
 ;; Session routes
 

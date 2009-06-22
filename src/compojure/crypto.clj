@@ -33,6 +33,8 @@
   (str (UUID/randomUUID)))
 
 (defn secure-random-bytes
+  "Returns a random byte array of the specified size and algorithm.
+   Defaults to SHA1PRNG."
   ([size] (secure-random-bytes size "SHA1PRNG"))
   ([size algorithm]
      (let [seed (make-array (. Byte TYPE) size)]
@@ -40,13 +42,15 @@
        seed)))
 
 (defn gen-iv-param
+  "Generates a random IvParameterSpec for use with CBC encryption algorithms."
   [size]
   (IvParameterSpec. (secure-random-bytes size)))
 
 (defn gen-key
-  [algorithm bits]
+  "Generates a SecretKey of the specified algorithm and size."
+  [algorithm size]
   (let [key-gen (doto (KeyGenerator/getInstance algorithm)
-                  (.init bits))]
+                  (.init size))]
     (.generateKey key-gen)))
 
 (defn- cipher

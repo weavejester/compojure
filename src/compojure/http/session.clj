@@ -85,11 +85,12 @@
      {:algorithm      "AES/CBC/PKCS5Padding"
       :secret-key     (gen-key "AES" 128)
       :cbc-params     (gen-iv-param 16)
-      :hash-key       (secure-random-bytes 128)
+      :hash-key       (secure-random-bytes 32)
       :hash-algorithm "HmacSHA256"})
 
 (defn session-hmac
-  "Calculate a HMAC for a marshalled session"
+  "Calculate a HMAC for a marshalled session.  Uses the :hash-key and
+   :hash-algorithm of the :encryption repository map."
   [cookie-data]
   (let [encryption-opts (merge *default-encryption*
                               (:encryption *session-repo*))
