@@ -3,8 +3,7 @@ programming language. It emphasizes a thin I/O layer and a functional approach
 to web development.
 
 Compojure is still in active development. The current stable branch has been
-released as version 0.1. All examples in this README refer to the latest
-development version, which differs slightly from version 0.1.
+released as version 0.2.
 
 Sample Code
 -----------

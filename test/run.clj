@@ -1,5 +1,6 @@
 (ns test.run
   (:use clojure.contrib.test-is)
+  (:require test.compojure.crypto)
   (:require test.compojure.html.gen)
   (:require test.compojure.html.form-helpers)
   (:require test.compojure.http.routes)
@@ -10,7 +11,8 @@
   (:require test.compojure.str-utils)
   (:require test.compojure.validation))
 
-(run-tests 
+(run-tests
+  'test.compojure.crypto
   'test.compojure.html.gen
   'test.compojure.html.form-helpers
   'test.compojure.http.routes

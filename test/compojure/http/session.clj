@@ -1,6 +1,10 @@
 (ns test.compojure.http.session
+  (:use compojure.crypto)
+  (:use compojure.encodings)
   (:use compojure.http.session)
-  (:use clojure.contrib.test-is))
+  (:use clojure.contrib.test-is)
+  (:import javax.crypto.spec.IvParameterSpec)
+  (:import javax.crypto.spec.SecretKeySpec))
 
 ;; Memory sessions
 
@@ -34,12 +38,15 @@
 
 ;; Cookie sessions
 
+(def *test-key*
+     (decode-hex "7bf5cf06baceab51168eff10d3e665d6ab503504bbce196f653fddc74bce55f7"))
+
 (deftest create-cookie-session
   (is (= (create-session {:type :cookie}) {})))
 
 (deftest session-hmac-secret-key
-  (is (= (session-hmac {:type :cookie, :secret-key "test"} "foobar")
-         "ithiOBI7sp/MpMb9EXgxvm1gmufcQvFT+gRzIUiSd7A=")))
+  (is (= (session-hmac {:type :cookie, :encryption {:hash-key *test-key*}} "foobar")
+         "R3Bi861ypOw+EooGuQuE/QWsSmcaRU6zgzUQAaDYk+o=")))
 
 ;; Associating session with request
 
