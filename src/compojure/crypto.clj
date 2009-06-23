@@ -9,6 +9,7 @@
 (ns compojure.crypto
   "Functions for cryptographically signing, verifying and encrypting data."
   (:use compojure.encodings)
+  (:use clojure.contrib.def)
   (:import java.security.SecureRandom)
   (:import javax.crypto.Cipher)
   (:import javax.crypto.KeyGenerator)
@@ -79,3 +80,45 @@
   "Base64 encodes and encrypts a string with the given key and algorithm."
   [key algorithm params s]
   (String. (decrypt-bytes key algorithm params (base64-decode-bytes s))))
+
+(defvar *crypto*
+  (delay {:algorithm      "AES/CBC/PKCS5Padding"
+          :secret-key     (gen-key "AES" 128)
+          :cbc-params     (gen-iv-param 16)
+          :hash-key       (secure-random-bytes 32)
+          :hash-algorithm "HmacSHA256"})
+  "Default cryptography settings")
+
+(defn seal
+  "Seal a data structure into a cryptographically secure string. Ensures no-one
+  looks at or tampers with the data inside. Uses the *crypto* option map if no
+  cryptography options are supplied."
+  ([data]
+    (seal *crypto* data))
+  ([crypto data]
+    (let [data-str (marshal data)
+          crypto   (force crypto)
+          mac      (hmac (:hash-key crypto)
+                         (:hash-algorithm crypto)
+                         data-str)]
+      (encrypt (:secret-key crypto)
+               (:algorithm crypto)
+               (:cbc-params crypto)
+               (str data-str "--" mac)))))
+
+(defn unseal
+  "Read a sealed data structure. Must use the same crypto option map as was
+  used to seal it in the first place. Uses the *crypto* option map by default."
+  ([sealed-data]
+    (unseal *crypto* sealed-data))
+  ([crypto sealed-data]
+    (let [crypto    (force crypto)
+          decrypted (decrypt (:secret-key crypto)
+                             (:algorithm crypto)
+                             (:cbc-params crypto)
+                             sealed-data)
+         [data mac] (.split decrypted "--")]
+      (if (= mac (hmac (:hash-key crypto)
+                       (:hash-algorithm crypto)
+                       data))
+        (unmarshal data)))))
