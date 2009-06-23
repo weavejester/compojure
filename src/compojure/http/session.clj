@@ -73,32 +73,6 @@
       dissoc (session :id))))
 
 ;; Cookie sessions
-(def *default-encryption*
-  {:algorithm      "AES/CBC/PKCS5Padding"
-   :secret-key     (gen-key "AES" 128)
-   :cbc-params     (gen-iv-param 16)
-   :hash-key       (secure-random-bytes 32)
-   :hash-algorithm "HmacSHA256"})
-
-(defn session-hmac
-  "Calculate a HMAC for a marshalled session.  Uses the :hash-key and
-   :hash-algorithm of the :encryption repository map."
-  [repository cookie-data]
-  (let [encryption-opts (merge *default-encryption*
-                              (:encryption repository))
-        hash-key        (:hash-key encryption-opts)
-        hash-algorithm  (:hash-algorithm encryption-opts)]
-    (hmac hash-key hash-algorithm cookie-data)))
-
-(defn session-crypt
-  "Encrypt or decrypt session data."
-  [repository func session]
-  (let [encryption-opts (merge *default-encryption*
-                               (:encryption repository))
-        key             (:secret-key encryption-opts)
-        algorithm       (:algorithm encryption-opts)
-        params          (:cbc-params encryption-opts)]
-    (func key algorithm params session)))
 
 (defmethod create-session :cookie
   [repository]
@@ -106,16 +80,14 @@
 
 (defmethod session-cookie :cookie
   [repository new? session]
-  (let [cookie-data (session-crypt repository encrypt (marshal session))]
+  (let [cookie-data (seal session)]
     (if (> (count cookie-data) 4000)
       (throwf "Session data exceeds 4K")
-      (str cookie-data "--" (session-hmac repository cookie-data)))))
+      cookie-data)))
 
 (defmethod read-session :cookie
   [repository data]
-  (let [[session mac] (.split data "--")]
-    (if (= mac (session-hmac repository session))
-      (unmarshal (session-crypt repository decrypt session)))))
+  (unseal data))
 
 (defmethod write-session :cookie
   [repository session])
