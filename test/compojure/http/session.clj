@@ -38,15 +38,8 @@
 
 ;; Cookie sessions
 
-(def *test-key*
-     (decode-hex "7bf5cf06baceab51168eff10d3e665d6ab503504bbce196f653fddc74bce55f7"))
-
 (deftest create-cookie-session
   (is (= (create-session {:type :cookie}) {})))
-
-(deftest session-hmac-secret-key
-  (is (= (session-hmac {:type :cookie, :encryption {:hash-key *test-key*}} "foobar")
-         "R3Bi861ypOw+EooGuQuE/QWsSmcaRU6zgzUQAaDYk+o=")))
 
 ;; Associating session with request
 
