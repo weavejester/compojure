@@ -38,7 +38,7 @@
    Defaults to SHA1PRNG."
   ([size] (secure-random-bytes size "SHA1PRNG"))
   ([size algorithm]
-     (let [seed (make-array (. Byte TYPE) size)]
+     (let [seed (make-array Byte/TYPE size)]
        (.nextBytes (SecureRandom/getInstance algorithm) seed)
        seed)))
 
