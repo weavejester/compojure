@@ -204,7 +204,7 @@
   and cookies to the request."
   [& handlers]
   (-> (apply routes* handlers)
-    with-params
+    with-request-params
     with-cookies))
 
 ;; Macros for easily creating a compiled routing table

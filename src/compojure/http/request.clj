@@ -84,7 +84,7 @@
     (assoc-func :form-params  parse-form-params)
     (assoc-func :params       get-merged-params)))
 
-(defn with-params
+(defn with-request-params
   "Decorator that adds urlencoded parameters to the request map."
   [handler]
   (fn [request]
