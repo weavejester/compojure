@@ -80,14 +80,14 @@
 
 (defmethod session-cookie :cookie
   [repository new? session]
-  (let [cookie-data (seal session)]
+  (let [cookie-data (seal (:encryption repository) session)]
     (if (> (count cookie-data) 4000)
       (throwf "Session data exceeds 4K")
       cookie-data)))
 
 (defmethod read-session :cookie
   [repository data]
-  (unseal data))
+  (unseal (:encryption repository) data))
 
 (defmethod write-session :cookie
   [repository session])

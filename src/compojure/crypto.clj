@@ -94,10 +94,10 @@
   looks at or tampers with the data inside. Uses the *crypto* option map if no
   cryptography options are supplied."
   ([data]
-    (seal *crypto* data))
+    (seal {} data))
   ([crypto data]
-    (let [data-str (marshal data)
-          crypto   (force crypto)
+    (let [crypto   (merge (force *crypto*) (force crypto))
+          data-str (marshal data)
           mac      (hmac (:hash-key crypto)
                          (:hash-algorithm crypto)
                          data-str)]
@@ -110,9 +110,9 @@
   "Read a sealed data structure. Must use the same crypto option map as was
   used to seal it in the first place. Uses the *crypto* option map by default."
   ([sealed-data]
-    (unseal *crypto* sealed-data))
+    (unseal {} sealed-data))
   ([crypto sealed-data]
-    (let [crypto    (force crypto)
+    (let [crypto    (merge (force *crypto*) (force crypto))
           decrypted (decrypt (:secret-key crypto)
                              (:algorithm crypto)
                              (:cbc-params crypto)
