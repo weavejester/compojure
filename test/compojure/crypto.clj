@@ -61,3 +61,7 @@
     (is (= (decrypt *secret-key* algorithm param
                     (encrypt *secret-key* algorithm param message))
            message))))
+
+(deftest test-seal-unseal
+  (is (= (unseal (seal "Foobar"))
+         "Foobar")))
