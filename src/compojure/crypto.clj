@@ -96,15 +96,15 @@
   ([data]
     (seal {} data))
   ([crypto data]
-    (let [crypto   (merge (force *crypto*) (force crypto))
-          data-str (marshal data)
-          mac      (hmac (:hash-key crypto)
-                         (:hash-algorithm crypto)
-                         data-str)]
-      (encrypt (:secret-key crypto)
-               (:algorithm crypto)
-               (:cbc-params crypto)
-               (str data-str "--" mac)))))
+    (let [crypto    (merge (force *crypto*) (force crypto))
+          encrypted (encrypt (:secret-key crypto)
+                             (:algorithm crypto)
+                             (:cbc-params crypto)
+                             (marshal data))]
+      (str encrypted "--"
+           (hmac (:hash-key crypto)
+                 (:hash-algorithm crypto)
+                 encrypted)))))
 
 (defn unseal
   "Read a sealed data structure. Must use the same crypto option map as was
@@ -112,13 +112,14 @@
   ([sealed-data]
     (unseal {} sealed-data))
   ([crypto sealed-data]
-    (let [crypto    (merge (force *crypto*) (force crypto))
-          decrypted (decrypt (:secret-key crypto)
-                             (:algorithm crypto)
-                             (:cbc-params crypto)
-                             sealed-data)
-         [data mac] (.split decrypted "--")]
-      (if (= mac (hmac (:hash-key crypto)
-                       (:hash-algorithm crypto)
-                       data))
-        (unmarshal data)))))
+    (let [crypto       (merge (force *crypto*) (force crypto))
+          [data mac]   (.split sealed-data "--")
+          expected-mac (hmac (:hash-key crypto)
+                             (:hash-algorithm crypto)
+                             data)]
+      (if (= mac expected-mac)
+        (unmarshal
+          (decrypt (:secret-key crypto)
+                   (:algorithm crypto)
+                   (:cbc-params crypto)
+                   data))))))
