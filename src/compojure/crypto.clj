@@ -40,6 +40,13 @@
        (.nextBytes (SecureRandom/getInstance algorithm) seed)
        seed)))
 
+(defn gen-secret-key
+  "Generate a random secret key from a map of encryption options."
+  ([]
+    (gen-secret-key {}))
+  ([options]
+    (secure-random-bytes (/ (options :key-size) 8))))
+
 (defn gen-uuid
   "Generate a random UUID."
   []
