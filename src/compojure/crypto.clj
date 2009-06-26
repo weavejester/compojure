@@ -10,6 +10,7 @@
   "Functions for cryptographically signing, verifying and encrypting data."
   (:use compojure.encodings)
   (:use clojure.contrib.def)
+  (:use clojure.contrib.java-utils)
   (:import java.security.SecureRandom)
   (:import javax.crypto.Cipher)
   (:import javax.crypto.KeyGenerator)
@@ -18,108 +19,107 @@
   (:import javax.crypto.spec.IvParameterSpec)
   (:import java.util.UUID))
 
-(defn hmac
-  "Generate a hashed message authentication code with the supplied key and
-  algorithm on some string data."
-  [key algorithm data]
-  (let [spec  (SecretKeySpec. key algorithm)
-        mac   (doto (Mac/getInstance algorithm)
-                (.init spec))
-        bytes (.doFinal mac (.getBytes data))]
-    (base64-encode-bytes bytes)))
+(defvar hmac-defaults
+  {:algorithm "HmacSHA256"}
+  "Default options for HMACs.")
+
+(defvar encrypt-defaults
+  {:algorithm  "AES"
+   :key-size   128
+   :mode       "CBC"
+   :padding    "PKCS5Padding"}
+  "Default options for symmetric encryption.")
+
+(defn secure-random-bytes
+  "Returns a random byte array of the specified size. Can optionally supply
+   an PRNG algorithm (defaults is SHA1PRNG)."
+  ([size]
+    (secure-random-bytes size "SHA1PRNG"))
+  ([size algorithm]
+     (let [seed (make-array Byte/TYPE size)]
+       (.nextBytes (SecureRandom/getInstance algorithm) seed)
+       seed)))
 
 (defn gen-uuid
   "Generate a random UUID."
   []
   (str (UUID/randomUUID)))
 
-(defn secure-random-bytes
-  "Returns a random byte array of the specified size and algorithm.
-   Defaults to SHA1PRNG."
-  ([size] (secure-random-bytes size "SHA1PRNG"))
-  ([size algorithm]
-     (let [seed (make-array Byte/TYPE size)]
-       (.nextBytes (SecureRandom/getInstance algorithm) seed)
-       seed)))
+(defn- to-bytes
+  "Converts its argument into an array of bytes."
+  [x]
+  (cond
+    (string? x)     (.getBytes x)
+    (sequential? x) (into-array Byte/TYPE x)
+    :else           x))
 
-(defn gen-iv-param
-  "Generates a random IvParameterSpec for use with CBC encryption algorithms."
-  [size]
-  (IvParameterSpec. (secure-random-bytes size)))
+(defn hmac-bytes
+  "Generate a HMAC byte array with the supplied key on a byte array of data.
+  Takes an optional map of cryptography options."
+  [options key data]
+  (let [options   (merge hmac-defaults options)
+        algorithm (options :algorithm)
+        hmac      (doto (Mac/getInstance algorithm)
+                    (.init (SecretKeySpec. key algorithm)))]
+    (.doFinal hmac data)))
 
-(defn gen-key
-  "Generates a SecretKey of the specified algorithm and size."
-  [algorithm size]
-  (let [key-gen (doto (KeyGenerator/getInstance algorithm)
-                  (.init size))]
-    (.generateKey key-gen)))
+(defn hmac
+  "Generate a Basc64-encoded HMAC with the supplied key on a byte array or
+  string of data. Takes an optional map of cryptography options."
+  [options key data]
+  (base64-encode-bytes (hmac-bytes options key (to-bytes data))))
 
-(defn- cipher
-  "Clojure wrapper for using javax.crypto.Cipher on a byte array."
-  [key algorithm params data mode]
-  (let [cipher (doto (Cipher/getInstance algorithm)
-                 (.init mode key params))]
-    (.doFinal cipher data)))
+(defn- make-algorithm
+  "Return an algorithm string suitable for JCE from a map of options."
+  [options]
+  (str "AES/" (options :mode) "/" (options :padding)))
+
+(defn- make-cipher
+  "Create an AES Cipher instance."
+  [options]
+  (Cipher/getInstance (make-algorithm options)))
 
 (defn encrypt-bytes
-  "Encrypts a byte array with the given key and algorithm."
-  [key algorithm params data]
-  (cipher key algorithm params data Cipher/ENCRYPT_MODE))
+  "Encrypts a byte array with the given key and encryption options."
+  [options key data]
+  (let [options    (merge encrypt-defaults options)
+        cipher     (make-cipher options)
+        secret-key (SecretKeySpec. key (options :algorithm))
+        iv         (secure-random-bytes (.getBlockSize cipher))]
+    (.init cipher Cipher/ENCRYPT_MODE secret-key (IvParameterSpec. iv))
+    (to-bytes (concat iv (.doFinal cipher data)))))
 
 (defn decrypt-bytes
-  "Decrypts a byte array with the given key and algorithm."
-  [key algorithm params data]
-  (cipher key algorithm params data Cipher/DECRYPT_MODE))
+  "Decrypts a byte array with the given key and encryption options."
+  [options key data]
+  (let [options    (merge encrypt-defaults options)
+        cipher     (make-cipher options)
+        [iv data]  (split-at (.getBlockSize cipher) data)
+        iv-spec    (IvParameterSpec. (to-bytes iv))
+        secret-key (SecretKeySpec. key (options :algorithm))]
+    (.init cipher Cipher/DECRYPT_MODE secret-key iv-spec)
+    (.doFinal cipher (to-bytes data))))
 
 (defn encrypt
-  "Base64 encodes and encrypts a string with the given key and algorithm."
-  [key algorithm params s]
-  (base64-encode-bytes (encrypt-bytes key algorithm params (.getBytes s))))
+  "Encrypts a string or byte array with the given key and encryption options."
+  [options key data]
+  (base64-encode-bytes (encrypt-bytes options key (to-bytes data))))
 
 (defn decrypt
   "Base64 encodes and encrypts a string with the given key and algorithm."
-  [key algorithm params s]
-  (String. (decrypt-bytes key algorithm params (base64-decode-bytes s))))
-
-(defvar *crypto*
-  (delay {:algorithm      "AES/CBC/PKCS5Padding"
-          :secret-key     (gen-key "AES" 128)
-          :cbc-params     (gen-iv-param 16)
-          :hash-key       (secure-random-bytes 32)
-          :hash-algorithm "HmacSHA256"})
-  "Default cryptography settings")
+  [options key data]
+  (String. (decrypt-bytes options key (base64-decode-bytes data))))
 
 (defn seal
   "Seal a data structure into a cryptographically secure string. Ensures no-one
-  looks at or tampers with the data inside. Uses the *crypto* option map if no
-  cryptography options are supplied."
-  ([data]
-    (seal {} data))
-  ([crypto data]
-    (let [crypto    (merge (force *crypto*) (force crypto))
-          encrypted (encrypt (:secret-key crypto)
-                             (:algorithm crypto)
-                             (:cbc-params crypto)
-                             (marshal data))]
-      (str encrypted "--"
-           (hmac (:hash-key crypto)
-                 (:hash-algorithm crypto)
-                 encrypted)))))
+  looks at or tampers with the data inside."
+  [key data]
+  (let [data (encrypt {} key (marshal data))]
+    (str data "--" (hmac {} key data))))
 
 (defn unseal
-  "Read a sealed data structure. Must use the same crypto option map as was
-  used to seal it in the first place. Uses the *crypto* option map by default."
-  ([sealed-data]
-    (unseal {} sealed-data))
-  ([crypto sealed-data]
-    (let [crypto       (merge (force *crypto*) (force crypto))
-          [data mac]   (.split sealed-data "--")
-          expected-mac (hmac (:hash-key crypto)
-                             (:hash-algorithm crypto)
-                             data)]
-      (if (= mac expected-mac)
-        (unmarshal
-          (decrypt (:secret-key crypto)
-                   (:algorithm crypto)
-                   (:cbc-params crypto)
-                   data))))))
+  "Read a cryptographically sealed data structure."
+  [key data]
+  (let [[data mac] (.split data "--")]
+    (if (= mac (hmac {} key data))
+      (unmarshal (decrypt {} key data)))))

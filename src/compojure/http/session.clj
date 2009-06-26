@@ -74,20 +74,29 @@
 
 ;; Cookie sessions
 
+(def default-session-key
+  (delay (secure-random-bytes 16)))
+
+(defn- get-session-key
+  "Get the session key from the repository or use the default key."
+  [repository]
+  (force (repository :session-key default-session-key)))
+
 (defmethod create-session :cookie
   [repository]
   {})
 
 (defmethod session-cookie :cookie
   [repository new? session]
-  (let [cookie-data (seal (:encryption repository) session)]
+  (let [session-key (get-session-key repository)
+        cookie-data (seal session-key session)]
     (if (> (count cookie-data) 4000)
       (throwf "Session data exceeds 4K")
       cookie-data)))
 
 (defmethod read-session :cookie
   [repository data]
-  (unseal (:encryption repository) data))
+  (unseal (get-session-key repository) data))
 
 (defmethod write-session :cookie
   [repository session])
