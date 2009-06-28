@@ -18,6 +18,7 @@
   'compojure.html.page-helpers
   'compojure.html.form-helpers
   'compojure.http.helpers
+  'compojure.http.middleware
   'compojure.http.multipart
   'compojure.http.routes
   'compojure.http.servlet
