@@ -9,30 +9,27 @@
 (ns compojure.http.middleware
   "Various middleware functions."
   (:use compojure.http.routes)
+  (:use compojure.str-utils)
   (:use clojure.contrib.str-utils))
 
 (defn header-option
   "Converts a header option KeyValue into a string."
-  [[k v]]
+  [[key val]]
   (cond 
-    (true? v) 
-      (name k)
-    (false? v)
-      ""
-    :else
-      (str (name k) "=" v)))
+    (true? val)  (str* key)
+    (false? val) nil
+    :otherwise   (str* key "=" val)))
 
 (defn header-options
   "Converts a map into an HTTP header options string."
-  [m delim]
-  (str-join delim 
-    (filter 
-      #(not (= "" %)) 
-      (map header-option m))))
+  [map delimiter]
+  (str-join delimiter
+    (filter (complement nil?)
+            (map header-option map))))
 
 (defn with-headers
-  "Merges a map of header name and values into the response.
-   Will not overwrite existing headers."
+  "Merges a map of header name and values into the response.  Will not
+  overwrite existing headers."
   [handler headers]
   (fn [request]
     (let [response (handler request)
@@ -40,12 +37,11 @@
       (assoc response :headers merged-headers))))
 
 (defn with-cache-control
-   "Middleware to set the Cache-Control http header.
-    Map entries with boolean values either write their
-    key's (name) if true, or nothing if false.
-    Example:
-    (... {:max-age 3600 :public false :must-revalidate true})
-    Cache-Control: max-age=3600, must-revalidate"
-   [handler m]
+   "Middleware to set the Cache-Control http header. Map entries with boolean
+   values either write their key if true, or nothing if false.
+   Example:
+   {:max-age 3600 :public false :must-revalidate true}
+   => Cache-Control: max-age=3600, must-revalidate"
+   [handler header-map]
    (with-headers handler
-     {"Cache-Control" (header-options m ", ")}))
+     {"Cache-Control" (header-options header-map ", ")}))
