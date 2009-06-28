@@ -22,10 +22,9 @@
 
 (defn header-options
   "Converts a map into an HTTP header options string."
-  [map delimiter]
+  [m delimiter]
   (str-join delimiter
-    (filter (complement nil?)
-            (map header-option map))))
+    (remove nil? (map header-option m))))
 
 (defn with-headers
   "Merges a map of header name and values into the response.  Will not

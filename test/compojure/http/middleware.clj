@@ -12,8 +12,7 @@
          "name")))
 
 (deftest test-header-option-false
-  (is (= (header-option [:name false])
-         "")))
+  (is (nil? (header-option [:name false]))))
 
 (deftest test-header-options-multi
   (let [m {:name "value",
