@@ -13,6 +13,9 @@
   (is (= (html [:h1]) "<h1></h1>"))
   (is (= (html [:script]) "<script></script>")))
 
+(deftest empty-links-tag
+  (is (= (html [:a]) "<a></a>")))
+
 (deftest tags-can-be-strs
   (is (= (html ["div"] "<div></div>"))))
 
