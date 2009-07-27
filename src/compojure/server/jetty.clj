@@ -13,6 +13,7 @@
   (:import org.mortbay.jetty.Server)
   (:import org.mortbay.jetty.servlet.Context)
   (:import org.mortbay.jetty.servlet.ServletHolder)
+  (:import org.mortbay.jetty.bio.SocketConnector)
   (:import org.mortbay.jetty.security.SslSocketConnector))
 
 (defn servlet-holder
@@ -68,9 +69,12 @@
 (defn- create-server
   "Construct a Jetty Server instance."
   [options servlets]
-  (let [port     (options :port 80)
-        server   (Server. port)
-        servlets (partition 2 servlets)]
+  (let [connector (doto (SocketConnector.)
+                    (.setPort (options :port 80))
+                    (.setHost (options :host)))
+        server    (doto (Server.)
+                    (.addConnector connector))
+        servlets  (partition 2 servlets)]
     (when (or (options :ssl) (options :ssl-port))
       (add-ssl-connector! server options))
     (doseq [[url-or-path servlet] servlets]
