@@ -27,7 +27,7 @@
            "name=value"))))
 
 (defn mock-middleware-response [f & args]
-  (let [routes  (routes (GET "/foo" [{:headers {"a" "b"}} "body"]))
+  (let [routes  (routes (GET "/foo" [{:headers {"k1" "v1" "k2" "v2"}} "body"]))
         request {:request-method :get,
                  :uri "/foo"}]
     ((apply f (conj args routes)) request)))
@@ -36,12 +36,14 @@
   (let [headers {"name1" "value1", "name2" "value2"}
         response (mock-middleware-response with-headers headers)]
     (is (= "value1" (get (:headers response) "name1")))
-    (is (= "value2" (get (:headers response) "name2")))))
+    (is (= "value2" (get (:headers response) "name2")))
+    (is (= "v1" (get (:headers response) "k1")))))
 
-(deftest test-with-headers-wont-overwrite
-  (let [headers {"a" "c"}
+(deftest test-with-headers-overwrites
+  (let [headers {"k1" "vnew"}
         response (mock-middleware-response with-headers headers)]
-    (is (= "b" (get (:headers response) "a")))))
+    (is (= "vnew" (get (:headers response) "k1")))
+    (is (= "v2" (get (:headers response) "k2")))))
 
 (deftest test-with-cache-control
   (let [m {:max-age 3600 :public false :must-revalidate true}]

@@ -27,12 +27,12 @@
     (remove nil? (map header-option m))))
 
 (defn with-headers
-  "Merges a map of header name and values into the response.  Will not
-  overwrite existing headers."
+  "Merges a map of header name and values into the response.  Overwrites 
+   existing headers."
   [handler headers]
   (fn [request]
     (let [response (handler request)
-          merged-headers (merge headers (:headers response))]
+          merged-headers (merge (:headers response) headers)]
       (assoc response :headers merged-headers))))
 
 (defn with-cache-control
