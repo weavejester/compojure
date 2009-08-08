@@ -213,6 +213,11 @@
   [session]
   {:session session})
 
+(defn clear-session
+  "Set the session to nil."
+  [session]
+  (set-session nil))
+
 (defn alter-session
   "Use a function to alter the session."
   [func & args]
