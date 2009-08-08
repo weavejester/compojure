@@ -3,6 +3,7 @@
   (:require test.compojure.crypto)
   (:require test.compojure.html.gen)
   (:require test.compojure.html.form-helpers)
+  (:require test.compojure.html.page-helpers)
   (:require test.compojure.http.helpers)
   (:require test.compojure.http.middleware)
   (:require test.compojure.http.routes)
@@ -16,6 +17,7 @@
   'test.compojure.crypto
   'test.compojure.html.gen
   'test.compojure.html.form-helpers
+  'test.compojure.html.page-helpers
   'test.compojure.http.helpers
   'test.compojure.http.middleware
   'test.compojure.http.routes
