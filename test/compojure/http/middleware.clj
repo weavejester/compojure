@@ -50,3 +50,30 @@
     (let [response (mock-middleware-response with-cache-control m)]
       (is (= "max-age=3600, must-revalidate"
              (get (:headers response) "Cache-Control"))))))
+
+(defn run-mimetypes
+  [uri type options]
+  (let [routes  (routes (GET uri "foo"))
+        request {:request-method :get,
+                 :uri uri}
+        response ((with-mimetypes routes options) request)
+        result (get (:headers response) "Content-Type")]
+    (= type result)))
+
+(deftest test-with-default-mimetypes
+  (are (run-mimetypes _1 _2 {})
+       "/" "text/html"
+       "/foobar" "text/html"
+       "/file.pdf" "application/pdf"
+       "/files/bar.css" "text/css"))
+
+(deftest test-with-custom-mimetypes
+  (let [options {:mimetypes {"foo" "test/foo"
+                             "bar" "test/bar"}
+                 :default "test/default"}]
+    (are (run-mimetypes _1 _2 options)
+         "/" "test/default"
+         "/foobar" "test/default"
+         "/file.pdf" "test/default"
+         "/file.foo" "test/foo"
+         "/files/file.bar" "test/bar")))

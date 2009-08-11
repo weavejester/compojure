@@ -10,6 +10,7 @@
   "Various middleware functions."
   (:use compojure.http.routes)
   (:use compojure.str-utils)
+  (:use clojure.contrib.def)
   (:use clojure.contrib.str-utils))
 
 (defn header-option
@@ -44,3 +45,45 @@
    [handler header-map]
    (with-headers handler
      {"Cache-Control" (header-options header-map ", ")}))
+
+(defvar default-mimetypes
+  {"css"  "text/css"
+   "gif"  "image/gif"
+   "htm"  "text/html"
+   "html" "text/html"
+   "jpg"  "image/jpeg"
+   "js"   "text/javascript"
+   "pdf"  "application/pdf"
+   "png"  "image/png"
+   "swf"  "application/x-shockwave-flash"
+   "txt"  "text/plain"
+   "xml"  "text/xml"
+   "zip"  "application/zip"}
+  "Default mimetype map used by with-mimetypes.")
+
+(defn- extension
+  "Returns the text after the last . of a String or nil."
+  [s]
+  (second (re-find #"\.(.*$)" s)))
+
+(defn- request-mimetype
+  "Derives the mimetype from a request.  See with-mimetypes for options."
+  [request options]
+  (let [default (or (:default options) "text/html")]
+    (if-let [ext (extension (:uri request))]
+      (let [mimetypes (or (:mimetypes options) default-mimetypes)]
+        (get mimetypes ext default))
+      default)))
+
+(defn with-mimetypes
+  "Middleware to add the proper Content-Type header based on the uri of
+   the request.  options is a map containing a :mimetype map of extension
+   to type and a :default mime type.  If :mimetype is not provided, a default
+   map with common mime types will be used.  If :default is not provided,
+   \"text/html\" is used."
+  ([handler]
+     (with-mimetypes handler {}))
+  ([handler options]
+     (fn [request]
+       (let [mimetype (request-mimetype request options)]
+         ((with-headers handler {"Content-Type" mimetype}) request)))))
