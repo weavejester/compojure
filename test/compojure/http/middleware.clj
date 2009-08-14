@@ -51,10 +51,45 @@
       (is (= "max-age=3600, must-revalidate"
              (get (:headers response) "Cache-Control"))))))
 
+(defn run-ignore-trailing-slash-paths
+  [route-path uri]
+  (let [routes  (routes (GET route-path "foo"))
+        request {:request-method :get
+                 :uri uri}
+        response ((ignore-trailing-slash routes) request)]
+    (= (:body response) "foo")))
+
+(deftest test-ignore-trailing-slash-paths
+  (are (run-ignore-trailing-slash-paths _1 _2)
+       "/" "/"
+       "/foo" "/foo"
+       "/foo" "/foo/"
+       "/foo/bar" "/foo/bar/"))
+
+(defn run-with-context
+  [route-path uri context]
+  (let [routes  (routes (GET route-path "foo"))
+        request {:request-method :get
+                 :uri uri}
+        response ((with-context routes context) request)]
+    (= (:body response) "foo")))
+
+(deftest test-with-context
+  (are (run-with-context _1 _2 "/context")
+       "/" "/context"
+       "/home" "/context/home"
+       "/asset/1" "/context/asset/1"))
+
+(deftest test-without-context
+  (are (not (run-with-context _1 _2 "/context"))
+       "/" "/"
+       "/home" "/home"
+       "/asset/1" "/asset/1"))
+
 (defn run-mimetypes
   [uri type options]
   (let [routes  (routes (GET uri "foo"))
-        request {:request-method :get,
+        request {:request-method :get
                  :uri uri}
         response ((with-mimetypes routes options) request)
         result (get (:headers response) "Content-Type")]

@@ -46,9 +46,51 @@
    (with-headers handler
      {"Cache-Control" (header-options header-map ", ")}))
 
+(defn with-uri-rewrite
+  "Rewrites a request uri with the result of calling f with the
+   request's original uri.  If f returns nil the handler is not called."
+  [handler f]
+  (fn [request]
+    (let [uri (:uri request)
+          rewrite (f uri)]
+      (if rewrite
+        (handler (assoc request :uri rewrite))
+        nil))))
+
+(defn- remove-or-nil-context
+  "Removes a context string from the front of a uri.  If it wasn't there,
+   returns nil."
+  [uri context]
+  (if (.startsWith uri context)
+    (if-not (= uri context)
+      (subs uri (count context))
+      "/")
+    nil))
+
+(defn with-context
+  "Removes the context string from the beginning of the request uri
+   such that route matching is done without it.  If the context is not
+   present, the handler will not be called."
+  [handler context]
+  (with-uri-rewrite handler #(remove-or-nil-context % context)))
+
+(defn- uri-snip-slash
+  "Removes a trailing slash from all uris except \"/\"."
+  [uri]
+  (if (and (not (= "/" uri))
+           (.endsWith uri "/"))
+    (chop uri)
+    uri))
+
+(defn ignore-trailing-slash
+  "Makes routes match regardless of whether or not a uri ends in a slash."
+  [handler]
+  (with-uri-rewrite handler uri-snip-slash))
+
 (defvar default-mimetypes
   {"css"  "text/css"
    "gif"  "image/gif"
+   "gz"   "application/gzip"
    "htm"  "text/html"
    "html" "text/html"
    "jpg"  "image/jpeg"
