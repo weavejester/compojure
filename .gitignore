@@ -1,0 +1,4 @@
+*.jar
+classes/
+deps.zip
+deps/
