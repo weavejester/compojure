@@ -75,7 +75,7 @@
 ;; Cookie sessions
 
 (def default-session-key
-  (delay (gen-secret-key)))
+  (delay (gen-secret-key {:key-size 128})))
 
 (defn- get-session-key
   "Get the session key from the repository or use the default key."
