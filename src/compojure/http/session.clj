@@ -201,7 +201,9 @@
                                  (assoc-session repo)
                                  (assoc-flash))
             response (handler request)
-            session  (or (:session response) (:session request))]
+            session  (if (contains? response :session)
+                       (:session response)
+                       (:session request))]
         (when response
           (save-handler-session repo request response session)
           (set-session-cookie   repo request response session))))))
@@ -215,7 +217,7 @@
 
 (defn clear-session
   "Set the session to nil."
-  [session]
+  []
   (set-session nil))
 
 (defn alter-session
