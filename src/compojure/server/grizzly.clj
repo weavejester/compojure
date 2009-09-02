@@ -31,10 +31,11 @@
   are setup."
   [#^GrizzlyWebServer server url-or-path servlet]
   (let [[host path] (get-host-and-path url-or-path)
-        #^Servlet ss (cast Servlet servlet)
         #^ServletAdapter adapter (if (instance? ServletAdapter servlet)
                                    servlet
-                                   (ServletAdapter. ss))]
+                                   ;; Otherwise, assume it's a servlet.
+                                   (let [#^Servlet ss (cast Servlet servlet)]
+                                     (ServletAdapter. ss)))]
     (.addGrizzlyAdapter server adapter (into-array [path]))))
 
 (defn- #^GrizzlyWebServer create-server
