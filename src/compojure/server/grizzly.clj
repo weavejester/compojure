@@ -11,41 +11,43 @@
    ant -Dwith.grizzly"
   (:use compojure.control)
   (:use compojure.server.common)
+  (:import javax.servlet.Servlet)
   (:import com.sun.grizzly.http.embed.GrizzlyWebServer)
   (:import com.sun.grizzly.http.servlet.ServletAdapter))
 
-(defn servlet-adapter
+(defn #^ServletAdapter servlet-adapter
   "Wrap a servlet in a ServletAdapter object with a supplied set of parameters
   to be set on servlet init."
-  [servlet & params]
+  [#^Servlet servlet & params]
   (let [adapter (new ServletAdapter servlet)
         params (partition 2 params)]
     (doseq [[key val] params]
-      (.setInitParameter adapter (name key) (str val)))
+      (.addInitParameter adapter (name key) (str val)))
     adapter))
 
 (defn add-servlet!
   "Add a servlet to a Grizzly server. Servlets can be connected to a relative
   path or an absolute URL. Unlike the Jetty server, no Virtual Hosts
   are setup."
-  [server url-or-path servlet]
+  [#^GrizzlyWebServer server url-or-path servlet]
   (let [[host path] (get-host-and-path url-or-path)
-        adapter     (if (instance? ServletAdapter servlet)
-                      servlet
-                      (ServletAdapter. servlet))]
+        #^Servlet ss (cast Servlet servlet)
+        #^ServletAdapter adapter (if (instance? ServletAdapter servlet)
+                                   servlet
+                                   (ServletAdapter. ss))]
     (.addGrizzlyAdapter server adapter (into-array [path]))))
 
-(defn- create-server
+(defn- #^GrizzlyWebServer create-server
   "Construct a Grizzly Server instance."
   [options servlets]
   (let [port     (options :port 80)
-        server   (GrizzlyWebServer. port)
+        server   (GrizzlyWebServer. (int port))
         servlets (partition 2 servlets)]
     (doseq [[url-or-path servlet] servlets]
       (add-servlet! server url-or-path servlet))
     server))
 
-(defn grizzly-server
+(defn #^GrizzlyWebServer grizzly-server
   "Create a new Grizzly HTTP server with the supplied options and servlets."
   [options & servlets]
   (server-with-options create-server options servlets))
@@ -56,14 +58,15 @@
   `(def ~name (grizzly-server ~@args)))
 
 (defn start "Start a HTTP server."
-  [server]
+  [#^GrizzlyWebServer server]
   (.start server))
 
 (defn stop  "Stop a HTTP server."
-  [server]
+  [#^GrizzlyWebServer server]
   (.stop server))
 
 (defn run-server
   "Create and start a new Grizzly HTTP server."
   [& server-args]
-  (.start (apply grizzly-server server-args)))
+  (let [#^GrizzlyWebServer server (apply grizzly-server server-args)]
+    (.start server)))
