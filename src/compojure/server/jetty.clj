@@ -102,4 +102,6 @@
 (defn run-server
   "Create and start a new Jetty HTTP server."
   [& server-args]
-  (.start (apply jetty-server server-args)))
+  (let [server (apply jetty-server server-args)]
+    (.start server)
+    server))

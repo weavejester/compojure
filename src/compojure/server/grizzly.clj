@@ -70,4 +70,5 @@
   "Create and start a new Grizzly HTTP server."
   [& server-args]
   (let [#^GrizzlyWebServer server (apply grizzly-server server-args)]
-    (.start server)))
+    (.start server)
+    server))
