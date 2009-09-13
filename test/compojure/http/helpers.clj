@@ -15,3 +15,7 @@
 (deftest test-content-type
   (is (= (content-type "text/html")
          {:headers {"Content-Type" "text/html"}})))
+
+(deftest test-safe-path
+  (is (not (safe-path? "/home/compojure" "../private/secret.txt")))
+  (is (safe-path? "/home/compojure" "public/index.html")))

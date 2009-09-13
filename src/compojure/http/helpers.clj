@@ -54,6 +54,12 @@
       #(.startsWith (.toLowerCase (.getName %)) "index.")
        (.listFiles dir))))
 
+(defn safe-path?
+  "Is a filepath safe for a particular root?"
+  [root path]
+  (.startsWith (.getCanonicalPath (File. root path))
+               (.getCanonicalPath (File. root))))
+
 (defn serve-file
   "Attempts to serve up a static file from a directory, which defaults to
   './public'. Nil is returned if the file does not exist. If the file is a
@@ -62,8 +68,9 @@
     (serve-file "public" path))
   ([root path]
     (let [filepath (File. root path)]
-      (cond
-        (.isFile filepath)
-          filepath
-        (.isDirectory filepath)
-          (find-index-file filepath)))))
+      (if (safe-path? root path)
+        (cond 
+          (.isFile filepath)
+            filepath
+          (.isDirectory filepath)
+            (find-index-file filepath))))))
