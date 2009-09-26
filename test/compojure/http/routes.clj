@@ -30,6 +30,11 @@
     "/:foo-bar" "/baz" {:foo-bar "baz"}
     "/:foo-"    "/baz" {:foo- "baz"}))
 
+(deftest urlencoded-keywords
+  (are (= (match-uri (compile-uri-matcher _1) _2) _3)
+    "/:x" "/foo%20bar" {:x "foo bar"}
+    "/:x" "/foo+bar"   {:x "foo bar"}))
+
 (deftest same-keyword-many-times
   (are (= (match-uri (compile-uri-matcher _1) _2) _3)
     "/:x/:x/:x" "/a/b/c" {:x ["a" "b" "c"]}

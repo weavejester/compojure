@@ -16,6 +16,7 @@
   (:use compojure.str-utils)
   (:use compojure.map-utils)
   (:use compojure.control)
+  (:use compojure.encodings)
   (:import java.util.regex.Pattern)
   (:import java.util.Map))
 
@@ -95,7 +96,7 @@
   (reduce
     (fn [m [k v]] (assoc-vec m k v))
     {}
-    (map vector keywords (rest groups))))
+    (map vector keywords groups)))
 
 (defmulti match-uri
   "Match a URL against a compiled URI-matcher or a regular expression. Returns
@@ -107,7 +108,7 @@
   (let [matcher (re-matcher (uri-matcher :regex) (or uri "/"))]
     (if (.matches matcher)
       (assoc-keywords-with-groups
-        (re-groups matcher)
+        (map urldecode (re-groups* matcher))
         (uri-matcher :keywords)))))
 
 (defmethod match-uri Pattern
@@ -115,7 +116,7 @@
   (let [matches (re-matches uri-pattern (or uri "/"))]
     (if matches
       (if (vector? matches)
-        (subvec matches 1)
+        (vec (map urldecode (rest matches)))
         []))))
 
 (defn match-method

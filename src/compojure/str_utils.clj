@@ -52,6 +52,13 @@
   [string]
   (escape "\\.*+|?()[]{}$^" string))
 
+(defn re-groups*
+  "More consistant re-groups that always returns a vector of groups, even if
+  there is only one group."
+  [matcher]
+  (for [i (range (.groupCount matcher))]
+    (.group matcher (inc i))))
+
 (defn blank?
   "True if s = \"\" or nil"
   [s]
