@@ -16,6 +16,13 @@
   (is (= (parse-query-params {:query-string "a=1%202"})
          {:a "1 2"})))
 
+(deftest query-params-invalid
+  (are (= (parse-query-params {:query-string _1}) _2)
+    ""      {}
+    "="     {}
+    "=1"    {}
+    "a=1&=" {:a "1"}))
+
 (deftest urlencoded-charset
   (is (urlencoded-form?
         {:content-type "application/x-www-form-urlencoded; charset=UTF8"})))

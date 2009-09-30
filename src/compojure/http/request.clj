@@ -22,10 +22,11 @@
   [param-string separator]
   (reduce
     (fn [param-map s]
-      (let [[key val] (re-split #"=" s)]
+      (if-let [[_ key val] (re-matches #"([^=]+)=(.*)" s)]
         (assoc-vec param-map
           (keyword (urldecode key))
-          (urldecode (or val "")))))
+          (urldecode (or val "")))
+        param-map))
     {}
     (remove blank?
       (re-split separator param-string))))
