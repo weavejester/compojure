@@ -31,6 +31,22 @@
                   :value "true"
                   :checked nil}])))
 
+(deftest test-radio-button
+  (is (= (radio-button :foo)
+         [:input {:type "radio"
+                  :id "foo"
+                  :name "foo"
+                  :value "true"
+                  :checked nil}])))
+
+(deftest test-radio-button-selected
+  (is (= (radio-button :foo true "abcdef")
+         [:input {:type "radio"
+                  :id "foo"
+                  :name "foo"
+                  :value "abcdef"
+                  :checked true}])))
+  
 (deftest select-options-with-values
   (is (= (select-options [["a" "1"] ["b" "2"] ["c" "3"]])
         '([:option {:value "1"} "a"]

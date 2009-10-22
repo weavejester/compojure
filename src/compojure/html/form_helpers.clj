@@ -66,6 +66,19 @@
              :value   value
              :checked checked?}]))
 
+(defn radio-button
+ "Creates a radio button."
+ ([name]
+    (radio-button name (*params* name)))
+ ([name checked?]
+    (radio-button name checked? "true"))
+ ([name checked? value]
+    [:input {:type    "radio"
+             :name    (str* name)
+             :id      (str* name)
+             :value   value
+             :checked checked?}]))
+
 (defn select-options
   "Turn a collection into a set of option tags."
   ([options]
