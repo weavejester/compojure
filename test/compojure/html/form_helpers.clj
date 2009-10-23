@@ -35,7 +35,7 @@
   (is (= (radio-button :foo)
          [:input {:type "radio"
                   :id "foo"
-                  :name "foo"
+                  :name "foo_true"
                   :value "true"
                   :checked nil}])))
 
@@ -43,7 +43,7 @@
   (is (= (radio-button :foo true "abcdef")
          [:input {:type "radio"
                   :id "foo"
-                  :name "foo"
+                  :name "foo_abcdef"
                   :value "abcdef"
                   :checked true}])))
   

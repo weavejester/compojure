@@ -68,14 +68,14 @@
 
 (defn radio-button
  "Creates a radio button."
- ([name]
-    (radio-button name (*params* name)))
- ([name checked?]
-    (radio-button name checked? "true"))
- ([name checked? value]
+ ([id]
+    (radio-button id (*params* id)))
+ ([id checked?]
+    (radio-button id checked? "true"))
+ ([id checked? value]
     [:input {:type    "radio"
-             :name    (str* name)
-             :id      (str* name)
+             :name    (str* id "_" value)
+             :id      (str* id)
              :value   value
              :checked checked?}]))
 
