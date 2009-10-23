@@ -34,16 +34,16 @@
 (deftest test-radio-button
   (is (= (radio-button :foo)
          [:input {:type "radio"
-                  :id "foo"
-                  :name "foo_true"
+                  :id "foo_true"
+                  :name "foo"
                   :value "true"
                   :checked nil}])))
 
 (deftest test-radio-button-selected
   (is (= (radio-button :foo true "abcdef")
          [:input {:type "radio"
-                  :id "foo"
-                  :name "foo_abcdef"
+                  :id "foo_abcdef"
+                  :name "foo"
                   :value "abcdef"
                   :checked true}])))
   
