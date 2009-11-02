@@ -5,38 +5,78 @@
 ;; using this software in any fashion, you are agreeing to be bound by the
 ;; terms of this license. You must not remove this notice, or any other, from
 ;; this software.
-;; Modified by Adam Blinkinsop <blinks@acm.org> in August 2009.
 
 (ns compojure.http.multipart
   "Add multipart form handling to Compojure. Relies on the Apache Commons
    FileUpload library."
   (:use clojure.contrib.def)
   (:use compojure.map-utils)
-  (:import [org.apache.commons.fileupload.servlet ServletFileUpload]))
+  (:import org.apache.commons.fileupload.FileUpload)
+  (:import org.apache.commons.fileupload.RequestContext)
+  (:import org.apache.commons.fileupload.disk.DiskFileItemFactory)
+  (:import org.apache.commons.fileupload.disk.DiskFileItem))
 
-(defn multipart?
-  "Does this request contain multipart content?"
+(defn multipart-form?
+  "Does a request have a multipart form?"
   [request]
-  (ServletFileUpload/isMultipartContent request))
+  (if-let [content-type (:content-type request)]
+    (.startsWith content-type "multipart/form-data")))
 
-(defvar- upload (ServletFileUpload.))
+(defvar- file-upload
+  (FileUpload.
+    (doto (DiskFileItemFactory.)
+      (.setSizeThreshold -1)
+      (.setFileCleaningTracker nil)))
+  "Uploader class to save multipart form values to temporary files.")
 
-(defn field-seq
-  "Map field names to values, which will either be a simple string or map.
-
-  Multipart values will be maps with content-type, name (original filename),
-  and stream (an open input stream object)."
+(defn- request-context
+  "Create a RequestContext object from a request map."
   [request]
-  (map (fn [i] {(keyword (.getFieldName i))
-                (if (.isFormField i)
-                  (.getParameter request (.getFieldName i))
-                  {:content-type (.getContentType i)
-                   :name (.getName i)
-                   :stream (.openStream i)})})
-       (.getItemIterator upload request)))
+  (proxy [RequestContext] []
+    (getContentType []       (:content-type request))
+    (getContentLength []     (:content-length request))
+    (getCharacterEncoding [] (:character-encoding request))
+    (getInputStream []       (:body request))))
+
+(defn- file-map
+  "Create a file map from a DiskFileItem."
+  [#^DiskFileItem item]
+  {:disk-file-item item
+   :filename       (.getName item)
+   :size           (.getSize item)
+   :content-type   (.getContentType item)
+   :tempfile       (.getStoreLocation item)})
+
+(defn parse-multipart-params
+  "Parse a map of multipart parameters from the request."
+  [request]
+  (reduce
+    (fn [param-map, #^DiskFileItem item]
+      (assoc-vec param-map
+        (keyword (.getFieldName item))
+        (if (.isFormField item)
+          (if (zero? (.getSize item))
+            ""
+            (.getString item))
+          (file-map item))))
+    {}
+    (.parseRequest
+       file-upload
+       (request-context request))))
+
+(defn get-multipart-params
+  "Retrieve multipart params from the request."
+  [request]
+  (if (multipart-form? request)
+    (parse-multipart-params request)
+    {}))
 
 (defn with-multipart
+  "Decorate a Ring handler with multipart parameters."
   [handler]
   (fn [request]
-    (let [req (merge request {:params (merge (field-seq request))})]
+    (let [params  (get-multipart-params request)
+          request (-> request
+                    (assoc :multipart-params params)
+                    (assoc :params (merge (request :params) params)))]
       (handler request))))
