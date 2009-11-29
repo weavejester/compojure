@@ -15,9 +15,6 @@
 
 (run-tests
   'test.compojure.crypto
-  'test.compojure.html.gen
-  'test.compojure.html.form-helpers
-  'test.compojure.html.page-helpers
   'test.compojure.http.helpers
   'test.compojure.http.middleware
   'test.compojure.http.routes
