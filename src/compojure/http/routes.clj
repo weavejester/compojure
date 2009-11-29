@@ -10,161 +10,31 @@
   "Macros and functions for compiling routes in the form (method path & body)
    into stand-alone functions that return the return value of the body, or the
    keyword :next if they don't match."
-  (:use compojure.http.request)
-  (:use compojure.http.response)
-  (:use compojure.http.session)
-  (:use compojure.str-utils)
-  (:use compojure.map-utils)
+  (:use clout)
   (:use compojure.control)
-  (:use compojure.encodings)
-  (:import java.util.regex.Pattern)
-  (:import java.util.Map))
+  (:use compojure.http.response)
+  (:use compojure.http.request))
 
-;; Functions for lexing a string
-
-(defn- lex-1
-  "Lex one symbol from a string, and return the symbol and trailing source."
-  [src clauses]
-  (some
-    (fn [[re action]]
-      (let [matcher (re-matcher re src)]
-        (if (.lookingAt matcher)
-          [(if (fn? action) (action matcher) action)
-           (.substring src (.end matcher))])))
-    (partition 2 clauses)))
-
-(defn- lex
-  "Lex a string into tokens by matching against regexs and evaluating
-   the matching associated function."
-  [src & clauses]
-  (loop [results []
-         src     src
-         clauses clauses]
-    (if-let [[result src] (lex-1 src clauses)]
-      (let [results (conj results result)]
-        (if (= src "")
-          results
-          (recur results src clauses))))))
-
-;; Functions for matching URIs using a syntax borrowed from Ruby frameworks
-;; like Sinatra and Rails.
-
-(defstruct uri-matcher
-  :regex
-  :keywords)
-
-(defn compile-uri-matcher
-  "Compile a path string using the routes syntax into a uri-matcher struct."
-  [path]
-  (let [splat   #"\*"
-        word    #":([A-Za-z][\w-]*)"
-        literal #"(:[^A-Za-z*]|[^:*])+"]
-    (struct uri-matcher
-      (re-pattern
-        (apply str
-          (lex path
-            splat   "(.*?)"
-            word    "([^/.,;?]+)"
-            literal #(re-escape (.group %)))))
-      (vec
-        (remove nil?
-          (lex path
-            splat   :*
-            word    #(keyword (.group % 1))
-            literal nil))))))
-
-;; Don't compile paths more than once.
-(decorate-with memoize compile-uri-matcher)
-
-(defmulti compile-matcher
-  "Compile a string or regex into a form suitable for buing passed to the
-  match-uri function."
-  class)
-
-(defmethod compile-matcher String
-  [path]
-  (compile-uri-matcher path))
-
-(defmethod compile-matcher Pattern
-  [re]
-  re)
-
-(defn- assoc-keywords-with-groups
-  "Create a hash-map from a series of regex match groups and a collection of
-  keywords."
-  [groups keywords]
-  (reduce
-    (fn [m [k v]] (assoc-vec m k v))
-    {}
-    (map vector keywords groups)))
-
-(defmulti match-uri
-  "Match a URL against a compiled URI-matcher or a regular expression. Returns
-  the matched URI keywords as a map, or the matched regex groups as a vector."
-  (fn [matcher uri] (class matcher)))
-
-(defmethod match-uri Map
-  [uri-matcher uri]
-  (let [matcher (re-matcher (uri-matcher :regex) (or uri "/"))]
-    (if (.matches matcher)
-      (assoc-keywords-with-groups
-        (map urldecode (re-groups* matcher))
-        (uri-matcher :keywords)))))
-
-(defmethod match-uri Pattern
-  [uri-pattern uri]
-  (let [matches (re-matches uri-pattern (or uri "/"))]
-    (if matches
-      (if (vector? matches)
-        (vec (map urldecode (rest matches)))
-        []))))
-
-(defn match-method
+(defn method-matches
   "True if this request matches the supplied method."
   [method request]
   (let [request-method (request :request-method)
         form-method    (-> request :form-params :_method)]
     (or (nil? method)
         (if (and form-method (= request-method :post))
-          (= (upcase-name method) form-method)
+          (= (.toUpperCase (name method)) form-method)
           (= method request-method)))))
 
-(defn request-url
-  "Return the complete URL for the request."
-  [request]
-  (str
-    (name (:scheme request))
-    "://"
-    (get-in request [:headers "host"])
-    (:uri request)))
-
-(defn absolute-url?
-  "True if the string is an absolute URL."
-  [s]
-  (re-find #"^[a-z+.-]+://" s))
-
-(defn get-matcher-uri
-  "Get the appropriate request URI for the given path pattern."
-  [path request]
-  (if (and (string? path) (absolute-url? path))
-    (request-url request)
-    (:uri request)))
-
-(defmacro request-matcher
+(defn- request-matcher
   "Compiles a function to match a HTTP request against the supplied method
-  and path template. Returns a map of the route parameters if the is a match,
-  nil otherwise. Precompiles the route when supplied with a literal string."
-  [method path]
-  (let [matcher (if (or (string? path) (instance? Pattern path))
-                  (compile-matcher path)
-                 `(compile-matcher ~path))]
+  and route."
+  [method route]
+  (let [matcher (if (string? route)
+                  (route-compile route)
+                  route)]
    `(fn [request#]
-      (and
-        (match-method ~method request#)
-        (match-uri ~matcher (get-matcher-uri ~path request#))))))
-
-;; Functions and macros for generating routing functions. A routing function
-;; returns :next if it doesn't match, and any other value if it does.
+      (and (method-matches ~method request#)
+           (route-matches ~route request#)))))
 
 (defmacro with-request-bindings
   "Add shortcut bindings for the keys in a request map."
@@ -187,7 +57,7 @@
 (defn compile-route
   "Compile a route in the form (method path & body) into a function."
   [method path body]
-  `(let [matcher# (request-matcher ~method ~path)]
+  `(let [matcher# ~(request-matcher method path)]
      (fn [request#]
        (if-let [route-params# (matcher# request#)]
          (let [request# (assoc-route-params request# route-params#)]
