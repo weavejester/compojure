@@ -6,7 +6,7 @@
 ;; terms of this license. You must not remove this notice, or any other, from
 ;; this software.
 
-(ns compojure.http.routes
+(ns compojure.routes
   "Macros and functions for compiling routes in the form (method path & body)
    into stand-alone functions that return the return value of the body, or the
    keyword :next if they don't match."
