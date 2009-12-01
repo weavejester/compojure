@@ -29,12 +29,15 @@
   "Compiles a function to match a HTTP request against the supplied method
   and route."
   [method route]
-  (let [matcher (if (string? route)
-                  (route-compile route)
-                  route)]
+  (let [matcher (cond
+                  (string? route) (route-compile route)
+                  (seq? route)    (route-compile
+                                    (first route)
+                                    (apply hash-map (rest route)))
+                  :otherwise      route)]
    `(fn [request#]
       (and (method-matches ~method request#)
-           (route-matches ~route request#)))))
+           (route-matches ~matcher request#)))))
 
 (defmacro with-request-bindings
   "Add shortcut bindings for the keys in a request map."
