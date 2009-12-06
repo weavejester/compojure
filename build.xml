@@ -35,24 +35,15 @@
     <java classname="clojure.lang.Compile" fork="true">
       <sysproperty key="clojure.compile.path" value="${build.dir}"/>
       <classpath refid="classpath"/>
-      <arg value="compojure"/>
+      <arg value="compojure.str-utils"/>
+      <arg value="compojure.map-utils"/>
+      <arg value="compojure.routes"/>
       <arg value="compojure.control"/>
-      <arg value="compojure.html"/>
-      <arg value="compojure.html.gen"/>
-      <arg value="compojure.html.form-helpers"/>
-      <arg value="compojure.html.page-helpers"/>
-      <arg value="compojure.http"/>
-      <arg value="compojure.http.routes"/>
+      <arg value="compojure.encodings"/>
+      <arg value="compojure.http.helpers"/>
       <arg value="compojure.http.request"/>
       <arg value="compojure.http.response"/>
-      <arg value="compojure.http.session"/>
-      <arg value="compojure.http.servlet"/>
-      <arg value="compojure.http.helpers"/>
-      <arg value="compojure.ns-utils"/>
-      <arg value="compojure.server.common"/>
-      <arg value="compojure.server.jetty"/>
-      <arg value="compojure.str-utils"/>
-      <arg value="compojure.validation"/>
+      <arg value="compojure.http.middleware"/>
     </java>
   </target>
 
