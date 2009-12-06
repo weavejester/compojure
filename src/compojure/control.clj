@@ -57,7 +57,7 @@
   "Return a symbol and body with an optional docstring applied."
   [name doc? body]
   (if (string? doc?)
-    (list* (with-meta name (assoc ^name :doc doc?)) body)
+    (list* (with-meta name (assoc (meta name) :doc doc?)) body)
     (list* name doc? body)))
 
 (defmacro deftmpl
