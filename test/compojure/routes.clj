@@ -1,4 +1,4 @@
-(ns test.compojure.http.routes
+(ns test.compojure.routes
   (:use clojure.contrib.test-is)
   (:use compojure.routes)
   (:use test.helpers))

@@ -1,6 +1,6 @@
 (ns test.compojure.http.helpers
   (:use compojure.http.helpers)
-  (:use compojure.http.routes)
+  (:use compojure.routes)
   (:use compojure.control)
   (:use clojure.contrib.test-is))
 

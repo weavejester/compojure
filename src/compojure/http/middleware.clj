@@ -8,7 +8,7 @@
 
 (ns compojure.http.middleware
   "Various middleware functions."
-  (:use compojure.http.routes)
+  (:use compojure.routes)
   (:use compojure.str-utils)
   (:use clojure.contrib.def)
   (:use clojure.contrib.str-utils))
