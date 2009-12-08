@@ -25,47 +25,57 @@
           (= (.toUpperCase (name method)) form-method)
           (= method request-method)))))
 
-(defn- request-matcher
-  "Compiles a function to match a HTTP request against the supplied method
-  and route."
-  [method route]
-  (let [matcher (cond
-                  (string? route) (route-compile route)
-                  (seq? route)    (route-compile
-                                    (first route)
-                                    (apply hash-map (rest route)))
-                  :otherwise      route)]
-   `(fn [request#]
-      (and (method-matches ~method request#)
-           (route-matches ~matcher request#)))))
+(defn- assoc-binding
+  "Associate an argument with a map of bindings."
+  [bindings arg]
+  (assoc bindings (symbol (name arg)) (keyword (str arg))))
 
-(defmacro with-request-bindings
-  "Add shortcut bindings for the keys in a request map."
-  [request & body]
-  `(let [~'request ~request
-         ~'params  (:params  ~'request)
-         ~'cookies (:cookies ~'request)
-         ~'session (:session ~'request)
-         ~'flash   (:flash   ~'request)]
-     ~@body))
+(defn- single-bindings
+  "Create a binding map of all the single value arguments."
+  [args]
+  (reduce assoc-binding {} (take-while #(not= % '&) args)))
+
+(defn- assoc-rest-bindings
+  "Assoc the '& rest' argument to a binding map."
+  [bindings args]
+  (if-let [rest-arg (second (drop-while #(not= % '&) args))]
+    (assoc bindings :as rest-arg)
+    bindings))
+    
+(defn- make-param-bindings
+  "Return a map of parameter bindings derived from the request map and a
+  vector of argument names."
+  [args]
+  (-> (single-bindings args)
+      (assoc-rest-bindings args)))
+
+(defn- prepare-route
+  "Pre-compile the route."
+  [route]
+  (cond
+    (string? route)
+      (route-compile route)
+    (seq? route)
+      (route-compile (first route) (apply hash-map (rest route)))
+    :else
+      route))
 
 (defn assoc-route-params
   "Associate route parameters with the request map."
   [request params]
-  (-> request
-    (assoc :route-params params)
-    (assoc :params (merge (:params request)
-                          (if (map? params) params)))))
+  (merge-with merge request {:route-params params, :params params}))
 
 (defn compile-route
   "Compile a route in the form (method path & body) into a function."
-  [method path body]
-  `(let [matcher# ~(request-matcher method path)]
-     (fn [request#]
-       (if-let [route-params# (matcher# request#)]
-         (let [request# (assoc-route-params request# route-params#)]
-           (create-response request#
-             (with-request-bindings request# ~@body)))))))
+  [method route args body]
+  (let [bindings (make-param-bindings args)]
+    `(let [route# ~(prepare-route route)]
+       (fn [request#]
+         (if (method-matches ~method request#)
+           (if-let [route-params# (route-matches route# request#)]
+             (let [request#  (assoc-route-params request# route-params#)
+                   ~bindings (request# :params)]
+               (create-response request# (do ~@body)))))))))
 
 (defn routes*
   "Create a Ring handler by combining several handlers into one."
@@ -92,25 +102,25 @@
       (routes ~@routes))))
 
 (defmacro GET "Generate a GET route."
-  [path & body]
-  (compile-route :get path body))
+  [path args & body]
+  (compile-route :get path args body))
 
 (defmacro POST "Generate a POST route."
-  [path & body]
-  (compile-route :post path body))
+  [path args & body]
+  (compile-route :post path args body))
 
 (defmacro PUT "Generate a PUT route."
-  [path & body]
-  (compile-route :put path body))
+  [path args & body]
+  (compile-route :put path args body))
 
 (defmacro DELETE "Generate a DELETE route."
-  [path & body]
-  (compile-route :delete path body))
+  [path args & body]
+  (compile-route :delete path args body))
 
 (defmacro HEAD "Generate a HEAD route."
-  [path & body]
-  (compile-route :head path body))
+  [path args & body]
+  (compile-route :head path args body))
 
 (defmacro ANY "Generate a route that matches any method."
-  [path & body]
-  (compile-route nil path body))
+  [path args & body]
+  (compile-route nil path args body))
