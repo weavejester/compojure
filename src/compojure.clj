@@ -19,15 +19,6 @@
           (= (.toUpperCase (name method)) form-method)
           (= method request-method)))))
 
-(defn- make-request-bindings
-  "Return a binding map for a request map."
-  [bindings]
-  (cond
-    (map? bindings)
-      bindings
-    (vector? bindings)
-      {{:keys bindings} :params}))
-
 (defn- prepare-route
   "Pre-compile the route."
   [route]
@@ -44,6 +35,16 @@
   [request params]
   (merge-with merge request {:route-params params, :params params}))
 
+(defmacro bind-request
+  "Bind a request to a collection of symbols."
+  [request bindings & body]
+  (cond
+    (map? bindings)
+      `(let [~bindings ~request] ~@body)
+    (vector? bindings)
+      `(let [{:keys ~bindings} (~request :params)]
+         ~@body)))
+
 (defn compile-route
   "Compile a route in the form (method path & body) into a function."
   [method route bindings body]
@@ -51,9 +52,8 @@
      (fn [request#]
        (if (method-matches ~method request#)
          (if-let [route-params# (route-matches route# request#)]
-           (let [request# (assoc-route-params request# route-params#)
-                 ~(make-request-bindings bindings) request#]
-             ~@body))))))
+           (let [request# (assoc-route-params request# route-params#)]
+             (bind-request request# ~bindings ~@body)))))))
 
 (defn routes
   "Create a Ring handler by combining several handlers into one."
