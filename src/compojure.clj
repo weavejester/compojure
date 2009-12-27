@@ -19,29 +19,14 @@
           (= (.toUpperCase (name method)) form-method)
           (= method request-method)))))
 
-(defn- assoc-binding
-  "Associate an argument with a map of bindings."
-  [bindings arg]
-  (assoc bindings (symbol (name arg)) (keyword (str arg))))
-
-(defn- single-bindings
-  "Create a binding map of all the single value arguments."
-  [args]
-  (reduce assoc-binding {} (take-while #(not= % '&) args)))
-
-(defn- assoc-rest-bindings
-  "Assoc the '& rest' argument to a binding map."
-  [bindings args]
-  (if-let [rest-arg (second (drop-while #(not= % '&) args))]
-    (assoc bindings :as rest-arg)
-    bindings))
-    
-(defn- make-param-bindings
-  "Return a map of parameter bindings derived from the request map and a
-  vector of argument names."
-  [args]
-  (-> (single-bindings args)
-      (assoc-rest-bindings args)))
+(defn- make-request-bindings
+  "Return a binding map for a request map."
+  [bindings]
+  (cond
+    (map? bindings)
+      bindings
+    (vector? bindings)
+      {{:keys bindings} :params}))
 
 (defn- prepare-route
   "Pre-compile the route."
@@ -61,15 +46,14 @@
 
 (defn compile-route
   "Compile a route in the form (method path & body) into a function."
-  [method route args body]
-  (let [bindings (make-param-bindings args)]
-    `(let [route# ~(prepare-route route)]
-       (fn [request#]
-         (if (method-matches ~method request#)
-           (if-let [route-params# (route-matches route# request#)]
-             (let [request#  (assoc-route-params request# route-params#)
-                   ~bindings (request# :params)]
-               (do ~@body))))))))
+  [method route bindings body]
+  `(let [route# ~(prepare-route route)]
+     (fn [request#]
+       (if (method-matches ~method request#)
+         (if-let [route-params# (route-matches route# request#)]
+           (let [request# (assoc-route-params request# route-params#)
+                 ~(make-request-bindings bindings) request#]
+             ~@body))))))
 
 (defn routes
   "Create a Ring handler by combining several handlers into one."
