@@ -7,6 +7,7 @@
 ;; this software.
 
 (ns compojure
+  "A concise syntax for generating Ring handlers."
   (:use clout))
 
 (defn method-matches
@@ -36,14 +37,21 @@
   (merge-with merge request {:route-params params, :params params}))
 
 (defmacro bind-request
-  "Bind a request to a collection of symbols."
+  "Bind a request to a collection of symbols. The collection can be a Clojure
+  map destructuring binding for the request map, or it can be a vector of
+  parameter bindings."
   [request bindings & body]
   (cond
     (map? bindings)
       `(let [~bindings ~request] ~@body)
     (vector? bindings)
-      `(let [{:keys ~bindings} (~request :params)]
-         ~@body)))
+      (let [[args more] (split-with #(not= % '&) bindings)
+            rest-args   (second more)]
+        `(let [{:keys ~(vec args)} (~request :params)
+               ~@(if rest-args
+                   [rest-args `(dissoc (~request :params)
+                                       ~@(map keyword args))])]
+           ~@body))))
 
 (defn compile-route
   "Compile a route in the form (method path & body) into a function."
