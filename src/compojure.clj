@@ -6,14 +6,8 @@
 ;; terms of this license. You must not remove this notice, or any other, from
 ;; this software.
 
-(ns compojure.routes
-  "Macros and functions for compiling routes in the form (method path & body)
-   into stand-alone functions that return the return value of the body, or the
-   keyword :next if they don't match."
-  (:use clout)
-  (:use compojure.control)
-  (:use compojure.http.response)
-  (:use compojure.http.request))
+(ns compojure
+  (:use clout))
 
 (defn method-matches
   "True if this request matches the supplied method."
@@ -75,23 +69,20 @@
            (if-let [route-params# (route-matches route# request#)]
              (let [request#  (assoc-route-params request# route-params#)
                    ~bindings (request# :params)]
-               (create-response request# (do ~@body)))))))))
+               (do ~@body))))))))
 
-(defn routes*
+(defn routes
   "Create a Ring handler by combining several handlers into one."
   [& handlers]
   (fn [request]
     (some #(% request) handlers)))
 
-(defn routes
-  "Create a Ring handler by combining several routes into one. Adds parameters
-  and cookies to the request."
-  [& handlers]
-  (-> (apply routes* handlers)
-    with-request-params
-    with-cookies))
-
-;; Macros for easily creating a compiled routing table
+(defn- apply-doc
+  "Return a symbol and body with an optional docstring applied."
+  [name doc? body]
+  (if (string? doc?)
+    (list* (with-meta name (assoc (meta name) :doc doc?)) body)
+    (list* name doc? body)))
 
 (defmacro defroutes
   "Define a Ring handler function from a sequence of routes. Takes an optional
