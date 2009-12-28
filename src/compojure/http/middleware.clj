@@ -32,9 +32,9 @@
    existing headers."
   [handler headers]
   (fn [request]
-    (let [response (handler request)
-          merged-headers (merge (:headers response) headers)]
-      (assoc response :headers merged-headers))))
+    (if-let [response (handler request)]
+      (assoc response :headers
+             (merge (:headers response) headers)))))
 
 (defn with-cache-control
    "Middleware to set the Cache-Control http header. Map entries with boolean
