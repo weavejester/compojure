@@ -17,5 +17,5 @@
          {:headers {"Content-Type" "text/html"}})))
 
 (deftest test-safe-path
-  (is (not (safe-path? "/home/compojure" "../private/secret.txt")))
-  (is (safe-path? "/home/compojure" "public/index.html")))
+  (is (not (safe-path? "/basedir/compojure" "../private/secret.txt")))
+  (is (safe-path? "/basedir/compojure" "public/index.html")))
