@@ -1,6 +1,6 @@
-(ns test.compojure.crypto
-  (:use compojure.crypto)
-  (:use clojure.contrib.test-is))
+(ns compojure.crypto-test
+  (:use compojure.crypto
+        clojure.contrib.test-is))
 
 (deftest secret-key-length
   (are (= (count (gen-secret-key {:key-size _1})) _2)

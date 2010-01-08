@@ -1,28 +1,17 @@
-(ns test.run
-  (:use clojure.contrib.test-is)
-  (:require test.compojure.crypto)
-  (:require test.compojure.html.gen)
-  (:require test.compojure.html.form-helpers)
-  (:require test.compojure.html.page-helpers)
-  (:require test.compojure.http.helpers)
-  (:require test.compojure.http.middleware)
-  (:require test.compojure.http.routes)
-  (:require test.compojure.http.request)
-  (:require test.compojure.http.response)
-  (:require test.compojure.http.session)
-  (:require test.compojure.str-utils)
-  (:require test.compojure.validation))
+(use 'clojure.contrib.find-namespaces
+     'clojure.test)
 
-(run-tests
-  'test.compojure.crypto
-  'test.compojure.html.gen
-  'test.compojure.html.form-helpers
-  'test.compojure.html.page-helpers
-  'test.compojure.http.helpers
-  'test.compojure.http.middleware
-  'test.compojure.http.routes
-  'test.compojure.http.request
-  'test.compojure.http.response
-  'test.compojure.http.session
-  'test.compojure.str-utils
-  'test.compojure.validation)
+(defn find-tests []
+  (filter
+   #(re-find #"-test" (str %)) (find-namespaces-in-dir (java.io.File. "test"))))
+
+(defn require-tests []
+  (doseq [test (find-tests)]
+    (require test)))
+
+(require-tests)
+(let [results (apply merge-with + (map test-ns (find-tests)))]
+  (if (or (> (results :fail) 0)
+          (> (results :error) 0))
+    (System/exit -1)
+    (System/exit 0)))

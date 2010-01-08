@@ -1,10 +1,10 @@
-(ns test.compojure.http.session
-  (:use compojure.crypto)
-  (:use compojure.encodings)
-  (:use compojure.http.session)
-  (:use clojure.contrib.test-is)
-  (:import javax.crypto.spec.IvParameterSpec)
-  (:import javax.crypto.spec.SecretKeySpec))
+(ns compojure.http.session-test
+  (:use compojure.crypto
+        compojure.encodings
+        compojure.http.session
+        clojure.contrib.test-is)
+  (:import javax.crypto.spec.IvParameterSpec
+           javax.crypto.spec.SecretKeySpec))
 
 ;; Memory sessions
 

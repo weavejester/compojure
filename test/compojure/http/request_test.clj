@@ -1,7 +1,7 @@
-(ns test.compojure.http.request
-  (:use compojure.http.request)
-  (:use clojure.contrib.test-is)
-  (:use test.helpers))
+(ns compojure.http.request-test
+  (:use compojure.http.request
+        clojure.contrib.test-is
+        test.helpers))
 
 (deftest query-params
   (are (= (parse-query-params {:query-string _1}) _2)

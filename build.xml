@@ -65,9 +65,10 @@
   </target>
 
   <target name="test" description="Run tests">
-    <java fork="true" classname="clojure.lang.Script">
+    <java fork="true" classname="clojure.main" failonerror="true">
       <classpath>
           <path refid="classpath"/>
+          <path location="${tests.dir}"/>
           <path location="."/>
       </classpath>
       <arg value="${tests.dir}/run.clj"/>

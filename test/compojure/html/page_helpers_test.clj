@@ -1,6 +1,6 @@
-(ns test.compojure.html.page-helpers
-  (:use compojure.html.page-helpers)
-  (:use clojure.contrib.test-is))
+(ns compojure.html.page-helpers-test
+  (:use compojure.html.page-helpers
+        clojure.contrib.test-is))
 
 (deftest test-doctype-html4
   (is (= (doctype :html4)
