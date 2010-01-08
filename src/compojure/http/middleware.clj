@@ -8,10 +8,10 @@
 
 (ns compojure.http.middleware
   "Various middleware functions."
-  (:use compojure.http.routes)
-  (:use compojure.str-utils)
-  (:use clojure.contrib.def)
-  (:use clojure.contrib.str-utils))
+  (:use compojure.http.routes
+        compojure.str-utils
+        clojure.contrib.def
+        clojure.contrib.str-utils))
 
 (defn header-option
   "Converts a header option KeyValue into a string."

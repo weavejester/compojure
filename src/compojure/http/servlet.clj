@@ -8,18 +8,13 @@
 
 (ns compojure.http.servlet
   "Functions for interfacing Compojure with the Java servlet standard."
-  (:use compojure.http.routes)
-  (:use compojure.http.request)
-  (:import java.io.File)
-  (:import java.io.InputStream)
-  (:import java.io.FileInputStream)
-  (:import java.util.Map$Entry)
-  (:import javax.servlet.http.Cookie)
-  (:import javax.servlet.http.HttpServlet)
-  (:import javax.servlet.http.HttpServletRequest)
-  (:import javax.servlet.http.HttpServletResponse)
-  (:import javax.servlet.ServletContext)
-  (:import org.apache.commons.io.IOUtils))
+  (:use compojure.http.routes
+        compojure.http.request)
+  (:import [java.io File InputStream FileInputStream]
+           java.util.Map$Entry
+           [javax.servlet.http Cookie HttpServlet HttpServletRequest HttpServletResponse]
+           javax.servlet.ServletContext
+           org.apache.commons.io.IOUtils))
 
 ;; Functions to pull information from the request object
 

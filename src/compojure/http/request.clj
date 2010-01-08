@@ -8,14 +8,14 @@
 
 (ns compojure.http.request
   "Functions for pulling useful data out of a HTTP request map."
-  (:use compojure.control)
-  (:use compojure.encodings)
-  (:use compojure.map-utils)
-  (:use compojure.str-utils)
-  (:use clojure.contrib.duck-streams)
-  (:use clojure.contrib.str-utils)
-  (:import java.net.URLDecoder)
-  (:import java.io.InputStreamReader))
+  (:use compojure.control
+        compojure.encodings
+        compojure.map-utils
+        compojure.str-utils
+        clojure.contrib.duck-streams
+        clojure.contrib.str-utils)
+  (:import java.net.URLDecoder
+           java.io.InputStreamReader))
 
 (defn- parse-params
   "Parse parameters from a string into a map."

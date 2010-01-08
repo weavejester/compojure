@@ -9,11 +9,11 @@
 (ns compojure.server.grizzly
   "Clojure interface to start an embedded Grizzly server. To compile, use:
    ant -Dwith.grizzly"
-  (:use compojure.control)
-  (:use compojure.server.common)
-  (:import javax.servlet.Servlet)
-  (:import com.sun.grizzly.http.embed.GrizzlyWebServer)
-  (:import com.sun.grizzly.http.servlet.ServletAdapter))
+  (:use compojure.control
+        compojure.server.common)
+  (:import javax.servlet.Servlet
+           com.sun.grizzly.http.embed.GrizzlyWebServer
+           com.sun.grizzly.http.servlet.ServletAdapter))
 
 (defn #^ServletAdapter servlet-adapter
   "Wrap a servlet in a ServletAdapter object with a supplied set of parameters

@@ -8,16 +8,16 @@
 
 (ns compojure.http.response
   "Parse a Compojure route return value into a HTTP response map."
-  (:use clojure.contrib.def)
-  (:use compojure.http.helpers)
-  (:import clojure.lang.Fn)
-  (:import clojure.lang.IPersistentVector)
-  (:import java.util.Map)
-  (:import clojure.lang.ISeq)
-  (:import java.io.File)
-  (:import java.io.InputStream)
-  (:import java.net.URL)
-  (:import clojure.lang.Keyword))
+  (:use clojure.contrib.def
+        compojure.http.helpers)
+  (:import clojure.lang.Fn
+           clojure.lang.IPersistentVector
+           java.util.Map
+           clojure.lang.ISeq
+           java.io.File
+           java.io.InputStream
+           java.net.URL
+           clojure.lang.Keyword))
 
 (defmulti update-response
   "Update a response with an object. The type of object determines how the

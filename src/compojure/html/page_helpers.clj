@@ -8,10 +8,10 @@
 
 (ns compojure.html.page-helpers
   "Functions for generating document and header boilerplate."
-  (:use compojure.control)
-  (:use compojure.html.gen)
-  (:use compojure.str-utils)
-  (:use clojure.contrib.str-utils)
+  (:use compojure.control
+        compojure.html.gen
+        compojure.str-utils
+        clojure.contrib.str-utils)
   (:import java.net.URLEncoder))
 
 (def doctype
@@ -19,8 +19,8 @@
    (str "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01//EN\" "
         "\"http://www.w3.org/TR/html4/strict.dtd\">\n")
 
-	 :html5
-	  (str "<!DOCTYPE html>")
+   :html5
+   (str "<!DOCTYPE html>")
 
    :xhtml-strict
    (str "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" "

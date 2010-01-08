@@ -8,13 +8,12 @@
 
 (ns compojure.server.jetty
   "Clojure interface to start an embedded Jetty server."
-  (:use compojure.control)
-  (:use compojure.server.common)
-  (:import org.mortbay.jetty.Server)
-  (:import org.mortbay.jetty.servlet.Context)
-  (:import org.mortbay.jetty.servlet.ServletHolder)
-  (:import org.mortbay.jetty.bio.SocketConnector)
-  (:import org.mortbay.jetty.security.SslSocketConnector))
+  (:use compojure.control
+        compojure.server.common)
+  (:import org.mortbay.jetty.Server
+           [org.mortbay.jetty.servlet Context ServletHolder]
+           org.mortbay.jetty.bio.SocketConnector
+           org.mortbay.jetty.security.SslSocketConnector))
 
 (defn servlet-holder
   "Wrap a servlet in a ServletHolder object with a supplied set of parameters

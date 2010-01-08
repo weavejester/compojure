@@ -8,8 +8,8 @@
 
 (ns compojure.str-utils
   "Utility functions for manipulating strings."
-  (:use clojure.contrib.seq-utils)
-  (:use clojure.contrib.str-utils)
+  (:use clojure.contrib.seq-utils
+        clojure.contrib.str-utils)
   (:import clojure.lang.Named))
 
 (defn escape

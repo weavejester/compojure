@@ -8,12 +8,10 @@
 
 (ns compojure.encodings
   "Functions for encoding data."
-  (:use compojure.str-utils)
-  (:use clojure.contrib.duck-streams)
-  (:import java.net.URLEncoder)
-  (:import java.net.URLDecoder)
-  (:import org.apache.commons.codec.binary.Base64)
-  (:import org.apache.commons.codec.binary.Hex))
+  (:use compojure.str-utils
+        clojure.contrib.duck-streams)
+  (:import [java.net URLEncoder URLDecoder]
+           [org.apache.commons.codec.binary Base64 Hex]))
 
 (defn urlencode
   "Encode a urlencoded string using the default encoding."

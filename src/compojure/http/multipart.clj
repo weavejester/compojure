@@ -9,12 +9,10 @@
 (ns compojure.http.multipart
   "Add multipart form handling to Compojure. Relies on the Apache Commons
    FileUpload library."
-  (:use clojure.contrib.def)
-  (:use compojure.map-utils)
-  (:import org.apache.commons.fileupload.FileUpload)
-  (:import org.apache.commons.fileupload.RequestContext)
-  (:import org.apache.commons.fileupload.disk.DiskFileItemFactory)
-  (:import org.apache.commons.fileupload.disk.DiskFileItem))
+  (:use clojure.contrib.def
+        compojure.map-utils)
+  (:import [org.apache.commons.fileupload FileUpload RequestContext]
+           [org.apache.commons.fileupload.disk DiskFileItemFactory DiskFileItem]))
 
 (defn multipart-form?
   "Does a request have a multipart form?"

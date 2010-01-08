@@ -8,11 +8,11 @@
 
 (ns compojure.html.form-helpers
   "Functions for generating HTML forms and input fields."
-  (:use compojure.html.gen)
-  (:use compojure.control)
-  (:use compojure.str-utils)
-  (:use clojure.contrib.def)
-  (:use clojure.contrib.seq-utils))
+  (:use compojure.html.gen
+        compojure.control
+        compojure.str-utils
+        clojure.contrib.def
+        clojure.contrib.seq-utils))
 
 ;; Global parameters for easy default values
 

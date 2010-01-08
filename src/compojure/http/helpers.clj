@@ -8,11 +8,11 @@
 
 (ns compojure.http.helpers
   "Helper functions for things like redirection, serving files, 404s, etc."
-  (:use compojure.encodings)
-  (:use compojure.str-utils)
-  (:use clojure.contrib.def)
-  (:use clojure.contrib.str-utils)
-  (:use clojure.contrib.duck-streams)
+  (:use compojure.encodings
+        compojure.str-utils
+        clojure.contrib.def
+        clojure.contrib.str-utils
+        clojure.contrib.duck-streams)
   (:import java.io.File))
 
 (defn- encode-cookie

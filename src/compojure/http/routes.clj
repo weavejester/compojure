@@ -10,15 +10,15 @@
   "Macros and functions for compiling routes in the form (method path & body)
    into stand-alone functions that return the return value of the body, or the
    keyword :next if they don't match."
-  (:use compojure.http.request)
-  (:use compojure.http.response)
-  (:use compojure.http.session)
-  (:use compojure.str-utils)
-  (:use compojure.map-utils)
-  (:use compojure.control)
-  (:use compojure.encodings)
-  (:import java.util.regex.Pattern)
-  (:import java.util.Map))
+  (:use compojure.http.request
+        compojure.http.response
+        compojure.http.session
+        compojure.str-utils
+        compojure.map-utils
+        compojure.control
+        compojure.encodings)
+  (:import java.util.regex.Pattern
+           java.util.Map))
 
 ;; Functions for lexing a string
 

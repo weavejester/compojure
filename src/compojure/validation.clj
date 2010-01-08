@@ -8,10 +8,10 @@
 
 (ns compojure.validation
   "Functions for validating form parameters."
-  (:use compojure.control)
-  (:use compojure.html.form-helpers)
-  (:use compojure.html.page-helpers)
-  (:use clojure.contrib.def))
+  (:use compojure.control
+        compojure.html.form-helpers
+        compojure.html.page-helpers
+        clojure.contrib.def))
 
 (defvar *errors* {}
   "Var containing validation errors.")

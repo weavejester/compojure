@@ -8,13 +8,13 @@
 
 (ns compojure.http.session
   "Functions for creating and updating HTTP sessions."
-  (:use compojure.str-utils)
-  (:use compojure.http.helpers)
-  (:use compojure.http.request)
-  (:use compojure.http.response)
-  (:use compojure.encodings)
-  (:use compojure.crypto)
-  (:use clojure.contrib.except))
+  (:use compojure.str-utils
+        compojure.http.helpers
+        compojure.http.request
+        compojure.http.response
+        compojure.encodings
+        compojure.crypto
+        clojure.contrib.except))
 
 ;; Override these mulitmethods to create your own session storage.
 ;; Uses the Compojure repository pattern.

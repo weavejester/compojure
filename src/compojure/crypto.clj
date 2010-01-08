@@ -8,16 +8,13 @@
 
 (ns compojure.crypto
   "Functions for cryptographically signing, verifying and encrypting data."
-  (:use compojure.encodings)
-  (:use clojure.contrib.def)
-  (:use clojure.contrib.java-utils)
-  (:import java.security.SecureRandom)
-  (:import javax.crypto.Cipher)
-  (:import javax.crypto.KeyGenerator)
-  (:import javax.crypto.Mac)
-  (:import javax.crypto.spec.SecretKeySpec)
-  (:import javax.crypto.spec.IvParameterSpec)
-  (:import java.util.UUID))
+  (:use compojure.encodings
+        clojure.contrib.def
+        clojure.contrib.java-utils)
+  (:import java.security.SecureRandom
+           [javax.crypto Cipher KeyGenerator Mac]
+           [javax.crypto.spec SecretKeySpec IvParameterSpec]
+           java.util.UUID))
 
 (defvar hmac-defaults
   {:algorithm "HmacSHA256"}
