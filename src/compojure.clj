@@ -8,9 +8,10 @@
 
 (ns compojure
   "A concise syntax for generating Ring handlers."
-  (:use clout))
+  (:use clout)
+  (:use clojure.contrib.def))
 
-(defn method-matches
+(defn- method-matches
   "True if this request matches the supplied method."
   [method request]
   (let [request-method (request :request-method)
@@ -28,39 +29,38 @@
       (route-compile route)
     (seq? route)
       (route-compile (first route) (apply hash-map (rest route)))
-    :else
-      route))
+    :else route))
 
-(defn assoc-route-params
+(defn- assoc-route-params
   "Associate route parameters with the request map."
   [request params]
   (merge-with merge request {:route-params params, :params params}))
+
+(defn- param-vector-bindings
+  "Create the bindings for a vector of parameters."
+  [request bindings body]
+  (let [[args [_ more]] (split-with #(not= % '&) bindings)]
+    `(let [{:keys ~(vec args)} (~request :params)
+          ~@(if more [more `(dissoc (~request :params) ~@(map keyword args))])]
+       ~@body)))
 
 (defmacro bind-request
   "Bind a request to a collection of symbols. The collection can be a Clojure
   map destructuring binding for the request map, or it can be a vector of
   parameter bindings."
   [request bindings & body]
-  (cond
-    (map? bindings)
-      `(let [~bindings ~request] ~@body)
-    (vector? bindings)
-      (let [[args more] (split-with #(not= % '&) bindings)
-            rest-args   (second more)]
-        `(let [{:keys ~(vec args)} (~request :params)
-               ~@(if rest-args
-                   [rest-args `(dissoc (~request :params)
-                                       ~@(map keyword args))])]
-           ~@body))))
+  (if (vector? bindings)
+    (param-vector-bindings request bindings body)
+    `(let [~bindings ~request] ~@body)))
 
-(defn compile-route
+(defn- compile-route
   "Compile a route in the form (method path & body) into a function."
   [method route bindings body]
   `(let [route# ~(prepare-route route)]
      (fn [request#]
-       (if (method-matches ~method request#)
+       (if (#'method-matches ~method request#)
          (if-let [route-params# (route-matches route# request#)]
-           (let [request# (assoc-route-params request# route-params#)]
+           (let [request# (#'assoc-route-params request# route-params#)]
              (bind-request request# ~bindings ~@body)))))))
 
 (defn routes
