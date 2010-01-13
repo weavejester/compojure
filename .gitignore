@@ -1,4 +1,6 @@
+lib
 classes
 compojure.jar
 deps
 deps.zip
+pom.xml
