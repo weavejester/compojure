@@ -1,6 +1,6 @@
-(ns test.compojure.html.gen
-  (:use compojure.html.gen)
-  (:use clojure.contrib.test-is))
+(ns compojure.html.gen-test
+  (:use compojure.html.gen
+        clojure.contrib.test-is))
 
 (deftest tag-text
   (is (= (html [:text "Lorem Ipsum"]) "<text>Lorem Ipsum</text>")))

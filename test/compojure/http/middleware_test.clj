@@ -1,7 +1,7 @@
-(ns test.compojure.http.middleware
-  (:use compojure.http.middleware)
-  (:use compojure.http.routes)
-  (:use clojure.contrib.test-is))
+(ns compojure.http.middleware-test
+  (:use compojure.http.middleware
+        compojure.http.routes
+        clojure.contrib.test-is))
 
 (deftest test-header-option
   (is (= (header-option [:name "value"])

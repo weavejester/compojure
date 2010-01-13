@@ -1,7 +1,7 @@
-(ns test.compojure.http.routes
-  (:use compojure.http.routes)
-  (:use clojure.contrib.test-is)
-  (:use test.helpers))
+(ns compojure.http.routes-test
+  (:use compojure.http.routes
+        clojure.contrib.test-is
+        test.helpers))
 
 (deftest fixed-path
   (are (match-uri (compile-uri-matcher _1) _1)

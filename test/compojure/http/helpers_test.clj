@@ -1,8 +1,8 @@
-(ns test.compojure.http.helpers
-  (:use compojure.http.helpers)
-  (:use compojure.http.routes)
-  (:use compojure.control)
-  (:use clojure.contrib.test-is))
+(ns compojure.http.helpers-test
+  (:use compojure.http.helpers
+        compojure.http.routes
+        compojure.control
+        clojure.contrib.test-is))
 
 (deftest test-set-cookie
   (is (= (set-cookie :foo "bar")
