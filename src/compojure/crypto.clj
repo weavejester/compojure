@@ -76,7 +76,7 @@
 (defn- make-algorithm
   "Return an algorithm string suitable for JCE from a map of options."
   [options]
-  (str "AES/" (options :mode) "/" (options :padding)))
+  (str (options :algorithm) "/" (options :mode) "/" (options :padding)))
 
 (defn- make-cipher
   "Create an AES Cipher instance."
