@@ -1,6 +1,6 @@
-(ns compojure-test
+(ns compojure.core-test
   (:use clojure.test)
-  (:use compojure))
+  (:use compojure.core))
 
 (deftest basic-get-test
   (let [handler (GET "/:x" [x] x)

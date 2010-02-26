@@ -6,7 +6,7 @@
 ;; terms of this license. You must not remove this notice, or any other, from
 ;; this software.
 
-(ns compojure
+(ns compojure.core
   "A concise syntax for generating Ring handlers."
   (:use clout)
   (:use clojure.contrib.def))
