@@ -1,8 +1,14 @@
 (ns compojure.core-test
-  (:use clojure.test)
-  (:use compojure.core))
+  (:use clojure.test
+        clojure.contrib.mock.test-adapter
+        compojure.core
+        compojure.response))
 
-(deftest basic-get-test
-  (let [handler (GET "/:x" [x] x)
-        request {:request-method :get, :uri "/foo"}]
-    (is (= (handler request) "foo"))))
+(deftest route-parameter-arguments
+  ((GET "/foo" [x y]
+     (is (= x "bar"))
+     (is (= y "baz"))
+     nil)
+   {:request-method :get
+    :uri "/foo"
+    :params {:x "bar", :y "baz"}}))

@@ -8,8 +8,8 @@
 
 (ns compojure.core
   "A concise syntax for generating Ring handlers."
-  (:use clout)
-  (:use clojure.contrib.def))
+  (:use [clout :only (route-matches route-compile)]
+        [compojure.response :only (render)]))
 
 (defn- method-matches
   "True if this request matches the supplied method."
@@ -61,7 +61,8 @@
        (if (#'method-matches ~method request#)
          (if-let [route-params# (route-matches route# request#)]
            (let [request# (#'assoc-route-params request# route-params#)]
-             (bind-request request# ~bindings ~@body)))))))
+             (bind-request request# ~bindings
+               (render (do ~@body)))))))))
 
 (defn routes
   "Create a Ring handler by combining several handlers into one."
