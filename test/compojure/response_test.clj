@@ -10,3 +10,9 @@
          {:status 200
           :headers {"Content-Type" "text/html"}
           :body "<html><body>foo</body></html>"})))
+
+(deftest render-map
+  (is (= (render {:body "foo"})
+         {:status 200
+          :headers {}
+          :body "foo"})))
