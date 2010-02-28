@@ -8,8 +8,8 @@
 
 (ns compojure.core
   "A concise syntax for generating Ring handlers."
-  (:use [clout :only (route-matches route-compile)]
-        [compojure.response :only (render)]))
+  (:use clout.core
+        compojure.response))
 
 (defn- method-matches
   "True if this request matches the supplied method."
