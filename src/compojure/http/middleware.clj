@@ -106,7 +106,7 @@
 (defn- extension
   "Returns the text after the last . of a String or nil."
   [s]
-  (second (re-find #"\.(.*$)" s)))
+  (last (re-split #"\." s)))
 
 (defn- request-mimetype
   "Derives the mimetype from a request.  See with-mimetypes for options."

@@ -100,7 +100,8 @@
        "/" "text/html"
        "/foobar" "text/html"
        "/file.pdf" "application/pdf"
-       "/files/bar.css" "text/css"))
+       "/files/bar.css" "text/css"
+       "/files/js/jquery.fancybox-1.3.0.js" "text/javascript"))
 
 (deftest test-with-custom-mimetypes
   (let [options {:mimetypes {"foo" "test/foo"
