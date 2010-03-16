@@ -8,7 +8,8 @@
 
 (ns compojure.core
   "A concise syntax for generating Ring handlers."
-  (:use clout.core
+  (:use [ring.middleware params cookies]
+        clout.core
         compojure.response))
 
 (defn- method-matches
@@ -67,8 +68,10 @@
 (defn routes
   "Create a Ring handler by combining several handlers into one."
   [& handlers]
-  (fn [request]
-    (some #(% request) handlers)))
+  (wrap-cookies
+    (wrap-params
+      (fn [request]
+        (some #(% request) handlers)))))
 
 (defn- apply-doc
   "Return a symbol and body with an optional docstring applied."
