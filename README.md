@@ -13,7 +13,7 @@ Here's a small web application written using Compojure,
       (:use [compojure.core :only (defroutes GET ANY)]
             [hiccup.core :only (html)]
             [ring.adapter.jetty :only (run-jetty)]
-            [ring.util.response :only (redirect)])
+            [ring.util.response :only (redirect)]))
 
     (defroutes main-routes
       (GET "/" []
