@@ -1,6 +1,8 @@
 Compojure is a small, open source web framework for the
 [Clojure](http://clojure.org) programming language.
 
+This is the latest development version of Compojure. For the latest stable
+version, see [0.3.2](http://github.com/weavejester/compojure/tree/0.3.2).
 
 An Example
 ----------
