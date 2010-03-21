@@ -6,15 +6,21 @@
 ;; terms of this license. You must not remove this notice, or any other, from
 ;; this software.
 
-(ns compojure.validation.predicates
-    (:use compojure.str-utils))
+(ns compojure.response
+  "Methods for generating Ring response maps"
+  (:import java.util.Map))
 
-(defn present?
-  "True if x is not nil and not an empty string."
-  [x]
-  (not (blank? x)))
+(defmulti render
+  "Turns its argument into an appropriate response"
+  type)
 
-(defn max-size
-  "Returns a function to check a maximum size of a collection."
-  [n]
-  #(<= (count %) n))
+(defmethod render nil [_] nil)
+
+(defmethod render String [html-string]
+  {:status 200
+   :headers {"Content-Type" "text/html"}
+   :body html-string})
+
+(defmethod render Map [a-map]
+  (merge {:status 200, :headers {}, :body ""}
+         a-map))
