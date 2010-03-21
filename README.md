@@ -7,24 +7,18 @@ version, see [0.3.2](http://github.com/weavejester/compojure/tree/0.3.2).
 An Example
 ----------
 
-Here's a small web application written using Compojure,
-[Ring](http://github.com/mmcgrana/ring) and
-[Hiccup](http://github.com/weavejester/hiccup).
+Here's a small web application written using Compojure and
+[Ring](http://github.com/mmcgrana/ring).
 
     (ns hello-world
-      (:use [compojure.core :only (defroutes GET ANY)]
-            [hiccup.core :only (html)]
-            [ring.adapter.jetty :only (run-jetty)]
-            [ring.util.response :only (redirect)]))
+      (:use compojure.core
+            ring.adapter.jetty))
 
     (defroutes main-routes
       (GET "/" []
-        (redirect "/world"))
-      (GET "/:name" [name]
-        (html [:h1 "Hello " name]))
-      (ANY "*" {uri :uri}
-        {:status 404
-         :body (html [:h1 "Page not found: " uri])}))
+        "<h1>Hello World</h1>")
+      (ANY "*" []
+        {:status 404, :body "<h1>Page not found</h1>"}))
 
     (run-jetty main-routes {:port 8080})
 
