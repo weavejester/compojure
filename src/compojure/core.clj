@@ -41,7 +41,7 @@
   "Create the bindings for a vector of parameters."
   [request bindings body]
   (let [[args [_ more]] (split-with #(not= % '&) bindings)]
-    `(let [{:keys ~(vec args)} (~request :params)
+    `(let [{:strs ~(vec args)} (~request :params)
           ~@(if more [more `(dissoc (~request :params) ~@(map keyword args))])]
        ~@body)))
 
