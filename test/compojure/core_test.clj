@@ -11,7 +11,7 @@
      nil)
    {:request-method :get
     :uri "/foo"
-    :params {:x "bar", :y "baz"}}))
+    :params {"x" "bar", "y" "baz"}}))
 
 (deftest route-with-map-arguments
   ((GET "/foo" {params :params}
@@ -19,4 +19,4 @@
      nil)
    {:request-method :get
     :uri "/foo"
-    :params {:x "a", :y "b"}}))
+    :params {"x" "a", "y" "b"}}))
