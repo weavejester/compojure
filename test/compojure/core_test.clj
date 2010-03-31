@@ -1,8 +1,10 @@
 (ns compojure.core-test
   (:use clojure.test
         clojure.contrib.mock.test-adapter
+        clojure.contrib.with-ns
         compojure.core
-        compojure.response))
+        compojure.response)
+  (:require [compojure.test-namespace :as testns]))
 
 (deftest route-with-vector-arguments
   ((GET "/foo" [x y]
@@ -20,3 +22,25 @@
    {:request-method :get
     :uri "/foo"
     :params {"x" "a", "y" "b"}}))
+
+(defn func1 [x] (inc x))
+
+(deftest wrap-var-with-funcion
+  (let [wrapper (fn [f] (fn [x] (f (inc x))))]
+    (wrap! func1 wrapper)
+    (is (= (func1 3) 5))))
+
+(defn func2 [x] (inc x))
+
+(defn wrap-test1 [f]
+  (fn [x] (f (* 2 x))))
+
+(deftest wrap-var-with-keyword
+  (wrap! func2 :test1)
+  (is (= (func2 3) 7)))
+
+(defn func3 [x] (inc x))
+
+(deftest wrap-var-with-namespaced-keyword
+  (wrap! func3 :testns/test2)
+  (is (= (func3 3) 10)))

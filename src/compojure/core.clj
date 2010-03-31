@@ -110,3 +110,31 @@
 (defmacro ANY "Generate a route that matches any method."
   [path args & body]
   (compile-route nil path args body))
+
+(defn- keywords->middleware
+  "Turn a keyword into a wrapper function symbol.
+  e.g. :test => wrap-test
+       (:test x) => (wrap-test x)"
+  [kw]
+  (letfn [(mw-sym [x]
+            (symbol (namespace x) (str "wrap-" (name x))))]
+    (cond
+      (keyword? kw)
+        (mw-sym kw)
+      (and (seq? kw) (keyword? (first kw)))
+        (cons (mw-sym (first kw)) (rest kw))
+      :else
+        kw)))
+
+(defmacro wrap!
+  "Wrap a handler in middleware functions. Uses the same syntax as the ->
+  macro. Additionally, keywords may be used to denote a leading 'wrap-'.
+  e.g.
+    (wrap! foo (:session cookie-store))
+    => (wrap! foo (wrap-session cookie-store))
+    => (def foo (wrap-session foo cookie-store))"
+  [handler & funcs]
+  (let [funcs (keywords->middleware funcs)]
+    `(alter-var-root
+       (var ~handler)
+       (constantly (-> ~handler ~@funcs)))))
