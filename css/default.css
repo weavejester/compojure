@@ -14,11 +14,22 @@ h1 {
     border-bottom: 1px solid #111;
     width: 5.8em;
     padding: 1pt 1pt 3pt 1pt;
-    margin: 5em auto 0 auto;
+    margin: 5em auto 2pt auto;
 }
 
 h1 .j {
     color: #26d;
     text-shadow: 0 1px 0 #137;
     font-style: italic;
+}
+
+nav {
+    text-align: center;
+    font-family: "dejavu sans";
+    font-size: 10pt;
+}
+
+nav a {
+    color: #333;
+    text-decoration: none;
 }
