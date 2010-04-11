@@ -1,0 +1,24 @@
+h1 {
+    font-family: "dejavu sans";
+    font-weight: normal;
+    font-size: 32pt;
+    color: #fff;
+    background-color: #272727;
+    background: -webkit-gradient(linear,
+                   center top, center bottom,
+                   from(#303030), to(#272727));
+    text-align: center;
+    text-shadow: 0 1px 0 #777;
+    border-radius: 0.28em;
+    border-top: 1px solid #555;
+    border-bottom: 1px solid #111;
+    width: 5.8em;
+    padding: 1pt 1pt 3pt 1pt;
+    margin: 5em auto 0 auto;
+}
+
+h1 .j {
+    color: #26d;
+    text-shadow: 0 1px 0 #137;
+    font-style: italic;
+}
