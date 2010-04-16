@@ -1,35 +1,35 @@
-h1 {
+.title {
     font-family: "dejavu sans";
     font-weight: normal;
     font-size: 32pt;
     color: #fff;
-    background-color: #272727;
-    background: -webkit-gradient(linear,
-                   center top, center bottom,
+    background: #272727;
+    background: -webkit-gradient(linear, center top, center bottom,
                    from(#303030), to(#272727));
+    background: -moz-linear-gradient(top, #303030, #272727);
     text-align: center;
     text-shadow: 0 1px 0 #777;
     border-radius: 0.28em;
-    border-top: 1px solid #555;
-    border-bottom: 1px solid #111;
+    -moz-border-radius: 0.28em;
     width: 5.8em;
     padding: 1pt 1pt 3pt 1pt;
-    margin: 5em auto 2pt auto;
+    border: #222222;
+    margin: 1.5em auto 2pt auto;
 }
 
-h1 .j {
+.title .j {
     color: #26d;
     text-shadow: 0 1px 0 #137;
     font-style: italic;
 }
 
-nav {
+.nav {
     text-align: center;
     font-family: "dejavu sans";
     font-size: 10pt;
 }
 
-nav a {
+.nav a {
     color: #333;
     text-decoration: none;
 }
