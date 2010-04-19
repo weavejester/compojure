@@ -44,3 +44,10 @@
 (deftest wrap-var-with-namespaced-keyword
   (wrap! func3 :testns/test2)
   (is (= (func3 3) 10)))
+
+(defn func4 [x] (inc x))
+
+(deftest wrap-var-with-function-and-keyword
+  (wrap! func4 wrap-test1 :test1)
+  (is (= (func4 3) 13)))
+
