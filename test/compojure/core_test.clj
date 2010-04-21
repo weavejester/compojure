@@ -23,6 +23,14 @@
     :uri "/foo"
     :params {"x" "a", "y" "b"}}))
 
+(deftest route-with-method-param
+  (let [req  {:request-method :post
+              :form-params {"_method" "PUT"}
+              :uri "/foo"}
+        resp {:status 200, :headers {}, :body "bar"}
+        route (PUT "/foo" [] resp)]
+    (is (= (route req) resp))))
+
 (defn func1 [x] (inc x))
 
 (deftest wrap-var-with-funcion
@@ -50,4 +58,3 @@
 (deftest wrap-var-with-function-and-keyword
   (wrap! func4 wrap-test1 :test1)
   (is (= (func4 3) 13)))
-
