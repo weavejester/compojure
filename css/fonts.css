@@ -1,9 +1,14 @@
 @font-face {
     font-family: "DejaVu Sans";
-    src: url(fonts/DejaVuSans.ttf) format(truetype);
+    src: url(../fonts/DejaVuSans.ttf);
 }
 
 @font-face {
     font-family: "DejaVu Mono";
-    src: url(fonts/DejaVuSansMono.ttf) format(truetype);
+    src: url(../fonts/DejaVuSansMono.ttf);
+}
+
+@font-face {
+    font-family: "Droid Serif Regular";
+    src: url(../fonts/DroidSerif-Regular.ttf);
 }
