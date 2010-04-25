@@ -57,7 +57,7 @@ lein repl src/hello-www/core.clj
 {% endhighlight %}
 
 Visit <http://localhost:8080> to see the results. If all has gone well, you'll
-see your 'Hello World' page.
+see your "Hello World" page.
 
 [1]:http://github.com/technomancy/leiningen
 [2]:http://www.assembla.com/wiki/show/clojure/Getting_Started_with_Leiningen

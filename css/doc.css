@@ -25,9 +25,8 @@ h1 .j {
 h2 {
     font-family: arial;
     font-weight: bold;
-    font-style: normal;
     font-size: 19pt;
-    color: #393939;
+    color: #3f3f3f;
     margin: -2em 0em 0em 6.5em;
     padding: 0pt;
 }
@@ -42,17 +41,27 @@ body {
 pre {
     font-family: "dejavu mono";
     font-size: 9pt;
-    background: #efefef;
-    border: 1px solid #e0e0e0;
-    padding: 3px;
+    background: #2f2f2f;
+    color: #eee;
+    padding: 0.7em;
+    border-radius: 0.5em;
+    -moz-border-radius: 0.5em;
 }
 
 .highlight .nb {
-    color: #113366;
-    font-weight: bold;
+    color: #cc7755;
 }
 
 .highlight .nf {
-    color: #442222;
+    color: #6699ee;
     font-weight: bold;
+}
+
+.highlight .s {
+    color: #99ee44;
+    font-style: italic;
+}
+
+.highlight .mi {
+    color: #ee77ee;
 }
