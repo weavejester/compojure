@@ -1,0 +1,9 @@
+@font-face {
+    font-family: "DejaVu Sans";
+    src: url(fonts/DejaVuSans.ttf) format(truetype);
+}
+
+@font-face {
+    font-family: "DejaVu Mono";
+    src: url(fonts/DejaVuSansMono.ttf) format(truetype);
+}

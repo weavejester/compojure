@@ -1,5 +1,7 @@
+@import url(fonts.css);
+
 .title {
-    font-family: "dejavu sans";
+    font-family: "DejaVu Sans";
     font-weight: normal;
     font-size: 32pt;
     color: #fff;
@@ -25,7 +27,7 @@
 
 .nav {
     text-align: center;
-    font-family: "dejavu sans";
+    font-family: "DejaVu Sans";
     font-size: 10pt;
 }
 

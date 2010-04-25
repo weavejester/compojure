@@ -1,5 +1,7 @@
+@import url(fonts.css);
+
 h1 {
-    font-family: "dejavu sans";
+    font-family: "DejaVu Sans";
     font-weight: normal;
     font-size: 20pt;
     color: #fff;
@@ -23,7 +25,7 @@ h1 .j {
 }
 
 h2 {
-    font-family: arial;
+    font-family: "DejaVu Sans";
     font-weight: bold;
     font-size: 19pt;
     color: #3f3f3f;
@@ -32,14 +34,14 @@ h2 {
 }
 
 body {
-    font-family: "dejavu sans";
+    font-family: "DejaVu Sans";
     font-size: 10pt;
     width: 50em;
     margin: auto;
 }
 
 pre {
-    font-family: "dejavu mono";
+    font-family: "DejaVu Mono";
     font-size: 9pt;
     background: #2f2f2f;
     color: #eee;
