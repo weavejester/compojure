@@ -1,0 +1,58 @@
+h1 {
+    font-family: "dejavu sans";
+    font-weight: normal;
+    font-size: 20pt;
+    color: #fff;
+    background: #272727;
+    background: -webkit-gradient(linear, center top, center bottom,
+                   from(#303030), to(#272727));
+    background: -moz-linear-gradient(top, #303030, #272727);
+    text-align: center;
+    text-shadow: 0 1px 0 #777;
+    border-radius: 0.28em;
+    -moz-border-radius: 0.28em;
+    width: 5.8em;
+    padding: 1pt 1pt 3pt 1pt;
+    border: #222222;
+}
+
+h1 .j {
+    color: #26d;
+    text-shadow: 0 1px 0 #137;
+    font-style: italic;
+}
+
+h2 {
+    font-family: arial;
+    font-weight: bold;
+    font-style: normal;
+    font-size: 19pt;
+    color: #393939;
+    margin: -2em 0em 0em 6.5em;
+    padding: 0pt;
+}
+
+body {
+    font-family: "dejavu sans";
+    font-size: 10pt;
+    width: 50em;
+    margin: auto;
+}
+
+pre {
+    font-family: "dejavu mono";
+    font-size: 9pt;
+    background: #efefef;
+    border: 1px solid #e0e0e0;
+    padding: 3px;
+}
+
+.highlight .nb {
+    color: #113366;
+    font-weight: bold;
+}
+
+.highlight .nf {
+    color: #442222;
+    font-weight: bold;
+}
