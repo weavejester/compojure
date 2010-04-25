@@ -1,7 +1,5 @@
 lib
 classes
-lib
 compojure.jar
-deps
-deps.zip
 pom.xml
+_site
