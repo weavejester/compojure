@@ -33,7 +33,7 @@ Next, use Leiningen to download the project dependencies for you:
 lein deps
 {% endhighlight %}
 
-Now we're ready to write the application. Put the following code into
+Now you're ready to write the application. Put the following code into
 `src/hello-www/core.clj`:
 
 {% highlight clj %}
