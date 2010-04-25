@@ -4,6 +4,11 @@
 }
 
 @font-face {
+    font-family: "DejaVu Sans Oblique";
+    src: url(../fonts/DejaVuSans-Oblique.ttf);
+}
+
+@font-face {
     font-family: "DejaVu Mono";
     src: url(../fonts/DejaVuSansMono.ttf);
 }

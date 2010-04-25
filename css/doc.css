@@ -1,7 +1,7 @@
 @import url(fonts.css);
 
 h1 {
-    font-family: "DejaVu Sans";
+    font-family: "DejaVu Sans", sans-serif;
     font-weight: normal;
     font-size: 20pt;
     color: #fff;
@@ -19,13 +19,14 @@ h1 {
 }
 
 h1 .j {
+    font-family: "DejaVu Sans Oblique", sans-serif;
+    font-style: italic;
     color: #26d;
     text-shadow: 0 1px 0 #137;
-    font-style: italic;
 }
 
 h2 {
-    font-family: "Droid Serif Regular";
+    font-family: "Droid Serif Regular", serif;
     font-weight: normal;
     font-size: 22pt;
     color: #444444;
@@ -34,14 +35,14 @@ h2 {
 }
 
 body {
-    font-family: "DejaVu Sans";
+    font-family: "DejaVu Sans", sans-serif;
     font-size: 10pt;
     width: 50em;
     margin: auto;
 }
 
 pre {
-    font-family: "DejaVu Mono";
+    font-family: "DejaVu Mono", monospace;
     font-size: 9pt;
     background: #2f2f2f;
     color: #eee;

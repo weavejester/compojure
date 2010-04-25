@@ -1,7 +1,7 @@
 @import url(fonts.css);
 
 .title {
-    font-family: "DejaVu Sans";
+    font-family: "DejaVu Sans", sans-serif;
     font-weight: normal;
     font-size: 32pt;
     color: #fff;
@@ -20,14 +20,15 @@
 }
 
 .title .j {
+    font-family: "DejaVu Sans Oblique", sans-serif;
+    font-style: italic;
     color: #26d;
     text-shadow: 0 1px 0 #137;
-    font-style: italic;
 }
 
 .nav {
     text-align: center;
-    font-family: "DejaVu Sans";
+    font-family: "DejaVu Sans", sans-serif;
     font-size: 10pt;
 }
 
