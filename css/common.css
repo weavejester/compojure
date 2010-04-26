@@ -1,9 +1,16 @@
+@import url(reset-min.css);
 @import url(fonts.css);
 
-.title {
+body {
+    font-family: "DejaVu Sans", sans-serif;
+    font-size: 10pt;
+    width: 50em;
+    margin: 1em auto 1em auto;
+}
+
+h1 {
     font-family: "DejaVu Sans", sans-serif;
     font-weight: normal;
-    font-size: 32pt;
     color: #fff;
     background: #272727;
     background: -webkit-gradient(linear, center top, center bottom,
@@ -16,22 +23,23 @@
     width: 5.8em;
     padding: 1pt 1pt 3pt 1pt;
     border: #222222;
-    margin: 1.5em auto 2pt auto;
 }
 
-.title .j {
+h1 .j {
     font-family: "DejaVu Sans Oblique", sans-serif;
     color: #26d;
     text-shadow: 0 1px 0 #137;
 }
 
-.nav {
-    text-align: center;
-    font-family: "DejaVu Sans", sans-serif;
-    font-size: 10pt;
+p {
+    margin: 1em 0 1em 0;
+    line-height: 1.2em;
 }
 
-.nav a {
-    color: #333;
-    text-decoration: none;
+a {
+    color: #152288;
+}
+
+a:visited {
+    color: #001144;
 }

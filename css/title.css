@@ -1,0 +1,15 @@
+@import url(common.css);
+
+h1 {
+    font-size: 32pt;
+    margin: 1.5em auto 2pt auto;
+}
+
+.nav {
+    text-align: center;
+}
+
+.nav a {
+    color: #333;
+    text-decoration: none;
+}
