@@ -20,7 +20,6 @@ h1 {
 
 h1 .j {
     font-family: "DejaVu Sans Oblique", sans-serif;
-    font-style: italic;
     color: #26d;
     text-shadow: 0 1px 0 #137;
 }
@@ -30,7 +29,7 @@ h2 {
     font-weight: normal;
     font-size: 22pt;
     color: #444444;
-    margin: -1.75em 0em 0em 5.7em;
+    margin: -1.8em 0em 0em 5.7em;
     padding: 0pt;
 }
 
