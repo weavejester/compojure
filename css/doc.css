@@ -68,3 +68,11 @@ pre {
 .highlight .mi {
     color: #ee77ee;
 }
+
+a {
+    color: #152288;
+}
+
+a:visited {
+    color: #001144;
+}
