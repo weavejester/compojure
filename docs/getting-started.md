@@ -39,13 +39,12 @@ Now you're ready to write the application. Put the following code into
 {% highlight clj %}
 (ns hello-www.core
   (:use compojure.core
-        ring.adapter.jetty))
+        ring.adapter.jetty)
+  (:require [compojure.route :as route]))
 
 (defroutes example
-  (GET "/" []
-    "<h1>Hello World Wide Web!</h1>")
-  (GET "*" []
-    {:status 404, :body "Page not found"}))
+  (GET "/" [] "<h1>Hello World Wide Web!</h1>")
+  (route/not-found "Page not found"))
 
 (run-jetty example {:port 8080})
 {% endhighlight %}
