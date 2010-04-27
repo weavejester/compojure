@@ -14,3 +14,8 @@
   (GET (add-wildcard path) {{file-path "*"} :params}
     (let [options (merge {:root "public"} options)]
       (file-response file-path options))))
+
+(defn not-found
+  "A route that returns a 404 not found response."
+  [body]
+  (ANY "*" [] {:status 404, :body body}))
