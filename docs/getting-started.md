@@ -3,9 +3,9 @@ layout: doc
 title: Getting Started
 ---
 
-The most straightforward way to get started with Compojure is to use
-[Leiningen][1]. Installing Leiningen is straightforward, and instructions to
-do so can be found on the [Clojure Assembla Wiki][2].
+The simplest way to get started with Compojure is to use [Leiningen][1].
+Installing Leiningen is straightforward, and instructions to do so can be
+found on the [Clojure Assembla Wiki][2].
 
 Once Leiningen is installed, use it to create a new Clojure project:
 
