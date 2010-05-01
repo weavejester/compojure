@@ -54,7 +54,7 @@
          (if-let [route-params# (route-matches route# request#)]
            (let [request# (#'assoc-route-params request# route-params#)]
              (bind-request request# ~bindings
-               (render (do ~@body)))))))))
+               (render request# (do ~@body)))))))))
 
 (defn routes
   "Create a Ring handler by combining several handlers into one."

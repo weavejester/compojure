@@ -1,18 +1,31 @@
 (ns compojure.response
   "Methods for generating Ring response maps"
-  (:import java.util.Map))
+  (:import java.util.Map
+           java.io.File
+           [clojure.lang IDeref IFn]))
 
 (defmulti render
-  "Turns its argument into an appropriate response"
-  type)
+  "Given the request map and an arbitrary value x, turn x into a valid HTTP
+  response map. Dispatches on the type of x."
+  (fn [_ x] (type x)))
 
-(defmethod render nil [_] nil)
+(defmethod render nil [_ _] nil)
 
-(defmethod render String [html-string]
-  {:status 200
+(defmethod render String [_ html]
+  {:status  200
    :headers {"Content-Type" "text/html"}
-   :body html-string})
+   :body    html})
 
-(defmethod render Map [a-map]
-  (merge {:status 200, :headers {}, :body ""}
-         a-map))
+(defmethod render Map [_ m]
+  (merge {:status 200, :headers {}, :body ""} m))
+
+(defmethod render IFn [request handler]
+  (render (handler request)))
+
+(defmethod render IDeref [_ r]
+  (render (deref r)))
+
+(defmethod render File [_ f]
+  {:status 200, :headers {}, :body f})
+
+(prefer-method render Map IFn)
