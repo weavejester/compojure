@@ -1,4 +1,4 @@
-(ns compojure.core-test
+(ns compojure.test.core
   (:use clojure.test
         clojure.contrib.mock.test-adapter
         clojure.contrib.with-ns
