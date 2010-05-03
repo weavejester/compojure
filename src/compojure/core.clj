@@ -17,11 +17,17 @@
 (defn- prepare-route
   "Pre-compile the route."
   [route]
-  (if (string? route)
-    (route-compile route)
-    `(if (string? ~route)
-       (route-compile ~route)
-       ~route)))
+  (cond
+    (string? route)
+      (route-compile route)
+    (vector? route)
+      (route-compile
+        (first route)
+        (apply hash-map (rest route)))
+    :else
+      `(if (string? ~route)
+         (route-compile ~route)
+         ~route)))
 
 (defn- assoc-route-params
   "Associate route parameters with the request map."

@@ -3,7 +3,8 @@
         clojure.contrib.mock.test-adapter
         clojure.contrib.with-ns
         compojure.core
-        compojure.response)
+        compojure.response
+        clout.core)
   (:require [compojure.test-namespace :as testns]))
 
 (deftest route-with-vector-arguments
@@ -30,6 +31,12 @@
         resp {:status 200, :headers {}, :body "bar"}
         route (PUT "/foo" [] resp)]
     (is (= (route req) resp))))
+
+(deftest route-with-custom-regexes
+  (expect [route-compile
+             (has-args ["/foo/:id" {:id "[0-9]+"}]
+               (times 1))]
+    (eval `(GET ["/foo/:id" :id "[0-9]+"] []))))
 
 (defn func1 [x] (inc x))
 
