@@ -1,5 +1,9 @@
 @import url(common.css);
 
+a.title {
+    text-decoration: none;
+}
+
 h1 {
     font-size: 20pt;
 }
