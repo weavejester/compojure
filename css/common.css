@@ -2,8 +2,8 @@
 @import url(fonts.css);
 
 body {
-    font-family: "DejaVu Sans", sans-serif;
-    font-size: 10pt;
+    font-family: "DejaVu Sans Condensed", sans-serif;
+    font-size: 9pt;
     width: 50em;
     margin: 1em auto 1em auto;
 }
@@ -33,7 +33,9 @@ h1 .j {
 
 p {
     margin: 1em 0 1em 0;
-    line-height: 1.2em;
+    line-height: 1.3em;
+    word-spacing: 0.1em;
+    letter-spacing: 0;
 }
 
 a {
