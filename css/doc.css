@@ -13,6 +13,16 @@ h2 {
     padding: 0pt;
 }
 
+h3 {
+    font-family: "Droid Serif Regular", serif;
+    font-weight: normal;
+    font-size: 14pt;
+    color: #000000;
+    margin-top: 1.2em;
+    padding-top: 0.2em;
+    border-top: 1px dotted #000000;
+}
+
 pre {
     font-family: "DejaVu Mono", monospace;
     font-size: 9pt;
