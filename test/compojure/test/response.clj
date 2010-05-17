@@ -5,8 +5,19 @@
 (deftest response-with-nil
   (is (nil? (response/render {} nil))))
 
+(def test-response
+  {:status  200
+   :headers {"Content-Type" "text/html"}
+   :body    "<h1>Foo</h1>"})
+
 (deftest response-with-string
   (is (= (response/render {} "<h1>Foo</h1>")
-         {:status  200
-          :headers {"Content-Type" "text/html"}
-          :body    "<h1>Foo</h1>"})))
+         test-response)))
+
+(deftest response-with-fn
+  (is (= (response/render {} (constantly test-response))
+         test-response)))
+
+(deftest response-with-deref
+  (is (= (response/render {} (future test-response))
+         test-response)))

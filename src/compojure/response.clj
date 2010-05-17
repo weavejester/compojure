@@ -20,12 +20,12 @@
   (merge {:status 200, :headers {}, :body ""} m))
 
 (defmethod render IFn [request handler]
-  (render (handler request)))
+  (render request (handler request)))
 
-(defmethod render IDeref [_ r]
-  (render (deref r)))
+(defmethod render IDeref [request ref-like]
+  (render request (deref ref-like)))
 
-(defmethod render File [_ f]
-  {:status 200, :headers {}, :body f})
+(defmethod render File [_ file]
+  {:status 200, :headers {}, :body file})
 
 (prefer-method render Map IFn)
