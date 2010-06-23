@@ -1,8 +1,8 @@
 (ns compojure.response
   "Methods for generating Ring response maps"
   (:import java.util.Map
-           java.io.File
-           [clojure.lang IDeref IFn]))
+           [java.io File InputStream]
+           [clojure.lang IDeref IFn ISeq]))
 
 (defmulti render
   "Given the request map and an arbitrary value x, turn x into a valid HTTP
@@ -27,5 +27,11 @@
 
 (defmethod render File [_ file]
   {:status 200, :headers {}, :body file})
+
+(defmethod render ISeq [_ coll]
+  {:status 200, :headers {}, :body coll})
+
+(defmethod render InputStream [_ stream]
+  {:status 200, :headers {}, :body stream})
 
 (prefer-method render Map IFn)
