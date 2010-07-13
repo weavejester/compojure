@@ -39,7 +39,7 @@
   [request bindings body]
   (let [[args [_ more]] (split-with #(not= % '&) bindings)]
     `(let [{:strs ~(vec args)} (~request :params)
-          ~@(if more [more `(dissoc (~request :params) ~@(map keyword args))])]
+          ~@(if more [more `(dissoc (~request :params) ~@(map str args))])]
        ~@body)))
 
 (defmacro bind-request

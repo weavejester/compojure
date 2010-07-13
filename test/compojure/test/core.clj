@@ -13,17 +13,27 @@
        (is (= x "bar"))
        (is (= y "baz"))
        nil)
-    {:request-method :get
-     :uri "/foo"
-     :params {"x" "bar", "y" "baz"}}))
+     {:request-method :get
+      :uri "/foo"
+      :params {"x" "bar", "y" "baz"}}))
+
+  (testing "vector '& more' arguments"
+    ((GET "/:x" [x y & more]
+       (is (= x "foo"))
+       (is (= y "bar"))
+       (is (= more {"z" "baz"}))
+       nil)
+     {:request-method :get
+      :uri "/foo"
+      :params {"y" "bar", "z" "baz"}}))
   
   (testing "map arguments"
     ((GET "/foo" {params :params}
        (is (= (params {:x "a", :y "b"})))
        nil)
-    {:request-method :get
-     :uri "/foo"
-     :params {"x" "a", "y" "b"}})))
+     {:request-method :get
+      :uri "/foo"
+      :params {"x" "a", "y" "b"}})))
 
 (deftest route-matching
   (testing "_method parameter"
