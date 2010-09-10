@@ -1,6 +1,7 @@
 (ns compojure.core
   "A concise syntax for generating Ring handlers."
-  (:use [ring.middleware params cookies]
+  (:use clojure.contrib.def
+        [ring.middleware params cookies]
         clout.core
         compojure.response))
 
@@ -70,20 +71,12 @@
       (fn [request]
         (some #(% request) handlers)))))
 
-(defn- apply-doc
-  "Return a symbol and body with an optional docstring applied."
-  [name doc? body]
-  (if (string? doc?)
-    (list* (vary-meta name assoc :doc doc?) body)
-    (list* name doc? body)))
-
 (defmacro defroutes
-  "Define a Ring handler function from a sequence of routes. Takes an optional
-  doc-string."
-  [name doc? & routes]
-  (let [[name & routes] (apply-doc name doc? routes)]
-   `(def ~name
-      (routes ~@routes))))
+  "Define a Ring handler function from a sequence of routes. The name may be
+  optionally be followed by a doc-string and metadata map."
+  [name & routes]
+  (let [[name routes] (name-with-attributes name routes)]
+   `(def ~name (routes ~@routes))))
 
 (defmacro GET "Generate a GET route."
   [path args & body]
