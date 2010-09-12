@@ -22,7 +22,7 @@
 (extend-type Map
   Renderable
   (render [this _]
-    (merge {:status 200, :headers {}, :body ""} m)))
+    (merge {:status 200, :headers {}, :body ""} this)))
 
 (extend-type IFn
   Renderable
