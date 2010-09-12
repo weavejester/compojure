@@ -1,5 +1,6 @@
 (ns compojure.response
   "Methods for generating Ring response maps"
+  (:use [ring.util.response :only (response header)])
   (:import java.util.Map
            [java.io File InputStream]
            [clojure.lang IDeref IFn ISeq]))
@@ -15,14 +16,13 @@
 (extend-type String
   Renderable
   (render [this _]
-    {:status  200
-     :headers {"Content-Type" "text/html"}
-     :body    this}))
+    (-> (response this)
+        (header "Content-Type" "text/html"))))
 
 (extend-type Map
   Renderable
   (render [this _]
-    (merge {:status 200, :headers {}, :body ""} this)))
+    (merge (response "") this)))
 
 (extend-type IFn
   Renderable
@@ -36,14 +36,12 @@
 
 (extend-type File
   Renderable
-  (render [this _]
-    {:status 200, :headers {}, :body file}))
+  (render [this _] (response this)))
 
 (extend-type ISeq
   Renderable
-  (render [this _]
-    {:status 200, :headers {}, :body coll}))
+  (render [this _] (response this)))
 
 (extend-type InputStream
-  (render [this _]
-    {:status 200, :headers {}, :body stream}))
+  Renderable
+  (render [this _] (response this)))
