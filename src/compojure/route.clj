@@ -20,10 +20,10 @@
 (defn resources
   "A route for serving resources on the classpath. Accepts the following
   keys:
-    :root - the root prefix to get the resources from. Defaults to 'public'."
+    :root - the root prefix to get the resources from. Defaults to '/public'."
   [path & [options]]
   (GET (add-wildcard path) {{resource-path "*"} :params}
-    (let [options (merge {:root "public"} options)]
+    (let [options (merge {:root "/public"} options)]
       (resource-response resource-path options))))
 
 (defn not-found
