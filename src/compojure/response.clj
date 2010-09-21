@@ -1,37 +1,47 @@
 (ns compojure.response
   "Methods for generating Ring response maps"
+  (:use [ring.util.response :only (response header)])
   (:import java.util.Map
            [java.io File InputStream]
            [clojure.lang IDeref IFn ISeq]))
 
-(defmulti render
-  "Given the request map and an arbitrary value x, turn x into a valid HTTP
-  response map. Dispatches on the type of x."
-  (fn [_ x] (type x)))
+(defprotocol Renderable
+  (render [this request]
+    "Render the object into a form suitable for the given request map."))
 
-(defmethod render nil [_ _] nil)
+(extend-type nil
+  Renderable
+  (render [_ _] nil))
 
-(defmethod render String [_ html]
-  {:status  200
-   :headers {"Content-Type" "text/html"}
-   :body    html})
+(extend-type String
+  Renderable
+  (render [this _]
+    (-> (response this)
+        (header "Content-Type" "text/html"))))
 
-(defmethod render Map [_ m]
-  (merge {:status 200, :headers {}, :body ""} m))
+(extend-type Map
+  Renderable
+  (render [this _]
+    (merge (response "") this)))
 
-(defmethod render IFn [request handler]
-  (render request (handler request)))
+(extend-type IFn
+  Renderable
+  (render [this request]
+    (render (this request) request)))
 
-(defmethod render IDeref [request ref-like]
-  (render request (deref ref-like)))
+(extend-type IDeref
+  Renderable
+  (render [this request]
+    (render (deref this) request)))
 
-(defmethod render File [_ file]
-  {:status 200, :headers {}, :body file})
+(extend-type File
+  Renderable
+  (render [this _] (response this)))
 
-(defmethod render ISeq [_ coll]
-  {:status 200, :headers {}, :body coll})
+(extend-type ISeq
+  Renderable
+  (render [this _] (response this)))
 
-(defmethod render InputStream [_ stream]
-  {:status 200, :headers {}, :body stream})
-
-(prefer-method render Map IFn)
+(extend-type InputStream
+  Renderable
+  (render [this _] (response this)))
