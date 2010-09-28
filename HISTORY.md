@@ -1,3 +1,11 @@
+## 0.5.1 (2010-09-28)
+
+* Fixed intermittent render map bug
+
+## 0.5.0 (2010-09-24)
+
+* Updated Ring dependency to 0.3.0
+
 ## 0.4.1 (2010-07-13)
 
 * Fixed '& more' destructuring bug
