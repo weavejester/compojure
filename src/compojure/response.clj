@@ -1,9 +1,8 @@
 (ns compojure.response
   "Methods for generating Ring response maps"
   (:use [ring.util.response :only (response header)])
-  (:import java.util.Map
-           [java.io File InputStream]
-           [clojure.lang IDeref IFn ISeq]))
+  (:import [java.io File InputStream]
+           [clojure.lang APersistentMap IDeref IFn ISeq]))
 
 (defprotocol Renderable
   (render [this request]
@@ -19,7 +18,7 @@
     (-> (response this)
         (header "Content-Type" "text/html"))))
 
-(extend-type Map
+(extend-type APersistentMap
   Renderable
   (render [this _]
     (merge (response "") this)))
