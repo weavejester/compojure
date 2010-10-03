@@ -1,3 +1,8 @@
+## 0.5.2 (2010-10-03)
+
+* Updated Ring dependency to 0.3.1
+* Updated Clout dependency to 0.3.1
+
 ## 0.5.1 (2010-09-28)
 
 * Fixed intermittent render map bug
