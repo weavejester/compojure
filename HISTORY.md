@@ -1,3 +1,7 @@
+## 0.5.3 (2010-11-16)
+
+* Updated Ring dependency to 0.3.4
+
 ## 0.5.2 (2010-10-03)
 
 * Updated Ring dependency to 0.3.1
