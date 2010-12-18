@@ -71,6 +71,7 @@
   [& handlers]
   (-> (fn [req] (some #(% req) handlers))
       wrap-keyword-params
+      wrap-nested-params
       wrap-params
       wrap-cookies))
 

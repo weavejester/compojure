@@ -41,20 +41,31 @@
           route (PUT "/foo" [] resp)]
       (is (= (route req) resp))))
 
-  (testing "custom regexes"
+  (testing "custom regular expressions"
     (expect [route-compile
               (has-args ["/foo/:id" {:id "[0-9]+"}]
                 (times 1))]
       (eval `(GET ["/foo/:id" :id "[0-9]+"] [])))))
 
 (deftest routes-test
-  ((routes
-    (GET "/:x" [x y & more]
-      (is (= x "foo"))
-      (is (= y "bar"))
-      (is (= more {:z "baz"}))
-      nil))
-   (request :get "/foo" {:y "bar", :z "baz"})))
+  (testing "keyword parameters"
+    ((routes
+      (GET "/:x" [x y & more]
+        (is (= x "foo"))
+        (is (= y "bar"))
+        (is (= more {:z "baz"}))
+        nil))
+     (request :get "/foo" {:y "bar", :z "baz"})))
+  (testing "nested parameters"
+    ((routes
+      (GET "/" [x y]
+        (is (= x {:a "1", :b "2"}))
+        (is (= y ["3" "4"]))
+        nil))
+     (request :get "/" [["x[a]" "1"]
+                        ["x[b]" "2"]
+                        ["y[]" "3"]
+                        ["y[]" "4"]]))))
 
 (deftest wrap
   (testing "wrap function"
