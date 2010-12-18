@@ -15,23 +15,23 @@
        (is (= y "baz"))
        nil)
      (-> (request :get "/foo")
-         (assoc :params {"x" "bar", "y" "baz"}))))
+         (assoc :params {:x "bar", :y "baz"}))))
 
   (testing "vector '& more' arguments"
     ((GET "/:x" [x y & more]
        (is (= x "foo"))
        (is (= y "bar"))
-       (is (= more {"z" "baz"}))
+       (is (= more {:z "baz"}))
        nil)
      (-> (request :get "/foo")
-         (assoc :params {"y" "bar", "z" "baz"}))))
+         (assoc :params {:y "bar", :z "baz"}))))
   
   (testing "map arguments"
     ((GET "/foo" {params :params}
        (is (= (params {:x "a", :y "b"})))
        nil)
      (-> (request :get "/foo")
-         (assoc :params {"x" "a", "y" "b"})))))
+         (assoc :params {:x "a", :y "b"})))))
 
 (deftest route-matching
   (testing "_method parameter"
@@ -46,6 +46,15 @@
               (has-args ["/foo/:id" {:id "[0-9]+"}]
                 (times 1))]
       (eval `(GET ["/foo/:id" :id "[0-9]+"] [])))))
+
+(deftest routes-test
+  ((routes
+    (GET "/:x" [x y & more]
+      (is (= x "foo"))
+      (is (= y "bar"))
+      (is (= more {:z "baz"}))
+      nil))
+   (request :get "/foo" {:y "bar", :z "baz"})))
 
 (deftest wrap
   (testing "wrap function"

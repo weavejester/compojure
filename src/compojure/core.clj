@@ -1,9 +1,12 @@
 (ns compojure.core
   "A concise syntax for generating Ring handlers."
   (:use clojure.contrib.def
-        [ring.middleware params cookies]
         clout.core
-        compojure.response))
+        compojure.response
+        [ring.middleware params
+                         keyword-params
+                         nested-params
+                         cookies]))
 
 (defn- method-matches
   "True if this request matches the supplied method."
@@ -20,11 +23,11 @@
   [route]
   (cond
     (string? route)
-      (route-compile route)
+      `(route-compile ~route)
     (vector? route)
-      (route-compile
-        (first route)
-        (apply hash-map (rest route)))
+      `(route-compile
+        ~(first route)
+        ~(apply hash-map (rest route)))
     :else
       `(if (string? ~route)
          (route-compile ~route)
@@ -39,8 +42,8 @@
   "Create the bindings for a vector of parameters."
   [request bindings body]
   (let [[args [_ more]] (split-with #(not= % '&) bindings)]
-    `(let [{:strs ~(vec args)} (~request :params)
-          ~@(if more [more `(dissoc (~request :params) ~@(map str args))])]
+    `(let [{:keys ~(vec args)} (~request :params)
+          ~@(if more [more `(dissoc (~request :params) ~@(map keyword args))])]
        ~@body)))
 
 (defmacro bind-request
@@ -66,10 +69,10 @@
 (defn routes
   "Create a Ring handler by combining several handlers into one."
   [& handlers]
-  (wrap-cookies
-    (wrap-params
-      (fn [request]
-        (some #(% request) handlers)))))
+  (-> (fn [req] (some #(% req) handlers))
+      wrap-keyword-params
+      wrap-params
+      wrap-cookies))
 
 (defmacro defroutes
   "Define a Ring handler function from a sequence of routes. The name may be
