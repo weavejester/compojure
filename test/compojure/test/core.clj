@@ -1,5 +1,6 @@
 (ns compojure.test.core
   (:use clojure.test
+        ring.mock.request
         clojure.contrib.mock.test-adapter
         clojure.contrib.with-ns
         compojure.core
@@ -13,9 +14,8 @@
        (is (= x "bar"))
        (is (= y "baz"))
        nil)
-     {:request-method :get
-      :uri "/foo"
-      :params {"x" "bar", "y" "baz"}}))
+     (-> (request :get "/foo")
+         (assoc :params {"x" "bar", "y" "baz"}))))
 
   (testing "vector '& more' arguments"
     ((GET "/:x" [x y & more]
@@ -23,23 +23,20 @@
        (is (= y "bar"))
        (is (= more {"z" "baz"}))
        nil)
-     {:request-method :get
-      :uri "/foo"
-      :params {"y" "bar", "z" "baz"}}))
+     (-> (request :get "/foo")
+         (assoc :params {"y" "bar", "z" "baz"}))))
   
   (testing "map arguments"
     ((GET "/foo" {params :params}
        (is (= (params {:x "a", :y "b"})))
        nil)
-     {:request-method :get
-      :uri "/foo"
-      :params {"x" "a", "y" "b"}})))
+     (-> (request :get "/foo")
+         (assoc :params {"x" "a", "y" "b"})))))
 
 (deftest route-matching
   (testing "_method parameter"
-    (let [req  {:request-method :post
-                :form-params {"_method" "PUT"}
-                :uri "/foo"}
+    (let [req (-> (request :post "/foo")
+                  (assoc :form-params {"_method" "PUT"}))
           resp {:status 200, :headers {}, :body "bar"}
           route (PUT "/foo" [] resp)]
       (is (= (route req) resp))))
