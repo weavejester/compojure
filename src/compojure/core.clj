@@ -122,12 +122,14 @@
         kw)))
 
 (defmacro wrap!
-  "Wrap a handler in middleware functions. Uses the same syntax as the ->
+  "DEPRECATED: Use '->' instead.
+  Wrap a handler in middleware functions. Uses the same syntax as the ->
   macro. Additionally, keywords may be used to denote a leading 'wrap-'.
   e.g.
     (wrap! foo (:session cookie-store))
     => (wrap! foo (wrap-session cookie-store))
     => (def foo (wrap-session foo cookie-store))"
+  {:deprecated "0.6.0"}
   [handler & funcs]
   (let [funcs (map keyword->middleware funcs)]
     `(alter-var-root
