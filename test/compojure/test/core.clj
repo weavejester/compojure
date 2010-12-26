@@ -25,6 +25,16 @@
        nil)
      (-> (request :get "/foo")
          (assoc :params {:y "bar", :z "baz"}))))
+
+  (testing "vector ':as request' arguments"
+    (let [req (-> (request :get "/foo")
+                  (assoc :params {:y "bar"}))]
+      ((GET "/:x" [x :as r]
+            (is (= x "foo"))
+            (is (= (dissoc r :params :route-params)
+                   (dissoc req :params)))
+            nil)
+       req)))
   
   (testing "map arguments"
     ((GET "/foo" {params :params}

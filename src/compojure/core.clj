@@ -38,13 +38,27 @@
   [request params]
   (merge-with merge request {:route-params params, :params params}))
 
-(defn- param-vector-bindings
+(defn- assoc-&-binding [binds req sym]
+  (assoc binds sym `(dissoc (:params ~req) ~@(map keyword (keys binds)))))
+
+(defn- assoc-symbol-binding [binds req sym]
+  (assoc binds sym `(get-in ~req [:params ~(keyword sym)])))
+
+(defn- vector-bindings
   "Create the bindings for a vector of parameters."
-  [request bindings body]
-  (let [[args [_ more]] (split-with #(not= % '&) bindings)]
-    `(let [{:keys ~(vec args)} (~request :params)
-          ~@(if more [more `(dissoc (~request :params) ~@(map keyword args))])]
-       ~@body)))
+  [args req]
+  (loop [args args, binds {}]
+    (if-let [sym (first args)]
+      (cond
+        (= '& sym)
+          (recur (nnext args) (assoc-&-binding binds req (second args)))
+        (= :as sym)
+          (recur (nnext args) (assoc binds (second args) req))
+        (symbol? sym)
+          (recur (next args) (assoc-symbol-binding binds req sym))
+        :else
+          (throw (Exception. (str "Unexpected binding: " sym))))
+      (mapcat identity binds))))
 
 (defmacro bind-request
   "Bind a request to a collection of symbols. The collection can be a Clojure
@@ -52,7 +66,7 @@
   parameter bindings."
   [request bindings & body]
   (if (vector? bindings)
-    (param-vector-bindings request bindings body)
+    `(let [~@(vector-bindings bindings request)] ~@body)
     `(let [~bindings ~request] ~@body)))
 
 (defn- compile-route
