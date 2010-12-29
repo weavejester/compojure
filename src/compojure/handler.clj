@@ -6,6 +6,12 @@
                          cookies
                          session]))
 
+(defn- with-opts
+  [routes middleware opts]
+  (if opts
+    (middleware routes opts)
+    (middleware routes)))
+
 (defn api
   "Create a handler suitable for a web API."
   [routes]
@@ -16,7 +22,7 @@
 
 (defn site
   "Create a handler suitable for a standard website."
-  [routes]
+  [routes & [opts]]
   (-> (api routes)
-      wrap-multipart-params
-      wrap-session))
+      (wrap-multipart-params)
+      (with-opts wrap-session (:session opts))))
