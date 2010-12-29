@@ -1,6 +1,6 @@
 (ns compojure.core
   "A concise syntax for generating Ring handlers."
-  (:use clojure.contrib.def
+  (:use [clojure.contrib.def :only (name-with-attributes)]
         clout.core
         compojure.response))
 
