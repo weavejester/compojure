@@ -1,4 +1,5 @@
 (ns compojure.handler
+  "Functions to create Ring handlers from routes."
   (:use [ring.middleware params
                          keyword-params
                          nested-params
