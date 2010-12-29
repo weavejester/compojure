@@ -1,8 +1,9 @@
 (ns compojure.core
   "A concise syntax for generating Ring handlers."
-  (:use [clojure.contrib.def :only (name-with-attributes)]
-        clout.core
-        compojure.response))
+  (:require [clojure.string :as str])
+  (:use clout.core
+        compojure.response
+        [clojure.contrib.def :only (name-with-attributes)]))
 
 (defn- method-matches
   "True if this request matches the supplied method."
@@ -11,7 +12,7 @@
         form-method    (get-in request [:form-params "_method"])]
     (or (nil? method)
         (if (and form-method (= request-method :post))
-          (= (.toUpperCase (name method)) form-method)
+          (= (str/upper-case (name method)) form-method)
           (= method request-method)))))
 
 (defn- prepare-route
@@ -117,20 +118,21 @@
   [path args & body]
   (compile-route nil path args body))
 
-(defn- keyword->middleware
+(defn- middleware-sym [x]
+  (symbol (namespace x) (str "wrap-" (name x))))
+
+(defn- ->middleware
   "Turn a keyword into a wrapper function symbol.
   e.g. :test => wrap-test
        (:test x) => (wrap-test x)"
   [kw]
-  (letfn [(mw-sym [x]
-            (symbol (namespace x) (str "wrap-" (name x))))]
-    (cond
-      (keyword? kw)
-        (mw-sym kw)
-      (and (seq? kw) (keyword? (first kw)))
-        (cons (mw-sym (first kw)) (rest kw))
-      :else
-        kw)))
+  (cond
+    (keyword? kw)
+      (middleware-sym kw)
+    (and (seq? kw) (keyword? (first kw)))
+      (cons (middleware-sym (first kw)) (rest kw))
+    :else
+      kw))
 
 (defmacro wrap!
   "DEPRECATED: Use '->' instead.
@@ -142,7 +144,7 @@
     => (def foo (wrap-session foo cookie-store))"
   {:deprecated "0.6.0"}
   [handler & funcs]
-  (let [funcs (map keyword->middleware funcs)]
+  (let [funcs (map ->middleware funcs)]
     `(alter-var-root
        (var ~handler)
        (constantly (-> ~handler ~@funcs)))))
