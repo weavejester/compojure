@@ -13,7 +13,7 @@
   keys:
     :root - the root path where the files are stored. Defaults to 'public'."
   [path & [options]]
-  (GET (add-wildcard path) {{file-path "*"} :params}
+  (GET (add-wildcard path) {{file-path :*} :route-params}
     (let [options (merge {:root "public"} options)]
       (file-response file-path options))))
 
@@ -22,7 +22,7 @@
   keys:
     :root - the root prefix to get the resources from. Defaults to '/public'."
   [path & [options]]
-  (GET (add-wildcard path) {{resource-path "*"} :params}
+  (GET (add-wildcard path) {{resource-path :*} :route-params}
     (let [options (merge {:root "/public"} options)]
       (resource-response resource-path options))))
 
