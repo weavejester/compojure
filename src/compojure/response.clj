@@ -1,6 +1,6 @@
 (ns compojure.response
   "Methods for generating Ring response maps"
-  (:use [ring.util.response :only (response header)])
+  (:use [ring.util.response :only (response content-type)])
   (:import [java.io File InputStream]
            [clojure.lang APersistentMap IDeref IFn ISeq]))
 
@@ -8,39 +8,25 @@
   (render [this request]
     "Render the object into a form suitable for the given request map."))
 
-(extend-type nil
-  Renderable
-  (render [_ _] nil))
-
-(extend-type String
-  Renderable
+(extend-protocol Renderable
+  nil
+  (render [_ _] nil)
+  String
   (render [this _]
     (-> (response this)
-        (header "Content-Type" "text/html"))))
-
-(extend-type APersistentMap
-  Renderable
+        (content-type "text/html")))
+  APersistentMap
   (render [this _]
-    (merge (response "") this)))
-
-(extend-type IFn
-  Renderable
+    (merge (response "") this))
+  IFn
   (render [this request]
-    (render (this request) request)))
-
-(extend-type IDeref
-  Renderable
+    (render (this request) request))
+  IDeref
   (render [this request]
-    (render (deref this) request)))
-
-(extend-type File
-  Renderable
-  (render [this _] (response this)))
-
-(extend-type ISeq
-  Renderable
-  (render [this _] (response this)))
-
-(extend-type InputStream
-  Renderable
+    (render (deref this) request))
+  File
+  (render [this _] (response this))
+  ISeq
+  (render [this _] (response this))
+  InputStream
   (render [this _] (response this)))
