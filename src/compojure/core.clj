@@ -80,10 +80,15 @@
              (bind-request request# ~bindings
                (render (do ~@body) request#))))))))
 
+(defn routing
+  "Apply a list of routes to a Ring request map."
+  [request & handlers]
+  (some #(% request) handlers))
+
 (defn routes
   "Create a Ring handler by combining several handlers into one."
   [& handlers]
-  (-> (fn [req] (some #(% req) handlers))
+  (-> #(apply routing % handlers)
       wrap-keyword-params
       wrap-nested-params
       wrap-params

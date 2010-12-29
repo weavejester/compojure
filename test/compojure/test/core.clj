@@ -50,14 +50,25 @@
           resp {:status 200, :headers {}, :body "bar"}
           route (PUT "/foo" [] resp)]
       (is (= (route req) resp))))
-
+  
   (testing "custom regular expressions"
     (expect [route-compile
               (has-args ["/foo/:id" {:id "[0-9]+"}]
                 (times 1))]
       (eval `(GET ["/foo/:id" :id "[0-9]+"] [])))))
 
+(deftest routing-test
+  (routing (request :get "/bar")
+    (GET "/foo" [] (is false) nil)
+    (GET "/bar" [] (is true) nil)))
+
 (deftest routes-test
+  (testing "multiple routes"
+    ((routes
+       (GET "/foo" [] (is false) nil)
+       (GET "/bar" [] (is true) nil))
+     (request :get "/bar")))
+    
   (testing "keyword parameters"
     ((routes
       (GET "/:x" [x y & more]
@@ -66,6 +77,7 @@
         (is (= more {:z "baz"}))
         nil))
      (request :get "/foo" {:y "bar", :z "baz"})))
+  
   (testing "nested parameters"
     ((routes
       (GET "/" [x y]
