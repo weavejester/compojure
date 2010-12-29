@@ -63,31 +63,10 @@
     (GET "/bar" [] (is true) nil)))
 
 (deftest routes-test
-  (testing "multiple routes"
-    ((routes
-       (GET "/foo" [] (is false) nil)
-       (GET "/bar" [] (is true) nil))
-     (request :get "/bar")))
-    
-  (testing "keyword parameters"
-    ((routes
-      (GET "/:x" [x y & more]
-        (is (= x "foo"))
-        (is (= y "bar"))
-        (is (= more {:z "baz"}))
-        nil))
-     (request :get "/foo" {:y "bar", :z "baz"})))
-  
-  (testing "nested parameters"
-    ((routes
-      (GET "/" [x y]
-        (is (= x {:a "1", :b "2"}))
-        (is (= y ["3" "4"]))
-        nil))
-     (request :get "/" [["x[a]" "1"]
-                        ["x[b]" "2"]
-                        ["y[]" "3"]
-                        ["y[]" "4"]]))))
+  ((routes
+    (GET "/foo" [] (is false) nil)
+    (GET "/bar" [] (is true) nil))
+   (request :get "/bar")))
 
 (deftest wrap
   (testing "wrap function"

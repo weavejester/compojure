@@ -2,11 +2,7 @@
   "A concise syntax for generating Ring handlers."
   (:use clojure.contrib.def
         clout.core
-        compojure.response
-        [ring.middleware params
-                         keyword-params
-                         nested-params
-                         cookies]))
+        compojure.response))
 
 (defn- method-matches
   "True if this request matches the supplied method."
@@ -88,11 +84,7 @@
 (defn routes
   "Create a Ring handler by combining several handlers into one."
   [& handlers]
-  (-> #(apply routing % handlers)
-      wrap-keyword-params
-      wrap-nested-params
-      wrap-params
-      wrap-cookies))
+  #(apply routing % handlers))
 
 (defmacro defroutes
   "Define a Ring handler function from a sequence of routes. The name may be
