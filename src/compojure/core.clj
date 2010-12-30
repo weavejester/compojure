@@ -118,6 +118,29 @@
   [path args & body]
   (compile-route nil path args body))
 
+(defn- remove-suffix [path suffix]
+  (subs path (- (count path) (count suffix))))
+
+(defn- set-context [request]
+  (let [uri     (:uri request)
+        path    (:path-info request uri)
+        context (or (:context request) "")
+        subpath (->> request :route-params :* (str "/"))]
+    (assoc request
+      :path-info subpath
+      :context   (remove-suffix uri subpath))))
+
+(defmacro context
+  [path args & routes]
+  `(let [route# ~(prepare-route (str path "/*"))]
+     (fn [request#]
+       (if-let [route-params# (route-matches route# request#)]
+         (let [request# (-> request#
+                            (#'assoc-route-params route-params#)
+                            (#'set-context))]
+           (bind-request request# ~args
+             (routing request# ~@routes)))))))
+
 (defn- middleware-sym [x]
   (symbol (namespace x) (str "wrap-" (name x))))
 

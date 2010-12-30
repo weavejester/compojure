@@ -68,7 +68,16 @@
     (GET "/bar" [] (is true) nil))
    (request :get "/bar")))
 
-(deftest wrap
+(deftest context-test
+  (let [rs (context "/foo/:id" [id]
+             (GET "" [] "root")
+             (GET "/id" [] id)
+             (ANY "*" [] "rest"))]
+    (are [req body] (= (:body (rs req)) body)
+      (request :get "/foo/10/id")  "10"
+      (request :get "/foo/10/bar") "rest")))
+
+(deftest wrap-test
   (testing "wrap function"
     (defn func1 [x] (inc x))
     (let [wrapper (fn [f] (fn [x] (f (inc x))))]
