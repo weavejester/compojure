@@ -119,20 +119,30 @@
   (compile-route nil path args body))
 
 (defn- remove-suffix [path suffix]
-  (subs path (- (count path) (count suffix))))
+  (subs path 0 (- (count path) (count suffix))))
 
 (defn- set-context [request]
   (let [uri     (:uri request)
         path    (:path-info request uri)
         context (or (:context request) "")
-        subpath (->> request :route-params :* (str "/"))]
+        subpath (-> request :route-params :_context_)]
     (assoc request
-      :path-info subpath
+      :path-info (if (= subpath "") "/" subpath)
       :context   (remove-suffix uri subpath))))
+
+(defn- context-route [route]
+  (let [re-context {:_context_ #"|/.*"}]
+    (cond
+      (string? route)
+       `(route-compile ~(str route ":_context_") ~re-context)
+     (vector? route)
+      `(route-compile
+        ~(str (first route) ":_context_")
+        ~(merge (apply hash-map (rest route)) re-context)))))
 
 (defmacro context
   [path args & routes]
-  `(let [route# ~(prepare-route (str path "/*"))]
+  `(let [route# ~(context-route path)]
      (fn [request#]
        (if-let [route-params# (route-matches route# request#)]
          (let [request# (-> request#

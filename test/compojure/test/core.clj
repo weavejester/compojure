@@ -69,13 +69,33 @@
    (request :get "/bar")))
 
 (deftest context-test
-  (let [rs (context "/foo/:id" [id]
-             (GET "" [] "root")
-             (GET "/id" [] id)
-             (ANY "*" [] "rest"))]
-    (are [req body] (= (:body (rs req)) body)
-      (request :get "/foo/10/id")  "10"
-      (request :get "/foo/10/bar") "rest")))
+  (testing "matching"
+    (let [handler (context "/foo/:id" [id] identity)]
+      (is (map? (handler (request :get "/foo/10"))))
+      (is (nil? (handler (request :get "/bar/10"))))))
+  (testing "context key"
+    (let [handler (context "/foo/:id" [id] :context)]
+      (are [url ctx] (= (handler (request :get url)) ctx)
+        "/foo/10"     "/foo/10"
+        "/foo/10/bar" "/foo/10"
+        "/bar/10"     nil)))
+  (testing "path-info key"
+    (let [handler (context "/foo/:id" [id] :path-info)]
+      (are [url ctx] (= (handler (request :get url)) ctx)
+        "/foo/10"     "/"
+        "/foo/10/bar" "/bar"
+        "/bar/10"     nil)))
+  (testing "routes"
+    (let [handler (context "/foo/:id" [id]
+                    (GET "/" [] "root")
+                    (GET "/id" [] id)
+                    (GET "/x/:x" [x] x))]
+      (are [url body] (= (:body (handler (request :get url)))
+                         body)
+        "/foo/10"    "root"
+        "/foo/10/"   "root"   
+        "/foo/10/id" "10"
+        "/foo/1/x/2" "2"))))
 
 (deftest wrap-test
   (testing "wrap function"
