@@ -1,3 +1,13 @@
+## 0.6.0 (...)
+
+* Updated Ring dependency to 0.3.5
+* Updated Clout dependency to 0.4.0
+* Added context macro
+* Added routing function
+* Removed default middleware from routes and defroutes
+* Added compojure.handler namespace
+* Deprecated wrap! macro
+
 ## 0.5.3 (2010-11-16)
 
 * Updated Ring dependency to 0.3.4
