@@ -121,33 +121,32 @@
 (defn- remove-suffix [path suffix]
   (subs path 0 (- (count path) (count suffix))))
 
-(defn- set-context [request]
+(defn- set-context [request params]
   (let [uri     (:uri request)
         path    (:path-info request uri)
         context (or (:context request) "")
-        subpath (-> request :route-params :_context_)]
-    (assoc request
-      :path-info (if (= subpath "") "/" subpath)
-      :context   (remove-suffix uri subpath))))
+        subpath (params :__path-info)]
+    (-> request
+        (assoc :path-info (if (= subpath "") "/" subpath))
+        (assoc :context (remove-suffix uri subpath))
+        (assoc-route-params (dissoc params :__path-info)))))
 
 (defn- context-route [route]
-  (let [re-context {:_context_ #"|/.*"}]
+  (let [re-context {:__path-info #"|/.*"}]
     (cond
       (string? route)
-       `(route-compile ~(str route ":_context_") ~re-context)
-     (vector? route)
-      `(route-compile
-        ~(str (first route) ":_context_")
-        ~(merge (apply hash-map (rest route)) re-context)))))
+       `(route-compile ~(str route ":__path-info") ~re-context)
+      (vector? route)
+       `(route-compile
+         ~(str (first route) ":__path-info")
+         ~(merge (apply hash-map (rest route)) re-context)))))
 
 (defmacro context
   [path args & routes]
   `(let [route# ~(context-route path)]
      (fn [request#]
        (if-let [route-params# (route-matches route# request#)]
-         (let [request# (-> request#
-                            (#'assoc-route-params route-params#)
-                            (#'set-context))]
+         (let [request# (#'set-context request# route-params#)]
            (bind-request request# ~args
              (routing request# ~@routes)))))))
 
