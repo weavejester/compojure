@@ -57,11 +57,7 @@
           (throw (Exception. (str "Unexpected binding: " sym))))
       (mapcat identity binds))))
 
-(defmacro bind-request
-  "Bind a request to a collection of symbols. The collection can be a Clojure
-  map destructuring binding for the request map, or it can be a vector of
-  parameter bindings."
-  [request bindings & body]
+(defmacro bind-request [request bindings & body]
   (if (vector? bindings)
     `(let [~@(vector-bindings bindings request)] ~@body)
     `(let [~bindings ~request] ~@body)))
