@@ -3,3 +3,4 @@ classes
 *.jar
 pom.xml
 _site
+autodoc
