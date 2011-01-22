@@ -18,6 +18,11 @@ Here's a small web application written using Compojure and
 
     (run-jetty main-routes {:port 8080})
 
+Documentation
+-------------
+
+* [Wiki](https://github.com/weavejester/compojure/wiki)
+* [API Docs](http://weavejester.github.com/compojure)
 
 Installing
 ----------
