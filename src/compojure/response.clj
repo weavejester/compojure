@@ -30,3 +30,21 @@
   (render [this _] (response this))
   InputStream
   (render [this _] (response this)))
+
+(deftype Resource [path]
+  Renderable
+  (render [_ request]
+    (let [path (.. path (replace "//" "/")
+                        (replaceAll "^/" ""))]
+      (response
+        (if-let [context (:servlet-context request)]
+          (.getResourceAsStream context path)
+          (.. Thread
+              currentThread
+              getContextClassLoader
+              (getResourceAsStream path)))))))
+
+(defn resource
+  "Create a resource response."
+  [^String path]
+  (Resource. path))
