@@ -23,6 +23,18 @@ Documentation
 * [Wiki](https://github.com/weavejester/compojure/wiki)
 * [API Docs](http://weavejester.github.com/compojure)
 
+Breaking Changes
+----------------
+
+As of version 0.6.0, Compojure no longer adds default middleware to
+routes. This means you must explicitly add the `wrap-params` and
+`wrap-cookies` middleware to your routes.
+
+To make this a little easier, the [compojure.handler][1] namespace
+provides functions that add common middleware functions to your routes. 
+
+[1]: http://weavejester.github.com/compojure/compojure.handler-api.html
+
 Installing
 ----------
 
@@ -36,7 +48,6 @@ To build Compojure from source, run the following commands:
 
     lein deps
     lein jar
-
 
 Mailing List
 ------------
