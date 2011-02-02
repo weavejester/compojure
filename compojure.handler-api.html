@@ -74,8 +74,12 @@ by <span id="author">Unknown</span><br />
   <span id="var-type">function</span><br />
   <pre id="var-usage">Usage: (api routes)
 </pre>
-  <pre id="var-docstr">Create a handler suitable for a web API.</pre>
-  <a href="http://github.com/weavejester/compojure/blobfa9ccbec1e508a45f227e836c2377308673050c4/src/compojure/handler.clj#L16" id="var-source">Source</a>
+  <pre id="var-docstr">Create a handler suitable for a web API. This adds the following
+middleware to your routes:
+  - wrap-params
+  - wrap-nested-params
+  - wrap-keyword-params</pre>
+  <a href="http://github.com/weavejester/compojure/blob1fac7c2e4f1c13878bf1168edb39644d62d369d6/src/compojure/handler.clj#L15" id="var-source">Source</a>
 </div><div id="var-entry">
   <br />
   <hr />
@@ -83,8 +87,18 @@ by <span id="author">Unknown</span><br />
   <span id="var-type">function</span><br />
   <pre id="var-usage">Usage: (site routes &amp; [opts])
 </pre>
-  <pre id="var-docstr">Create a handler suitable for a standard website.</pre>
-  <a href="http://github.com/weavejester/compojure/blobfa9ccbec1e508a45f227e836c2377308673050c4/src/compojure/handler.clj#L24" id="var-source">Source</a>
+  <pre id="var-docstr">Create a handler suitable for a standard website. This adds the
+following middleware to your routes:
+  - wrap-session
+  - wrap-cookies
+  - wrap-multipart-params
+  - wrap-params
+  - wrap-nested-params
+  - wrap-keyword-params
+
+A map of options may also be provided. These keys are provided:
+  :session - a map of session middleware options</pre>
+  <a href="http://github.com/weavejester/compojure/blob1fac7c2e4f1c13878bf1168edb39644d62d369d6/src/compojure/handler.clj#L27" id="var-source">Source</a>
 </div>
 
 
