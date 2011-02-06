@@ -26,6 +26,15 @@
      (-> (request :get "/foo")
          (assoc :params {:y "bar", :z "baz"}))))
 
+  (testing "string parameter names"
+    ((GET "/:x" [x y & more]
+       (is (= x "foo"))
+       (is (= y "bar"))
+       (is (= more {"z" "baz"}))
+       nil)
+     (-> (request :get "/foo")
+         (assoc :params {"y" "bar", "z" "baz"}))))
+  
   (testing "vector ':as request' arguments"
     (let [req (-> (request :get "/foo")
                   (assoc :params {:y "bar"}))]

@@ -36,10 +36,13 @@
   (merge-with merge request {:route-params params, :params params}))
 
 (defn- assoc-&-binding [binds req sym]
-  (assoc binds sym `(dissoc (:params ~req) ~@(map keyword (keys binds)))))
+  (assoc binds sym `(dissoc (:params ~req)
+                            ~@(map keyword (keys binds))
+                            ~@(map str (keys binds)))))
 
 (defn- assoc-symbol-binding [binds req sym]
-  (assoc binds sym `(get-in ~req [:params ~(keyword sym)])))
+  (assoc binds sym `(get-in ~req [:params ~(keyword sym)]
+                      (get-in ~req [:params ~(str sym)]))))
 
 (defn- vector-bindings
   "Create the bindings for a vector of parameters."
