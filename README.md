@@ -42,7 +42,7 @@ The easiest way to use Compojure in your own projects is via
 [Leiningen](http://github.com/technomancy/leiningen). Add the following
 dependency to your project.clj file:
 
-    [compojure "0.6.0-RC3"]
+    [compojure "0.6.0-RC4"]
 
 To build Compojure from source, run the following commands:
 
