@@ -1,4 +1,4 @@
-## 0.6.0 (...)
+## 0.6.0 (2011-02-13)
 
 * Updated Ring dependency to 0.3.5
 * Updated Clout dependency to 0.4.0
