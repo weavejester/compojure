@@ -5,7 +5,7 @@
     [[org.clojure/clojure "1.2.0"]
      [org.clojure/clojure-contrib "1.2.0"]
      [clout "0.4.0"]
-     [ring/ring-core "0.3.5"]]
+     [ring/ring-core "0.3.7"]]
   :dev-dependencies
     [[ring-mock "0.1.1"]
      [autodoc "0.7.1" :exclusions [org.clojure/clojure

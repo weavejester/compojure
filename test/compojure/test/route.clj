@@ -1,7 +1,6 @@
 (ns compojure.test.route
   (:use clojure.test
-        ring.mock.request
-        [clojure.contrib.io :only (slurp*)])
+        ring.mock.request)
   (:require [compojure.route :as route]))
 
 (deftest not-found-route
@@ -10,7 +9,17 @@
     (is (= (:body response) "foo"))))
 
 (deftest resources-route
-  (let [route    (route/resources "/foo" {:root "/resources"})
+  (let [route    (route/resources "/foo" {:root "resources"})
         response (route (request :get "/foo/test.txt"))]
     (is (= (:status response) 200))
-    (is (= (slurp* (:body response)) "foobar\n"))))
+    (is (= (slurp (:body response)) "foobar\n"))
+    (is (= (get-in response [:headers "Content-Type"])
+           "text/plain"))))
+
+(deftest files-route
+  (let [route    (route/files "/foo" {:root "test/resources"})
+        response (route (request :get "/foo/test.txt"))]
+    (is (= (:status response) 200))
+    (is (= (slurp (:body response)) "foobar\n"))
+    (is (= (get-in response [:headers "Content-Type"])
+           "text/plain"))))
