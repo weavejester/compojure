@@ -1,3 +1,8 @@
+## 0.6.1 (2011-03-05)
+
+* Route for files and resources guess content-type
+* Updated Clout dependency to 0.4.1
+
 ## 0.6.0 (2011-02-13)
 
 * Updated Ring dependency to 0.3.5
