@@ -1,5 +1,5 @@
 (ns compojure.test.response
-  (:use clojure.test)
+  (:use [clojure.test] :reload)
   (:require [compojure.response :as response]))
 
 (deftest response-with-nil
@@ -21,3 +21,8 @@
 (deftest response-with-deref
   (is (= (response/render (future test-response) {})
          test-response)))
+
+(deftest response-resource
+  (let [resource (response/resource "resources/test.txt")
+        response (response/render resource {})]
+    (is (= (slurp (:body response)) "foobar\n"))))
