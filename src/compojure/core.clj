@@ -5,15 +5,37 @@
         compojure.response
         [clojure.contrib.def :only (name-with-attributes)]))
 
-(defn- method-matches
-  "True if this request matches the supplied method."
+(defn- method-matches?
+  "True if this request matches the supplied request method."
   [method request]
   (let [request-method (request :request-method)
         form-method    (get-in request [:form-params "_method"])]
-    (or (nil? method)
-        (if (and form-method (= request-method :post))
-          (= (str/upper-case (name method)) form-method)
-          (= method request-method)))))
+    (if (and form-method (= request-method :post))
+      (= (str/upper-case (name method)) form-method)
+      (= method request-method))))
+
+(defn- if-method
+  "Evaluate the handler if the request method matches."
+  [method handler]
+  (fn [request]
+    (cond
+      (or (nil? method) (method-matches? method request))
+        (handler request)
+      (and (= :get method) (= :head (:request-method request)))
+        (-> (handler request)
+            (dissoc :body)))))
+
+(defn- assoc-route-params
+  "Associate route parameters with the request map."
+  [request params]
+  (merge-with merge request {:route-params params, :params params}))
+
+(defn- if-route
+  "Evaluate the handler if the route matches the request."
+  [route handler]
+  (fn [request]
+    (if-let [params (route-matches route request)]
+      (handler (assoc-route-params request params)))))
 
 (defn- prepare-route
   "Pre-compile the route."
@@ -29,11 +51,6 @@
       `(if (string? ~route)
          (route-compile ~route)
          ~route)))
-
-(defn- assoc-route-params
-  "Associate route parameters with the request map."
-  [request params]
-  (merge-with merge request {:route-params params, :params params}))
 
 (defn- assoc-&-binding [binds req sym]
   (assoc binds sym `(dissoc (:params ~req)
@@ -60,7 +77,7 @@
           (throw (Exception. (str "Unexpected binding: " sym))))
       (mapcat identity binds))))
 
-(defmacro bind-request [request bindings & body]
+(defmacro let-request [[bindings request] & body]
   (if (vector? bindings)
     `(let [~@(vector-bindings bindings request)] ~@body)
     `(let [~bindings ~request] ~@body)))
@@ -68,13 +85,11 @@
 (defn- compile-route
   "Compile a route in the form (method path & body) into a function."
   [method route bindings body]
-  `(let [route# ~(prepare-route route)]
-     (fn [request#]
-       (if (#'method-matches ~method request#)
-         (if-let [route-params# (route-matches route# request#)]
-           (let [request# (#'assoc-route-params request# route-params#)]
-             (bind-request request# ~bindings
-               (render (do ~@body) request#))))))))
+  `(#'if-method ~method
+     (#'if-route ~(prepare-route route)
+       (fn [request#]
+         (let-request [~bindings request#]
+           (render (do ~@body) request#))))))
 
 (defn routing
   "Apply a list of routes to a Ring request map."
@@ -120,15 +135,18 @@
 (defn- remove-suffix [path suffix]
   (subs path 0 (- (count path) (count suffix))))
 
-(defn- set-context [request params]
-  (let [uri     (:uri request)
-        path    (:path-info request uri)
-        context (or (:context request) "")
-        subpath (params :__path-info)]
-    (-> request
-        (assoc :path-info (if (= subpath "") "/" subpath))
-        (assoc :context (remove-suffix uri subpath))
-        (assoc-route-params (dissoc params :__path-info)))))
+(defn- wrap-context [handler]
+  (fn [request]
+    (let [uri     (:uri request)
+          path    (:path-info request uri)
+          context (or (:context request) "")
+          subpath (-> request :route-params :__path-info)]
+      (handler
+       (-> request
+           (assoc :path-info (if (= subpath "") "/" subpath))
+           (assoc :context (remove-suffix uri subpath))
+           (update-in [:params] dissoc :__path-info)
+           (update-in [:route-params] dissoc :__path-info))))))
 
 (defn- context-route [route]
   (let [re-context {:__path-info #"|/.*"}]
@@ -142,12 +160,11 @@
 
 (defmacro context
   [path args & routes]
-  `(let [route# ~(context-route path)]
-     (fn [request#]
-       (if-let [route-params# (route-matches route# request#)]
-         (let [request# (#'set-context request# route-params#)]
-           (bind-request request# ~args
-             (routing request# ~@routes)))))))
+  `(#'if-route ~(context-route path)
+     (#'wrap-context
+       (fn [request#]
+         (let-request [~args request#]
+           (routing request# ~@routes))))))
 
 (defn- middleware-sym [x]
   (symbol (namespace x) (str "wrap-" (name x))))
