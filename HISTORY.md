@@ -1,3 +1,9 @@
+## 0.6.2 (2011-03-13)
+
+* GET routes now handle HEAD requests as well
+* Resource routes now check classpath then servlet context
+* Fixed possible issue with large resource streams
+
 ## 0.6.1 (2011-03-05)
 
 * Route for files and resources guess content-type
