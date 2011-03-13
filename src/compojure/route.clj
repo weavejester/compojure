@@ -35,4 +35,6 @@
   "A route that returns a 404 not found response, with its argument as the
   response body."
   [body]
-  (ANY "*" [] {:status 404, :body body}))
+  (routes
+    (HEAD "*" [] {:status 404})
+    (ANY "*" [] {:status 404, :body body})))
