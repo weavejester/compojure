@@ -3,6 +3,7 @@
   (:require [clojure.string :as str])
   (:use clout.core
         compojure.response
+        [clojure.contrib.core :only (-?>)]
         [clojure.contrib.def :only (name-with-attributes)]))
 
 (defn- method-matches?
@@ -22,8 +23,8 @@
       (or (nil? method) (method-matches? method request))
         (handler request)
       (and (= :get method) (= :head (:request-method request)))
-        (-> (handler request)
-            (dissoc :body)))))
+        (-?> (handler request)
+             (assoc :body nil)))))
 
 (defn- assoc-route-params
   "Associate route parameters with the request map."

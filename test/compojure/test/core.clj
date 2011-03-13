@@ -64,7 +64,7 @@
     (let [resp  {:status 200, :headers {"X-Foo" "foo"}, :body "bar"}
           route (GET "/foo" []  resp)]
       (is (= (route (request :head "/foo"))
-             (dissoc resp :body)))))
+             (assoc resp :body nil)))))
   
   (testing "custom regular expressions"
     (expect [route-compile
