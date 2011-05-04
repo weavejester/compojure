@@ -1,3 +1,8 @@
+## 0.6.3 (2011-05-04)
+
+* Removed dependency on clojure-contrib
+* Updated Ring dependency to 0.3.8
+
 ## 0.6.2 (2011-03-13)
 
 * GET routes now handle HEAD requests as well

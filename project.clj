@@ -1,4 +1,4 @@
-(defproject compojure "0.6.2"
+(defproject compojure "0.6.3"
   :description "A concise web framework for Clojure"
   :url "http://github/weavejester/compojure"
   :dependencies [[org.clojure/clojure "1.2.0"]
