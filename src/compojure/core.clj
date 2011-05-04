@@ -3,8 +3,8 @@
   (:require [clojure.string :as str])
   (:use clout.core
         compojure.response
-        [clojure.contrib.core :only (-?>)]
-        [clojure.contrib.def :only (name-with-attributes)]))
+        [clojure.core.incubator :only (-?>)]
+        [clojure.tools.macro :only (name-with-attributes)]))
 
 (defn- method-matches?
   "True if this request matches the supplied request method."
