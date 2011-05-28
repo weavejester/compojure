@@ -1,7 +1,6 @@
 (ns compojure.route
   (:use compojure.core
-        [compojure.response :only (resource)]
-        [ring.util.response :only (file-response)]
+        [ring.util.response :only (file-response resource-response)]
         [ring.util.codec :only (url-decode)]
         ring.middleware.content-type
         ring.middleware.file-info))
@@ -28,7 +27,8 @@
   [path & [options]]
   (-> (GET (add-wildcard path) {{resource-path :*} :route-params}
         (let [root (:root options "public")]
-          (resource (str root "/" resource-path))))
+          (resource-response (str root "/" resource-path))))
+      (wrap-file-info (:mime-types options))
       (wrap-content-type options)))
 
 (defn not-found

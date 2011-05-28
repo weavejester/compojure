@@ -1,7 +1,7 @@
 (ns compojure.test.route
   (:use clojure.test
         ring.mock.request)
-  (:require [compojure.route :as route]))
+  (:require [compojure.route :as route] :reload))
 
 (deftest not-found-route
   (let [response ((route/not-found "foo") (request :get "/"))]
