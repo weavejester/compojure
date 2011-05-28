@@ -1,6 +1,6 @@
 (defproject compojure "0.6.3"
   :description "A concise web framework for Clojure"
-  :url "http://github/weavejester/compojure"
+  :url "https://github.com/weavejester/compojure"
   :dependencies [[org.clojure/clojure "1.2.0"]
                  [org.clojure/core.incubator "0.1.0"]
                  [org.clojure/tools.macro "0.1.0"]
