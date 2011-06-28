@@ -1,3 +1,7 @@
+## 0.6.4 (2011-06-28)
+
+* Updated Ring dependency to 0.3.10
+
 ## 0.6.3 (2011-05-04)
 
 * Removed dependency on clojure-contrib
