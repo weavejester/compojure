@@ -35,8 +35,9 @@
     - wrap-keyword-params
 
   A map of options may also be provided. These keys are provided:
-    :session - a map of session middleware options"
+    :session   - a map of session middleware options
+    :multipart - a map of multipart-params middleware options"
   [routes & [opts]]
   (-> (api routes)
-      (wrap-multipart-params)
+      (with-opts wrap-multipart-params (:multipart opts))
       (with-opts wrap-session (:session opts))))
