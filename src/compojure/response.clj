@@ -17,7 +17,7 @@
   String
   (render [body _]
     (-> (response body)
-        (content-type "text/html")))
+        (content-type "text/html; charset=utf-8")))
   APersistentMap
   (render [resp-map _]
     (merge (response "") resp-map))
