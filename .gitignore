@@ -4,3 +4,4 @@ classes
 pom.xml
 _site
 autodoc
+.lein-failures
