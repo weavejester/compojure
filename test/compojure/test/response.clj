@@ -7,7 +7,7 @@
 
 (def expected-response
   {:status  200
-   :headers {"Content-Type" "text/html"}
+   :headers {"Content-Type" "text/html; charset=utf-8"}
    :body    "<h1>Foo</h1>"})
 
 (deftest response-test
