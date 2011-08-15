@@ -30,7 +30,8 @@
   File
   (render [file _] (response file))
   ISeq
-  (render [coll _] (response coll))
+  (render [coll _] (-> (response coll)
+                       (content-type "text/html; charset=utf-8")))
   InputStream
   (render [stream _] (response stream))
   URL

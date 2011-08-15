@@ -18,6 +18,12 @@
     (is (= (response/render "<h1>Foo</h1>" {})
            expected-response)))
 
+  (testing "with string seq"
+    (let [response (response/render '("<h1>" "Foo" "</h1>") {})]
+      (is (seq? (:body response)))
+      (is (= (:headers response)
+             {"Content-Type" "text/html; charset=utf-8"}))))
+
   (testing "with handler function"
     (is (= (response/render (constantly expected-response) {})
            expected-response)))
