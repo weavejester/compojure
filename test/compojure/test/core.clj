@@ -111,27 +111,3 @@
         "/foo/10/"   "root"   
         "/foo/10/id" "10"
         "/foo/1/x/2" "2"))))
-
-(deftest wrap-test
-  (testing "wrap function"
-    (defn func1 [x] (inc x))
-    (let [wrapper (fn [f] (fn [x] (f (inc x))))]
-      (wrap! func1 wrapper)
-      (is (= (func1 3) 5))))
-
-  (testing "wrap keyword"
-    (defn func2 [x] (inc x))
-    (defn wrap-test1 [f]
-      (fn [x] (f (* 2 x))))
-    (wrap! func2 :test1)
-    (is (= (func2 3) 7)))
-
-  (testing "wrap namespaced keyword"
-    (defn func3 [x] (inc x))
-    (wrap! func3 :testns/test2)
-    (is (= (func3 3) 10)))
-
-  (testing "wrap function and keyword"
-    (defn func4 [x] (inc x))
-    (wrap! func4 wrap-test1 :test1)
-    (is (= (func4 3) 13))))
