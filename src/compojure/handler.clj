@@ -5,7 +5,8 @@
                          nested-params
                          multipart-params
                          cookies
-                         session]))
+                         session
+                         flash]))
 
 (defn- with-opts [routes middleware opts]
   (if opts
@@ -28,6 +29,7 @@
   "Create a handler suitable for a standard website. This adds the
   following middleware to your routes:
     - wrap-session
+    - wrap-flash
     - wrap-cookies
     - wrap-multipart-params
     - wrap-params
@@ -40,4 +42,5 @@
   [routes & [opts]]
   (-> (api routes)
       (with-opts wrap-multipart-params (:multipart opts))
+      (wrap-flash)
       (with-opts wrap-session (:session opts))))
