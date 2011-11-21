@@ -160,6 +160,14 @@
          ~(merge (apply hash-map (rest route)) re-context)))))
 
 (defmacro context
+  "Give all routes in the form a common path prefix and set of bindings.
+
+  The following example demonstrates defining two routes with a common
+  path prefix ('/user/:id') and a common binding ('id'):
+
+    (context \"/user/:id\" [id]
+      (GET \"/profile\" [] ...)
+      (GET \"/settings\" [] ...))"
   [path args & routes]
   `(#'if-route ~(context-route path)
      (#'wrap-context
