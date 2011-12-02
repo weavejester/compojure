@@ -111,3 +111,12 @@
         "/foo/10/"   "root"   
         "/foo/10/id" "10"
         "/foo/1/x/2" "2"))))
+
+(deftest let-routes-test
+  (let [handler (let-routes [a "foo", b "bar"]
+                  (GET "/foo" [] a)
+                  (GET "/bar" [] b))]
+    (are [url body] (= (:body (handler (request :get url)))
+                         body)
+        "/foo" "foo"
+        "/bar" "bar")))

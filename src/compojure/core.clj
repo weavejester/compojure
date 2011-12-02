@@ -174,3 +174,9 @@
        (fn [request#]
          (let-request [~args request#]
            (routing request# ~@routes))))))
+
+(defmacro let-routes
+  "Takes a vector of bindings and a body of routes. Equivalent to:
+  (let [...] (routes ...))"
+  [bindings & body]
+  `(let ~bindings (routes ~@body)))
