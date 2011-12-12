@@ -1,4 +1,4 @@
-(defproject compojure "1.0.0-SNAPSHOT"
+(defproject compojure "1.0.0-RC1"
   :description "A concise web framework for Clojure"
   :url "https://github.com/weavejester/compojure"
   :dependencies [[org.clojure/clojure "1.2.1"]
