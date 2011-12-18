@@ -1,3 +1,18 @@
+## 1.0.0 (2011-??-??)
+
+* Updated Ring dependency to 1.0.0
+* Updated Clout dependency to 1.0.0
+* Added let-routes macro
+* Added wrap-flash middleware to compojure.handler/site
+* Removed deprecated wrap! function
+* Added content-type header for rendering seqs
+
+## 0.6.5 (2011-07-17)
+
+* Added multipart options to compojure.handler/site
+* Added default character encoding of UTF-8
+* Updated Ring to 0.3.11
+
 ## 0.6.4 (2011-06-28)
 
 * Updated Ring dependency to 0.3.10
