@@ -1,6 +1,6 @@
-## 1.0.0 (2011-??-??)
+## 1.0.0 (2011-12-25)
 
-* Updated Ring dependency to 1.0.0
+* Updated Ring dependency to 1.0.1
 * Updated Clout dependency to 1.0.0
 * Added let-routes macro
 * Added wrap-flash middleware to compojure.handler/site
