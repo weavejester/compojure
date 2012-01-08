@@ -1,3 +1,7 @@
+## 1.0.1 (2012-01-08)
+
+* Updated Clout dependency to 1.0.1
+
 ## 1.0.0 (2011-12-25)
 
 * Updated Ring dependency to 1.0.1
