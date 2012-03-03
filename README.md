@@ -33,7 +33,7 @@ routes. This means you must explicitly add the `wrap-params` and
 To make this a little easier, the [compojure.handler][1] namespace
 provides functions that add common middleware functions to your routes. 
 
-[1]: http://weavejester.github.com/compojure/compojure.handler-api.html
+[1]: http://weavejester.github.com/compojure/compojure.handler.html
 
 Installing
 ----------
