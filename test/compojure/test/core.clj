@@ -84,10 +84,14 @@
    (request :get "/bar")))
 
 (deftest context-test
-  (testing "matching"
+  (testing "keyword matching"
     (let [handler (context "/foo/:id" [id] identity)]
       (is (map? (handler (request :get "/foo/10"))))
       (is (nil? (handler (request :get "/bar/10"))))))
+  (testing "regex matching"
+    (let [handler (context ["/foo/:id" :id #"\d+"] [id] identity)]
+      (is (map? (handler (request :get "/foo/10"))))
+      (is (nil? (handler (request :get "/foo/ab"))))))
   (testing "context key"
     (let [handler (context "/foo/:id" [id] :context)]
       (are [url ctx] (= (handler (request :get url)) ctx)
