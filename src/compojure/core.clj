@@ -157,7 +157,9 @@
       (vector? route)
        `(route-compile
          ~(str (first route) ":__path-info")
-         ~(merge (apply hash-map (rest route)) re-context)))))
+         ~(merge (apply hash-map (rest route)) re-context))
+      (symbol? route)
+       `(route-compile (str ~route ":__path-info") ~re-context))))
 
 (defmacro context
   "Give all routes in the form a common path prefix and set of bindings.
