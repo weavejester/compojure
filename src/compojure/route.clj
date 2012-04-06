@@ -1,6 +1,7 @@
 (ns compojure.route
+  (:require [compojure.response :as response])
   (:use compojure.core
-        [ring.util.response :only (file-response resource-response)]
+        [ring.util.response :only (file-response resource-response status)]
         [ring.util.codec :only (url-decode)]
         ring.middleware.content-type
         ring.middleware.file-info))
@@ -37,4 +38,6 @@
   [body]
   (routes
     (HEAD "*" [] {:status 404})
-    (ANY "*" [] {:status 404, :body body})))
+    (ANY "*" {:as request}
+      (-> (response/render body request)
+          (status 404)))))
