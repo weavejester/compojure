@@ -129,6 +129,10 @@
   [path args & body]
   (compile-route :head path args body))
 
+(defmacro OPTIONS "Generate a OPTIONS route."
+  [path args & body]
+  (compile-route :options path args body))
+
 (defmacro ANY "Generate a route that matches any method."
   [path args & body]
   (compile-route nil path args body))
