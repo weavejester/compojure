@@ -4,9 +4,15 @@
   (:require [compojure.route :as route] :reload))
 
 (deftest not-found-route
-  (let [response ((route/not-found "foo") (request :get "/"))]
-    (is (= (:status response) 404))
-    (is (= (:body response) "foo"))))
+  (testing "string body"
+    (let [response ((route/not-found "foo") (request :get "/"))]
+      (is (= (:status response) 404))
+      (is (= (:body response) "foo"))))
+  (testing "response map body"
+    (let [response ((route/not-found {:status 200 :body "bar"})
+                    (request :get "/"))]
+      (is (= (:status response) 404))
+      (is (= (:body response) "bar")))))
 
 (deftest resources-route
   (let [route    (route/resources "/foo" {:root "resources"})

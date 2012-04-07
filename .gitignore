@@ -5,4 +5,5 @@ pom.xml
 _site
 autodoc
 .lein-failures
+.lein-env
 doc
