@@ -1,3 +1,8 @@
+## 1.0.3 (2012-04-28)
+
+* Updated Ring dependency to 1.1.0
+* Fixed lost headers in compojure.route/files
+
 ## 1.0.2 (2012-04-06)
 
 * Updated Ring dependency to 1.0.2
