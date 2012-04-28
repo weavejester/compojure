@@ -1,3 +1,9 @@
+## 1.0.2 (2012-04-06)
+
+* Updated Ring dependency to 1.0.2
+* not-found route accepts response maps
+* Fixed context macro to allow vars for prefix
+
 ## 1.0.1 (2012-01-08)
 
 * Updated Clout dependency to 1.0.1
