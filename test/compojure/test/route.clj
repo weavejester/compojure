@@ -29,3 +29,28 @@
     (is (= (slurp (:body response)) "foobar\n"))
     (is (= (get-in response [:headers "Content-Type"])
            "text/plain"))))
+
+(deftest head-method
+  (testing "not found"
+    (let [response ((route/not-found {:status 200
+                                      :headers {"Content-Type" "text/plain"}
+                                      :body "bar"})
+                    (request :head "/"))]
+      (is (= (:status response) 404))
+      (is (nil? (:body response)))
+      (is (= (get-in response [:headers "Content-Type"])
+             "text/plain"))))
+  (testing "resources"
+    (let [route    (route/resources "/foo" {:root "resources"})
+          response (route (request :head "/foo/test.txt"))]
+      (is (= (:status response) 200))
+      (is (nil? (:body response)))
+      (is (= (get-in response [:headers "Content-Type"])
+             "text/plain"))))
+  (testing "files"
+    (let [route    (route/files "/foo" {:root "test/resources"})
+          response (route (request :head "/foo/test.txt"))]
+      (is (= (:status response) 200))
+      (is (nil? (:body response)))
+      (is (= (get-in response [:headers "Content-Type"])
+             "text/plain")))))
