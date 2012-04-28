@@ -4,7 +4,8 @@
         [ring.util.response :only (file-response resource-response status)]
         [ring.util.codec :only (url-decode)]
         ring.middleware.content-type
-        ring.middleware.file-info))
+        ring.middleware.file-info
+        ring.middleware.head))
 
 (defn- add-wildcard
   "Add a wildcard to the end of a route path."
@@ -19,7 +20,8 @@
   (-> (GET (add-wildcard path) {{file-path :*} :route-params}
         (let [options (merge {:root "public"} options)]
           (file-response file-path options)))
-      (wrap-file-info (:mime-types options))))
+      (wrap-file-info (:mime-types options))
+      (wrap-head)))
 
 (defn resources
   "A route for serving resources on the classpath. Accepts the following
@@ -30,14 +32,14 @@
         (let [root (:root options "public")]
           (resource-response (str root "/" resource-path))))
       (wrap-file-info (:mime-types options))
-      (wrap-content-type options)))
+      (wrap-content-type options)
+      (wrap-head)))
 
 (defn not-found
   "A route that returns a 404 not found response, with its argument as the
   response body."
   [body]
-  (routes
-    (HEAD "*" [] {:status 404})
-    (ANY "*" {:as request}
+  (wrap-head
+    (fn [request]
       (-> (response/render body request)
           (status 404)))))
