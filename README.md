@@ -7,15 +7,17 @@ An Example
 Here's a small web application written using Compojure and
 [Ring](http://github.com/mmcgrana/ring).
 
-    (ns hello-world
-      (:use compojure.core, ring.adapter.jetty)
-      (:require [compojure.route :as route]))
+```clojure
+(ns hello-world
+ (:use compojure.core, ring.adapter.jetty)
+ (:require [compojure.route :as route]))
 
-    (defroutes main-routes
-      (GET "/" [] "<h1>Hello World</h1>")
-      (route/not-found "<h1>Page not found</h1>"))
+(defroutes main-routes
+ (GET "/" [] "<h1>Hello World</h1>")
+ (route/not-found "<h1>Page not found</h1>"))
 
-    (run-jetty main-routes {:port 8080})
+(run-jetty main-routes {:port 8080})
+```
 
 Documentation
 -------------
