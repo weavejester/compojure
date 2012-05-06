@@ -158,7 +158,7 @@
        `(route-compile
          ~(str (first route) ":__path-info")
          ~(merge (apply hash-map (rest route)) re-context))
-      (symbol? route)
+      :else
        `(route-compile (str ~route ":__path-info") ~re-context))))
 
 (defmacro context
