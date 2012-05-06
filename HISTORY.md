@@ -1,3 +1,7 @@
+## 1.0.4 (2012-05-06)
+
+* Fixed context macro to allow lists for prefix
+
 ## 1.0.3 (2012-04-28)
 
 * Updated Ring dependency to 1.1.0
