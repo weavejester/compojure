@@ -133,3 +133,12 @@
                          body)
         "/foo" "foo"
         "/bar" "bar")))
+
+(deftest make-route-test
+  (let [handler (make-route :get (route-compile "/foo/:id") #(-> % :params :id))]
+    (are [method url body] (= (:body (handler (request method url)))
+                              body)
+      :get  "/foo/10" "10"
+      :post "/foo/10" nil
+      :get  "/bar/10" nil
+      :get  "/foo"    nil)))

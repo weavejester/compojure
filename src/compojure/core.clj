@@ -83,14 +83,22 @@
     `(let [~@(vector-bindings bindings request)] ~@body)
     `(let [~bindings ~request] ~@body)))
 
+(defn make-route
+  "Returns a function that will only call the handler if the method and Clout
+  route match the request."
+  [method route handler]
+  (if-method method
+    (if-route route
+      (fn [request]
+        (render (handler request) request)))))
+
 (defn- compile-route
   "Compile a route in the form (method path & body) into a function."
   [method route bindings body]
-  `(#'if-method ~method
-     (#'if-route ~(prepare-route route)
-       (fn [request#]
-         (let-request [~bindings request#]
-           (render (do ~@body) request#))))))
+  `(make-route
+    ~method ~(prepare-route route)
+    (fn [request#]
+      (let-request [~bindings request#] ~@body))))
 
 (defn routing
   "Apply a list of routes to a Ring request map."
