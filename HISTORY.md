@@ -1,3 +1,9 @@
+## 1.1.0 (2012-05-XX)
+
+* Added PATCH route macro
+* Added OPTION route macro
+* Added low-level make-route function
+
 ## 1.0.4 (2012-05-06)
 
 * Fixed context macro to allow lists for prefix
