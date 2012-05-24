@@ -1,4 +1,4 @@
-## 1.1.0 (2012-05-XX)
+## 1.1.0 (2012-05-24)
 
 * Added PATCH route macro
 * Added OPTION route macro
