@@ -3,8 +3,7 @@
         ring.mock.request
         compojure.core
         compojure.response
-        clout.core)
-  (:require [compojure.test-namespace :as testns]))
+        clout.core))
 
 (deftest request-destructuring
   (testing "vector arguments"
