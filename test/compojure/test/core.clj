@@ -1,8 +1,6 @@
 (ns compojure.test.core
   (:use clojure.test
         ring.mock.request
-        clojure.contrib.mock.test-adapter
-        clojure.contrib.with-ns
         compojure.core
         compojure.response
         clout.core)
@@ -67,10 +65,10 @@
              (assoc resp :body nil)))))
   
   (testing "custom regular expressions"
-    (expect [route-compile
-              (has-args ["/foo/:id" {:id "[0-9]+"}]
-                (times 1))]
-      (eval `(GET ["/foo/:id" :id "[0-9]+"] [])))))
+    (let [route (GET ["/foo/:id" :id #"\d+"] [id] id)]
+      (is (nil? (route (request :get "/foo/bar"))))
+      (is (nil? (route (request :get "/foo/1.1"))))
+      (is (route (request :get "/foo/10"))))))
 
 (deftest routing-test
   (routing (request :get "/bar")

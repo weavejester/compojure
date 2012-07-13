@@ -7,5 +7,4 @@
                  [clout "1.0.1"]
                  [ring/ring-core "1.1.0"]]
   :profiles
-  {:dev {:dependencies [[ring-mock "0.1.1"]
-                        [org.clojure/clojure-contrib "1.2.0"]]}})
+  {:dev {:dependencies [[ring-mock "0.1.1"]]}})
