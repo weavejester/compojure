@@ -2,6 +2,7 @@ lib
 classes
 *.jar
 pom.xml
+pom.xml.asc
 _site
 autodoc
 .lein-failures
