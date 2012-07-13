@@ -1,5 +1,5 @@
 (defproject compojure "1.1.0"
-  :description "A concise web framework for Clojure"
+  :description "A concise routing library for Ring"
   :url "https://github.com/weavejester/compojure"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
