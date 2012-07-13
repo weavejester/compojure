@@ -7,7 +7,7 @@ applications to be composed of small, independent parts.
 
 Add the following dependency to your `project.clj` file:
 
-    [compojure "1.1.0"]
+    [compojure "1.1.1"]
 
 ## Documentation
 

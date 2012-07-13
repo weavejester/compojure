@@ -1,3 +1,7 @@
+## 1.1.1 (2012-07-13)
+
+* Updated Ring dependency to 1.1.1
+
 ## 1.1.0 (2012-05-24)
 
 * Added PATCH route macro
