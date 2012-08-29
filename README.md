@@ -34,9 +34,10 @@ from two routes:
   (route/not-found "<h1>Page not found</h1>"))
 ```
 
-Also refer to the [Getting Started][1] page on the wiki.
+Also refer to the [Getting Started][2] page on the wiki.
 
-[1]:https://github.com/weavejester/compojure/wiki/Getting-Started
+[1]:https://github.com/ring-clojure/ring
+[2]:https://github.com/weavejester/compojure/wiki/Getting-Started
 
 ## License
 
