@@ -9,4 +9,6 @@
                  [clout "1.0.1"]
                  [ring/ring-core "1.1.4"]]
   :profiles
-  {:dev {:dependencies [[ring-mock "0.1.3"]]}})
+  {:dev {:dependencies [[ring-mock "0.1.3"]]}
+   :1.3 {:dependencies [[org.clojure/clojure "1.3.0"]]}
+   :1.4 {:dependencies [[org.clojure/clojure "1.4.0"]]}})
