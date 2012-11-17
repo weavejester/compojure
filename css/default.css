@@ -4,14 +4,14 @@ body {
 }
 
 pre, code {
-   font-family: monospace;
-   font-size: 10pt;
+   font-family: Monaco, DejaVu Sans Mono, Consolas, monospace;
+   font-size: 9pt;
 }
 
 h2 {
    font-weight: normal;
    font-size: 18pt;
-   margin: 10px 0 0.8em 0;
+   margin: 10px 0 0.4em 0;
 }
 
 #header, #content, .sidebar {
@@ -87,7 +87,6 @@ h2 {
 
 #header a, .sidebar a {
    display: block;
-   color: #333;
    text-decoration: none;
 }
 
@@ -97,6 +96,19 @@ h2 {
 
 .sidebar a {
    color: #333;
+}
+
+#header h2 {
+    float: right;
+    font-size: 9pt;
+    font-weight: normal;
+    width: 10em;
+    margin: 3px 0;
+    color: #bbb;
+}
+
+#header h2 a {
+    display: inline;
 }
 
 .sidebar h3 {
@@ -116,18 +128,18 @@ h2 {
 }
 
 .sidebar li a {
-   padding: 0.5em 0.8em;
+   padding: 7px 10px;
 }
 
 #namespaces li.current a {
-   border-left: 0.3em solid #a33;
-   padding-left: 0.5em;
+   border-left: 3px solid #a33;
+   padding-left: 7px;
    color: #a33;
 }
 
 #vars li.current a {
-   border-left: 0.3em solid #33a;
-   padding-left: 0.5em;
+   border-left: 3px solid #33a;
+   padding-left: 7px;
    color: #33a;
 }
 
@@ -137,12 +149,35 @@ h2 {
    font-weight: bold;
 }
 
+.public h3, h4.macro {
+    margin: 0;
+    float: left;
+}
+
+.usage {
+    clear: both;
+}
+
+h4.macro {
+    font-variant: small-caps;
+    font-size: 13px;
+    font-weight: bold;
+    color: #717171;
+    margin-top: 3px;
+    margin-left: 10px;
+}
+
 .public {
-   margin-bottom: 2.5em;
+   margin-top: 1.5em;
+   margin-bottom: 2.0em;
 }
 
 .public:last-child {
    margin-bottom: 20%;
+}
+
+.namespace:last-child {
+    margin-bottom: 10%;
 }
 
 .index {
@@ -163,4 +198,13 @@ h2 {
 
 .usage code {
    display: block;
+   color: #008;
+}
+
+.doc {
+    margin-bottom: .5em;
+}
+
+.src-link a {
+    font-size: 9pt;
 }

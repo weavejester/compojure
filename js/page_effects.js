@@ -1,6 +1,6 @@
 function visibleInParent(element) {
   var position = $(element).position().top
-  return position >= 0 && position < $(element).offsetParent().height()
+  return position > -50 && position < ($(element).offsetParent().height() - 50)
 }
 
 function hasFragment(link, fragment) {
@@ -46,6 +46,22 @@ function persistScrollPosition(element) {
   $(element).scroll(function() { storeScrollPosition(element) })
 }
 
+function sidebarContentWidth(element) {
+    var widths = $(element).find('span').map(function() { return $(this).width() })
+    return Math.max.apply(Math, widths)
+}
+
+function resizeNamespaces() {
+    var width = sidebarContentWidth('#namespaces') + 40
+    $('#namespaces').css('width', width)
+    $('#vars, .namespace-index').css('left', width + 1)
+    $('.namespace-docs').css('left', $('#vars').width() + width + 2)
+}
+
+$(window).ready(resizeNamespaces)
 $(window).ready(setCurrentVarLink)
-$(window).ready(function() { $('#content').scroll(setCurrentVarLink) })
 $(window).ready(function() { persistScrollPosition('#namespaces')})
+$(window).ready(function() {
+    $('#content').scroll(setCurrentVarLink)
+    $(window).resize(setCurrentVarLink)
+})
