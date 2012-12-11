@@ -57,6 +57,28 @@
           route (PUT "/foo" [] resp)]
       (is (= (route req) resp))))
 
+  (testing "ANY"
+    (testing "with methods set"
+      (let [resp {:status 200, :headers {}, :body "bar"}
+            route (ANY #{:put :post} "/foo" [] resp)]
+        (is (= (route (request :put "/foo")) resp))
+        (is (= (route (request :post "/foo")) resp))
+        (is (= (route (-> (request :post "/foo")
+                          (assoc :form-params {"_method" "PUT"})))
+               resp))
+        (is (nil? (route (request :get "/foo"))))
+        (is (nil? (route (-> (request :post "/foo")
+                             (assoc :form-params {"_method" "DELETE"})))))))
+
+    (testing "without methods"
+       (let [resp {:status 200, :headers {}, :body "bar"}
+            route (ANY "/foo" [] resp)]
+        (is (= (route (request :put "/foo")) resp))
+        (is (= (route (request :post "/foo")) resp))
+        (is (= (route (-> (request :post "/foo")
+                          (assoc :form-params {"_method" "PUT"})))
+               resp)))))
+
   (testing "HEAD requests"
     (let [resp  {:status 200, :headers {"X-Foo" "foo"}, :body "bar"}
           route (GET "/foo" []  resp)]
