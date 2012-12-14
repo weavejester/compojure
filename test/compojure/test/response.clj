@@ -40,4 +40,9 @@
   (testing "with stream URL"
     (let [response (response/render (io/resource "ring/util/response.clj") {})]
       (is (instance? InputStream (:body response)))
-      (is (.contains (slurp (:body response)) "(ns ring.util.response")))))
+      (is (.contains (slurp (:body response)) "(ns ring.util.response"))))
+  
+  (testing "with map + metadata"
+    (let [response (response/render ^{:has-metadata? true} {:body "foo"} {})]
+      (is (= (:body response) "foo"))
+      (is (= (meta response) {:has-metadata? true})))))
