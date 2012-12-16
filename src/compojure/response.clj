@@ -20,7 +20,8 @@
         (content-type "text/html; charset=utf-8")))
   APersistentMap
   (render [resp-map _]
-    (merge (response "") resp-map))
+    (merge (with-meta (response "") (meta resp-map))
+           resp-map))
   IFn
   (render [func request]
     (render (func request) request))
