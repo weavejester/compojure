@@ -8,23 +8,24 @@
 
 (defn- method-matches?
   "True if this request matches the supplied request method."
-  [method request]
+  [predicate request]
   (let [request-method (request :request-method)
         form-method    (get-in request [:form-params "_method"])]
     (if (and form-method (= request-method :post))
-      (= (str/upper-case (name method)) form-method)
-      (= method request-method))))
+      (predicate (-> form-method str/lower-case keyword))
+      (predicate request-method))))
 
 (defn- if-method
   "Evaluate the handler if the request method matches."
   [method handler]
-  (fn [request]
-    (cond
-      (or (nil? method) (method-matches? method request))
+  (let [method-matcher (if (set? method) method #(= % method))]
+    (fn [request]
+      (cond
+        (or (nil? method) (method-matches? method-matcher request))
         (handler request)
-      (and (= :get method) (= :head (:request-method request)))
+        (and (= :get method) (= :head (:request-method request)))
         (-?> (handler request)
-             (assoc :body nil)))))
+             (assoc :body nil))))))
 
 (defn- assoc-route-params
   "Associate route parameters with the request map."
@@ -146,8 +147,10 @@
   (compile-route :patch path args body))
 
 (defmacro ANY "Generate a route that matches any method."
-  [path args & body]
-  (compile-route nil path args body))
+  [methods path args & body]
+  (if (set? methods)
+    (compile-route methods path args body)
+    (compile-route nil methods path (cons args body))))
 
 (defn- remove-suffix [path suffix]
   (subs path 0 (- (count path) (count suffix))))
