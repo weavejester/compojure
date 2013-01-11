@@ -1,3 +1,7 @@
+## 1.1.4 (2013-01-11)
+
+* compojure.response/render method retains metadata on responses
+
 ## 1.1.3 (2012-09-03)
 
 * Updated Ring dependency to 1.1.5
