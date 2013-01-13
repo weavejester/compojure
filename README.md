@@ -43,6 +43,6 @@ Also refer to the [Getting Started][2] page on the wiki.
 
 ## License
 
-Copyright © 2012 James Reeves
+Copyright © 2013 James Reeves
 
 Distributed under the Eclipse Public License, the same as Clojure.
