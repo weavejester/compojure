@@ -101,9 +101,10 @@
   (testing "context key"
     (let [handler (context "/foo/:id" [id] :context)]
       (are [url ctx] (= (handler (request :get url)) ctx)
-        "/foo/10"     "/foo/10"
-        "/foo/10/bar" "/foo/10"
-        "/bar/10"     nil)))
+        "/foo/10"       "/foo/10"
+        "/foo/10/bar"   "/foo/10"
+        "/foo/10/b%20r" "/foo/10"
+        "/bar/10"       nil)))
   (testing "path-info key"
     (let [handler (context "/foo/:id" [id] :path-info)]
       (are [url ctx] (= (handler (request :get url)) ctx)

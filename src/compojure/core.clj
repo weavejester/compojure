@@ -154,7 +154,7 @@
 
 (defn- wrap-context [handler]
   (fn [request]
-    (let [uri     (:uri request)
+    (let [uri     (path-decode (:uri request))
           path    (:path-info request uri)
           context (or (:context request) "")
           subpath (-> request :route-params :__path-info)]
