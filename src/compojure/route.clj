@@ -9,7 +9,7 @@
 
 (defn- add-wildcard
   "Add a wildcard to the end of a route path."
-  [path]
+  [^String path]
   (str path (if (.endsWith path "/") "*" "/*")))
 
 (defn files
