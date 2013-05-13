@@ -57,6 +57,13 @@
           route (PUT "/foo" [] resp)]
       (is (= (route req) resp))))
 
+  (testing "_method parameter case-insenstive"
+    (let [req (-> (request :post "/foo")
+                  (assoc :form-params {"_method" "delete"}))
+          resp {:status 200, :headers {}, :body "bar"}
+          route (DELETE "/foo" [] resp)]
+      (is (= (route req) resp))))
+
   (testing "HEAD requests"
     (let [resp  {:status 200, :headers {"X-Foo" "foo"}, :body "bar"}
           route (GET "/foo" []  resp)]
