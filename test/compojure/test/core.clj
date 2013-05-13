@@ -31,7 +31,7 @@
        nil)
      (-> (request :get "/foo")
          (assoc :params {"y" "bar", "z" "baz"}))))
-  
+
   (testing "vector ':as request' arguments"
     (let [req (-> (request :get "/foo")
                   (assoc :params {:y "bar"}))]
@@ -41,7 +41,7 @@
                    (dissoc req :params)))
             nil)
        req)))
-  
+
   (testing "map arguments"
     ((GET "/foo" {params :params}
        (is (= (params {:x "a", :y "b"})))
@@ -57,12 +57,19 @@
           route (PUT "/foo" [] resp)]
       (is (= (route req) resp))))
 
+  (testing "_method parameter case-insenstive"
+    (let [req (-> (request :post "/foo")
+                  (assoc :form-params {"_method" "delete"}))
+          resp {:status 200, :headers {}, :body "bar"}
+          route (DELETE "/foo" [] resp)]
+      (is (= (route req) resp))))
+
   (testing "HEAD requests"
     (let [resp  {:status 200, :headers {"X-Foo" "foo"}, :body "bar"}
           route (GET "/foo" []  resp)]
       (is (= (route (request :head "/foo"))
              (assoc resp :body nil)))))
-  
+
   (testing "custom regular expressions"
     (let [route (GET ["/foo/:id" :id #"\d+"] [id] id)]
       (is (nil? (route (request :get "/foo/bar"))))
@@ -118,7 +125,7 @@
       (are [url body] (= (:body (handler (request :get url)))
                          body)
         "/foo/10"    "root"
-        "/foo/10/"   "root"   
+        "/foo/10/"   "root"
         "/foo/10/id" "10"
         "/foo/1/x/2" "2"))))
 

@@ -12,7 +12,8 @@
   (let [request-method (request :request-method)
         form-method    (get-in request [:form-params "_method"])]
     (if (and form-method (= request-method :post))
-      (= (str/upper-case (name method)) form-method)
+      (= (str/upper-case (name method))
+         (str/upper-case form-method))
       (= method request-method))))
 
 (defn- if-method
