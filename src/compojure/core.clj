@@ -199,3 +199,18 @@
   (let [...] (routes ...))"
   [bindings & body]
   `(let ~bindings (routes ~@body)))
+
+(defn- wrap-route [f [v p as b]]
+  `(~v ~p ~as (~f (partial render ~b))))
+
+(defmacro wrapped-routes 
+  "Takes a middleware function and a body of routes. The middleware will only 
+  be called with the underlying route's body if the route matches a request, 
+  and after bindings. 
+  This is useful if the middleware itself has routing side-effects, e.g. 
+  lib-noir's wrap-force-ssl. 
+  Equivalent to:
+  (routes (verb path args (f (partial render route-body))) ...)"
+  [f & body]
+  (list* `routes (map (partial wrap-route f) body)))
+
