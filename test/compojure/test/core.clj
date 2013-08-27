@@ -37,7 +37,7 @@
                   (assoc :params {:y "bar"}))]
       ((GET "/:x" [x :as r]
             (is (= x "foo"))
-            (is (= (dissoc r :params :route-params)
+            (is (= (dissoc r :params :route-params :route)
                    (dissoc req :params)))
             nil)
        req)))
@@ -146,3 +146,21 @@
       :post "/foo/10" nil
       :get  "/bar/10" nil
       :get  "/foo"    nil)))
+
+(deftest matched-string-route-info-test
+  (let [path "/foo/:x"
+        body-maker (fn [{route-info :route}] (str (:method route-info) (:path route-info)))
+        handler (routes (GET path [x] body-maker)
+                        (POST path [x] body-maker))]
+    (are [method url] (= (:body (handler (request method url))) (str method path))
+         :get "/foo/123"
+         :post "/foo/456")))
+
+(deftest matched-vec-route-info-test
+  (let [
+        body-maker (fn [{route-info :route}] (str (:method route-info) (:path route-info)))
+        handler (routes (GET ["/foo/:x" :x #"[a-z]+"] [x] body-maker)
+                        (POST ["/foo/:x" :x #"[a-z]+"] [x] body-maker))]
+    (are [method url matched-path] (= (:body (handler (request method url))) (str method matched-path))
+         :get "/foo/xyz" ["/foo/:x" :x #"[a-z]+"]
+         :post "/foo/xyz" ["/foo/:x" :x #"[a-z]+"])))

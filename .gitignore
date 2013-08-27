@@ -7,5 +7,6 @@ _site
 autodoc
 .lein-failures
 .lein-env
+.lein-repl-history
 doc
 target

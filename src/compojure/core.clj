@@ -16,16 +16,20 @@
          (str/upper-case form-method))
       (= method request-method))))
 
+(defn- assoc-route-info
+  [request route-info-type route-info-data]
+  (merge-with merge request {:route {route-info-type route-info-data}}))
+
 (defn- if-method
   "Evaluate the handler if the request method matches."
   [method handler]
   (fn [request]
     (cond
       (or (nil? method) (method-matches? method request))
-        (handler request)
+        (handler (assoc-route-info request :method method))
       (and (= :get method) (= :head (:request-method request)))
-        (-?> (handler request)
-             (assoc :body nil)))))
+        (-?> (handler (assoc-route-info request :method method))
+                (assoc :body nil)))))
 
 (defn- assoc-route-params
   "Associate route parameters with the request map."
@@ -37,7 +41,11 @@
   [route handler]
   (fn [request]
     (if-let [params (route-matches route request)]
-      (handler (assoc-route-params request params)))))
+      (let [req-with-route-params (assoc-route-params request params)
+            req-with-params-n-route-info (assoc-route-info
+                                          req-with-route-params :path
+                                          (:path route))]
+        (handler req-with-params-n-route-info)))))
 
 (defn- prepare-route
   "Pre-compile the route."
@@ -97,7 +105,7 @@
   "Compile a route in the form (method path & body) into a function."
   [method route bindings body]
   `(make-route
-    ~method ~(prepare-route route)
+    ~method (assoc ~(prepare-route route) :path ~route)
     (fn [request#]
       (let-request [~bindings request#] ~@body))))
 
