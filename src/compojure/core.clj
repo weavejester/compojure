@@ -26,10 +26,10 @@
   (fn [request]
     (cond
       (or (nil? method) (method-matches? method request))
-        (handler (assoc-route-info request :method method))
+        (handler request)
       (and (= :get method) (= :head (:request-method request)))
-        (-?> (handler (assoc-route-info request :method method))
-                (assoc :body nil)))))
+        (-?> (handler request)
+             (assoc :body nil)))))
 
 (defn- assoc-route-params
   "Associate route parameters with the request map."
@@ -41,11 +41,7 @@
   [route handler]
   (fn [request]
     (if-let [params (route-matches route request)]
-      (let [req-with-route-params (assoc-route-params request params)
-            req-with-params-n-route-info (assoc-route-info
-                                          req-with-route-params :path
-                                          (:path route))]
-        (handler req-with-params-n-route-info)))))
+      (handler (assoc-route-params request params)))))
 
 (defn- prepare-route
   "Pre-compile the route."
@@ -99,7 +95,9 @@
   (if-method method
     (if-route route
       (fn [request]
-        (render (handler request) request)))))
+        (let [route-info {:path (:path route) :method method}
+              enhanced-request (assoc request :route route-info)]
+          (render (handler enhanced-request) enhanced-request))))))
 
 (defn- compile-route
   "Compile a route in the form (method path & body) into a function."
