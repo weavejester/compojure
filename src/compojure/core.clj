@@ -93,13 +93,39 @@
       (fn [request]
         (render (handler request) request)))))
 
+(defn extract-parameters
+  "Extract parameters from head of the sequence. Returns a vector with
+   two elements: parameters and the rest of the body. Parameters can be
+   in a form:
+     1) a map (if followed by any form) [{:a 1 :b 2} :body] => [{:a 1 :b 2} :body]
+     2) number of keywords & values [:a 1 :b 2 :body]       => [{:a 1 :b 2} :body]
+     3) no parameters [:body]                               => [{} :body]
+   Returns a tuple with parameters and body without the parameters"
+  [c]
+  {:pre [(sequential? c)]}
+  (cond
+    (and (map? (first c)) (> (count c) 1)) [(first c) (rest c)]
+    (keyword? (first c))  (let [parameters (->> c
+                                             (partition 2)
+                                             (take-while (comp keyword? first))
+                                             (mapcat identity)
+                                             (apply hash-map))
+                                form       (drop (* 2 (count parameters)) c)]
+                            [parameters form])
+    :else  [{} c]))
+
 (defn- compile-route
-  "Compile a route in the form (method path & body) into a function."
+  "Compile a route in the form (method path & body) into a function.
+   Extracts optional meta-data from head of the body as defined in the
+   extract-parameters -function."
   [method route bindings body]
-  `(make-route
-    ~method ~(prepare-route route)
-    (fn [request#]
-      (let-request [~bindings request#] ~@body))))
+  (let [[meta-data body] (extract-parameters body)]
+    (with-meta
+      `(make-route
+         ~method ~(prepare-route route)
+         (fn [request#]
+           (let-request [~bindings request#] ~@body)))
+      meta-data)))
 
 (defn routing
   "Apply a list of routes to a Ring request map."
@@ -120,35 +146,43 @@
 
 (defmacro GET "Generate a GET route."
   [path args & body]
-  (compile-route :get path args body))
+  (let [f (compile-route :get path args body)]
+    `(with-meta ~f ~(meta f))))
 
 (defmacro POST "Generate a POST route."
   [path args & body]
-  (compile-route :post path args body))
+  (let [f (compile-route :post path args body)]
+    `(with-meta ~f ~(meta f))))
 
 (defmacro PUT "Generate a PUT route."
   [path args & body]
-  (compile-route :put path args body))
+  (let [f (compile-route :put path args body)]
+    `(with-meta ~f ~(meta f))))
 
 (defmacro DELETE "Generate a DELETE route."
   [path args & body]
-  (compile-route :delete path args body))
+  (let [f (compile-route :delete path args body)]
+    `(with-meta ~f ~(meta f))))
 
 (defmacro HEAD "Generate a HEAD route."
   [path args & body]
-  (compile-route :head path args body))
+  (let [f (compile-route :head path args body)]
+    `(with-meta ~f ~(meta f))))
 
 (defmacro OPTIONS "Generate an OPTIONS route."
   [path args & body]
-  (compile-route :options path args body))
+  (let [f (compile-route :options path args body)]
+    `(with-meta ~f ~(meta f))))
 
 (defmacro PATCH "Generate a PATCH route."
   [path args & body]
-  (compile-route :patch path args body))
+  (let [f (compile-route :patch path args body)]
+    `(with-meta ~f ~(meta f))))
 
 (defmacro ANY "Generate a route that matches any method."
   [path args & body]
-  (compile-route nil path args body))
+  (let [f (compile-route :any path args body)]
+    `(with-meta ~f ~(meta f))))
 
 (defn- remove-suffix [path suffix]
   (subs path 0 (- (count path) (count suffix))))
