@@ -146,3 +146,34 @@
       :post "/foo/10" nil
       :get  "/bar/10" nil
       :get  "/foo"    nil)))
+
+(deftest extract-parameters-test
+  (testing "parameter maps"
+    (is (= (extract-parameters [{:a 1 :b 2}]) [{} [{:a 1 :b 2}]]))
+    (is (= (extract-parameters [{:a 1 :b 2} identity]) [{:a 1 :b 2} [identity]])))
+  (testing "vararg parameters"
+    (is (= (extract-parameters [:kikka 1 :kakka 2 identity])  [{:kikka 1 :kakka 2} [identity]]))
+    (is (= (extract-parameters [:kikka 1 :kakka 2 :kukka])  [{:kikka 1 :kakka 2} [:kukka]]))
+    (is (= (extract-parameters [:kikka 1 :kakka identity])  [{:kikka 1 :kakka identity} []])))
+  (testing "no parameters"
+    (is (= (extract-parameters [identity]) [{} [identity]]))))
+
+(deftest route-with-metadata-test
+  (let [side-effects (atom 0)
+        route (GET "/" [] :key (swap! side-effects inc) "kikka")]
+    (testing "meta-data is evaluated on compile"
+      (is (= 1 @side-effects)))
+    (testing "meta-data is not evaluated on runtime"
+      (is (= (:body (route (request :get "/"))) "kikka"))
+      (is (= 1 @side-effects)))))
+
+(deftest meta-data-for-all-routes
+  (testing "all methods"
+    (is (= (meta (GET "/" [] :a 1 identity)) {:a 1}))
+    (is (= (meta (POST "/" [] :a 1 identity)) {:a 1}))
+    (is (= (meta (PUT "/" [] :a 1 identity)) {:a 1}))
+    (is (= (meta (DELETE "/" [] :a 1 identity)) {:a 1}))
+    (is (= (meta (HEAD "/" [] :a 1 identity)) {:a 1}))
+    (is (= (meta (OPTIONS "/" [] :a 1 identity)) {:a 1}))
+    (is (= (meta (PATCH "/" [] :a 1 identity)) {:a 1}))
+    (is (= (meta (ANY "/" [] :a 1 identity)) {:a 1}))))
