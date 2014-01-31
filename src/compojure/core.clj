@@ -16,6 +16,10 @@
          (str/upper-case form-method))
       (= method request-method))))
 
+(defn- assoc-route-info
+  [request route-info-type route-info-data]
+  (merge-with merge request {:route {route-info-type route-info-data}}))
+
 (defn- if-method
   "Evaluate the handler if the request method matches."
   [method handler]
@@ -91,13 +95,15 @@
   (if-method method
     (if-route route
       (fn [request]
-        (render (handler request) request)))))
+        (let [route-info {:path (:path route) :method method}
+              enhanced-request (assoc request :route route-info)]
+          (render (handler enhanced-request) enhanced-request))))))
 
 (defn- compile-route
   "Compile a route in the form (method path & body) into a function."
   [method route bindings body]
   `(make-route
-    ~method ~(prepare-route route)
+    ~method (assoc ~(prepare-route route) :path ~route)
     (fn [request#]
       (let-request [~bindings request#] ~@body))))
 
