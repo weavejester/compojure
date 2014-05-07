@@ -15,4 +15,5 @@
   {:dev {:dependencies [[ring-mock "0.1.3"]
                         [javax.servlet/servlet-api "2.5"]]}
    :1.4 {:dependencies [[org.clojure/clojure "1.4.0"]]}
-   :1.5 {:dependencies [[org.clojure/clojure "1.5.1"]]}})
+   :1.5 {:dependencies [[org.clojure/clojure "1.5.1"]]}
+   :1.6 {:dependencies [[org.clojure/clojure "1.6.0"]]}})
