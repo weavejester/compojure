@@ -1,3 +1,7 @@
+## 1.1.7 (2014-05-07)
+
+* Updated Ring dependency to 1.2.2
+
 ## 1.1.6 (2013-10-30)
 
 * Updated Ring dependency to 1.2.1
