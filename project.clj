@@ -8,9 +8,8 @@
                  [org.clojure/tools.macro "0.1.0"]
                  [clout "1.1.0"]
                  [ring/ring-core "1.2.2"]]
-  :plugins [[codox "0.7.4"]]
-  :codox {:sources ["src"]
-          :src-dir-uri "http://github.com/weavejester/compojure/blob/1.1.7/"
+  :plugins [[codox "0.8.0"]]
+  :codox {:src-dir-uri "http://github.com/weavejester/compojure/blob/1.1.7/"
           :src-linenum-anchor-prefix "L"}
   :profiles
   {:dev {:dependencies [[ring-mock "0.1.3"]
