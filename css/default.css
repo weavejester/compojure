@@ -202,7 +202,6 @@ h2 {
 }
 
 #content h3 {
-   margin-bottom: 0.5em;
    font-size: 13pt;
    font-weight: bold;
 }
@@ -216,7 +215,7 @@ h2 {
     clear: both;
 }
 
-h4.macro, h4.added, h4.deprecated {
+h4.type, h4.added, h4.deprecated {
     margin: 0;
     float: left;
     font-variant: small-caps;
@@ -226,7 +225,7 @@ h4.macro, h4.added, h4.deprecated {
     margin-left: 10px;
 }
 
-h4.macro {
+h4.type {
     color: #717171;
 }
 
@@ -239,12 +238,44 @@ h4.deprecated {
 }
 
 .public {
-   margin-top: 1.5em;
-   margin-bottom: 2.0em;
+   margin-top: 1.8em;
+   margin-bottom: 2.4em;
 }
 
 .public:last-child {
    margin-bottom: 20%;
+}
+
+.members .public:last-child {
+    margin-bottom: 0;
+}
+
+.members {
+    margin: 15px 0;
+}
+
+.members h4 {
+    color: #555;
+    font-weight: normal;
+    font-variant: small-caps;
+    margin: 0 0 5px 0;
+}
+
+.members .inner {
+    padding-top: 5px;
+    padding-left: 15px;
+    margin-top: 2px;
+    margin-left: 4px;
+    border-left: 1px solid #bbb;
+}
+
+#content .members .inner h3 {
+    font-size: 12pt;
+}
+
+.members .public {
+    margin-top: 0;
+    margin-bottom: 1em;
 }
 
 .namespace {
@@ -274,8 +305,12 @@ h4.deprecated {
 }
 
 .usage code {
-   display: block;
-   color: #008;
+    display: block;
+    color: #008;
+}
+
+.usage code:first-child {
+    padding-top: 0.5em;
 }
 
 div.doc {
@@ -288,5 +323,11 @@ pre.doc {
 }
 
 .src-link a {
-    font-size: 9pt;
+    background: #f6f6f6;
+    border: 1px solid #e4e4e4;
+    border-radius: 2px;
+    font-size: 70%;
+    padding: 1px 4px;
+    text-decoration: none;
+    color: #5555bb;
 }
