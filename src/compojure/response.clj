@@ -1,7 +1,6 @@
 (ns compojure.response
   "Methods for generating Ring response maps"
-  (:use [clojure.core.incubator :only (-?>)]
-        [ring.util.response :only (response content-type)])
+  (:use [ring.util.response :only (response content-type)])
   (:require [clojure.java.io :as io])
   (:import [java.io File InputStream]
            [java.net URL]

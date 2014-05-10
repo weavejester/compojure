@@ -3,7 +3,6 @@
   (:require [clojure.string :as str])
   (:use clout.core
         compojure.response
-        [clojure.core.incubator :only (-?>)]
         [clojure.tools.macro :only (name-with-attributes)]))
 
 (defn- method-matches?
@@ -24,8 +23,8 @@
       (or (nil? method) (method-matches? method request))
         (handler request)
       (and (= :get method) (= :head (:request-method request)))
-        (-?> (handler request)
-             (assoc :body nil)))))
+        (if-let [response (handler request)]
+          (assoc response :body nil)))))
 
 (defn- assoc-route-params
   "Associate route parameters with the request map."
