@@ -156,3 +156,19 @@
       :post "/foo/10" nil
       :get  "/bar/10" nil
       :get  "/foo"    nil)))
+
+
+(deftest context-url-decoding-test
+  (testing "url encoded percent"
+    (let [handler (GET "/ip/:ip" [ip] ip)
+          context-handler (context "/ip/:ip" [ip]
+                               (GET "/" [] ip))
+          in-context-handler (context "/ip" []
+                            (GET "/:ip" [ip] ip))
+          request (request :get "/ip/0%3A0%3A0%3A0%3A0%3A0%3A0%3A1%250") ]
+      (is (= "0:0:0:0:0:0:0:1%0"
+             (-> request handler :body)))
+      (is (= "0:0:0:0:0:0:0:1%0"
+             (-> request context-handler :body)))
+      (is (= "0:0:0:0:0:0:0:1%0"
+             (-> request in-context-handler :body))))))
