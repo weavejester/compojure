@@ -1,5 +1,11 @@
 (ns compojure.core
-  "A concise syntax for generating Ring handlers."
+  "A DSL for building Ring handlers from smaller routes.
+
+  Compojure routes are semantically the same as Ring handlers, with the
+  exception that routes may return nil to indicate they do not match.
+
+  This namespace provides functions and macros for concisely constructing
+  routes and combining them together to form more complex functions."
   (:require [clojure.string :as str])
   (:use clout.core
         compojure.response

@@ -1,4 +1,5 @@
 (ns compojure.route
+  "Route functions that define common behavior."
   (:require [compojure.response :as response])
   (:use compojure.core
         [ring.util.response :only (file-response resource-response status)]
