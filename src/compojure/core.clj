@@ -153,18 +153,22 @@
 (defn- remove-suffix [path suffix]
   (subs path 0 (- (count path) (count suffix))))
 
+(defn- path-normalize [path]
+  (path-encode (path-decode path)))
+
 (defn- wrap-context [handler]
   (fn [request]
-    (let [uri     (:uri request)
+    (let [uri     (path-normalize (:uri request))
           path    (:path-info request uri)
           context (or (:context request) "")
-          subpath (-> request :route-params :__path-info)]
+          subpath (-> request :route-params :__path-info path-encode)]
       (handler
        (-> request
-           (assoc :path-info (if (= subpath "") "/" subpath))
-           (assoc :context (remove-suffix uri subpath))
            (update-in [:params] dissoc :__path-info)
-           (update-in [:route-params] dissoc :__path-info))))))
+           (update-in [:route-params] dissoc :__path-info)
+           (assoc :uri       uri
+                  :path-info (if (= subpath "") "/" subpath)
+                  :context   (remove-suffix uri subpath)))))))
 
 (defn- context-route [route]
   (let [re-context {:__path-info #"|/.*"}]

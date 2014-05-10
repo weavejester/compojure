@@ -108,15 +108,17 @@
   (testing "context key"
     (let [handler (context "/foo/:id" [id] :context)]
       (are [url ctx] (= (handler (request :get url)) ctx)
-        "/foo/10"     "/foo/10"
-        "/foo/10/bar" "/foo/10"
-        "/bar/10"     nil)))
-  (testing "path-info key"
+        "/foo/10"       "/foo/10"
+        "/foo/10/bar"   "/foo/10"
+        "/foo/10/b%20r" "/foo/10"
+        "/bar/10"       nil)))
+  (testing "path-info   key"
     (let [handler (context "/foo/:id" [id] :path-info)]
       (are [url ctx] (= (handler (request :get url)) ctx)
-        "/foo/10"     "/"
-        "/foo/10/bar" "/bar"
-        "/bar/10"     nil)))
+        "/foo/10"       "/"
+        "/foo/10/bar"   "/bar"
+        "/foo/10/b%20r" "/b%20r"
+        "/bar/10"       nil)))
   (testing "routes"
     (let [handler (context "/foo/:id" [id]
                     (GET "/" [] "root")
@@ -127,7 +129,15 @@
         "/foo/10"    "root"
         "/foo/10/"   "root"
         "/foo/10/id" "10"
-        "/foo/1/x/2" "2"))))
+        "/foo/1/x/2" "2")))
+  (testing "url decoding"
+    (let [handler        (GET "/ip/:ip" [ip] ip)
+          cxt-handler    (context "/ip/:ip" [ip] (GET "/" [] ip))
+          in-cxt-handler (context "/ip" [] (GET "/:ip" [ip] ip))
+          request        (request :get "/ip/0%3A0%3A0%3A0%3A0%3A0%3A0%3A1%250") ]
+      (is (= (-> request handler :body)        "0:0:0:0:0:0:0:1%0"))
+      (is (= (-> request cxt-handler :body)    "0:0:0:0:0:0:0:1%0"))
+      (is (= (-> request in-cxt-handler :body) "0:0:0:0:0:0:0:1%0")))))
 
 (deftest let-routes-test
   (let [handler (let-routes [a "foo", b "bar"]
