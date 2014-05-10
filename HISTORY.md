@@ -1,3 +1,10 @@
+## 1.1.8 (2014-05-11)
+
+* Fixed URL-encoding bug in routes defined within the context macro
+* Removed core.incubator dependency
+* Improved docstrings
+* Updated Clout dependency to 1.2.0
+
 ## 1.1.7 (2014-05-07)
 
 * Updated Ring dependency to 1.2.2
