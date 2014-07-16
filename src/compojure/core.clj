@@ -98,7 +98,7 @@
       (fn [request]
         (render (handler request) request)))))
 
-(defn- compile-route
+(defn compile-route
   "Compile a route in the form (method path & body) into a function."
   [method route bindings body]
   `(make-route
