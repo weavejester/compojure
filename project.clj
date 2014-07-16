@@ -7,7 +7,7 @@
                  [org.clojure/tools.macro "0.1.0"]
                  [clout "1.2.0"]
                  [ring/ring-core "1.3.0"]]
-  :plugins [[codox "0.8.0"]]
+  :plugins [[codox "0.8.10"]]
   :codox {:src-dir-uri "http://github.com/weavejester/compojure/blob/1.1.8/"
           :src-linenum-anchor-prefix "L"}
   :profiles

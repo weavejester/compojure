@@ -1,5 +1,8 @@
 (ns compojure.handler
-  "Functions to create Ring handlers from routes."
+  "Functions to create Ring handlers from routes.
+
+  This namespace has been DEPRECATED in favor of the ring-defaults library."
+  {:deprecated "1.3"}
   (:use [ring.middleware params
                          keyword-params
                          nested-params
@@ -19,6 +22,7 @@
     - wrap-params
     - wrap-nested-params
     - wrap-keyword-params"
+  {:deprecated "1.3"}
   [routes]
   (-> routes
       wrap-keyword-params
@@ -39,6 +43,7 @@
   A map of options may also be provided. These keys are provided:
     :session   - a map of session middleware options
     :multipart - a map of multipart-params middleware options"
+  {:deprecated "1.3"}
   [routes & [opts]]
   (-> (api routes)
       (with-opts wrap-multipart-params (:multipart opts))
