@@ -151,6 +151,10 @@
   [path args & body]
   (compile-route :patch path args body))
 
+(defmacro SUBSCRIBE "Generate a SUBSCRIBE route."
+  [path args & body]
+  (compile-route :subscribe path args body))
+
 (defmacro ANY "Generate a route that matches any method."
   [path args & body]
   (compile-route nil path args body))
