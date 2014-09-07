@@ -27,7 +27,7 @@ This small Compojure application demonstrates creating a Ring handler
 from two routes:
 
 ```clojure
-(ns hello-world
+(ns hello-world.core
   (:require [compojure.core :refer :all]
             [compojure.route :as route]))
 
