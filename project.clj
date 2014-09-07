@@ -1,4 +1,4 @@
-(defproject compojure "1.1.8"
+(defproject compojure "1.1.9"
   :description "A concise routing library for Ring"
   :url "https://github.com/weavejester/compojure"
   :license {:name "Eclipse Public License"
@@ -8,7 +8,7 @@
                  [clout "1.2.0"]
                  [ring/ring-core "1.3.1"]]
   :plugins [[codox "0.8.10"]]
-  :codox {:src-dir-uri "http://github.com/weavejester/compojure/blob/1.1.8/"
+  :codox {:src-dir-uri "http://github.com/weavejester/compojure/blob/1.1.9/"
           :src-linenum-anchor-prefix "L"}
   :profiles
   {:dev {:dependencies [[ring-mock "0.1.3"]

@@ -1,3 +1,8 @@
+## 1.1.9 (2014-09-07)
+
+* `_method` parameter works for multipart forms
+* Updated Ring dependency to 1.3.1
+
 ## 1.1.8 (2014-05-11)
 
 * Fixed URL-encoding bug in routes defined within the context macro
