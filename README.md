@@ -28,8 +28,8 @@ from two routes:
 
 ```clojure
 (ns hello-world
-  (:use compojure.core)
-  (:require [compojure.route :as route]))
+  (:require [compojure.core :refer :all]
+            [compojure.route :as route]))
 
 (defroutes app
   (GET "/" [] "<h1>Hello World</h1>")
