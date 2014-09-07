@@ -15,7 +15,8 @@
   "True if this request matches the supplied request method."
   [method request]
   (let [request-method (request :request-method)
-        form-method    (get-in request [:form-params "_method"])]
+        form-method    (or (get-in request [:form-params "_method"])
+                           (get-in request [:multipart-params "_method"]))]
     (if (and form-method (= request-method :post))
       (= (str/upper-case (name method))
          (str/upper-case form-method))
