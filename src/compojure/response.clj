@@ -1,10 +1,7 @@
 (ns compojure.response
   "A protocol for generating Ring response maps"
-  (:use [ring.util.response :only (response content-type)])
-  (:require [clojure.java.io :as io])
-  (:import [java.io File InputStream]
-           [java.net URL]
-           [clojure.lang APersistentMap IDeref IFn ISeq]))
+  (:require [clojure.java.io :as io]
+            [ring.util.response :as response]))
 
 (defprotocol Renderable
   "A protocol that tells Compojure how to handle the return value of routes
@@ -21,27 +18,23 @@
   (render [_ _] nil)
   String
   (render [body _]
-    (-> (response body)
-        (content-type "text/html; charset=utf-8")))
-  APersistentMap
+    (-> (response/response body)
+        (response/content-type "text/html; charset=utf-8")))
+  clojure.lang.APersistentMap
   (render [resp-map _]
-    (merge (with-meta (response "") (meta resp-map))
+    (merge (with-meta (response/response "") (meta resp-map))
            resp-map))
-  IFn
-  (render [func request]
-    (render (func request) request))
-  IDeref
-  (render [ref request]
-    (render (deref ref) request))
-  File
-  (render [file _] (response file))
-  ISeq
-  (render [coll _] (-> (response coll)
-                       (content-type "text/html; charset=utf-8")))
-  InputStream
-  (render [stream _] (response stream))
-  URL
-  (render [url _]
-    (if (= "file" (.getProtocol url))
-      (response (io/as-file url))
-      (response (io/input-stream url)))))
+  clojure.lang.IFn
+  (render [func request] (render (func request) request))
+  clojure.lang.IDeref
+  (render [ref request] (render (deref ref) request))
+  java.io.File
+  (render [file _] (response/file-response file))
+  clojure.lang.ISeq
+  (render [coll _]
+    (-> (response/response coll)
+        (response/content-type "text/html; charset=utf-8")))
+  java.io.InputStream
+  (render [stream _] (response/response stream))
+  java.net.URL
+  (render [url _] (response/url-response url)))

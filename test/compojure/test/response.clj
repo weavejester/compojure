@@ -35,12 +35,17 @@
   (testing "with file URL"
     (let [response (response/render (io/resource "resources/test.txt") {})]
       (is (instance? File (:body response)))
+      (is (= (get-in response [:headers "Content-Length"]) "7"))
+      (is (string? (get-in response [:headers "Last-Modified"])))
       (is (= (slurp (:body response)) "foobar\n"))))
 
   (testing "with stream URL"
-    (let [response (response/render (io/resource "ring/util/response.clj") {})]
+    (let [response (response/render (io/resource "ring/util/response.clj") {})
+          body-str (slurp (:body response))]
       (is (instance? InputStream (:body response)))
-      (is (.contains (slurp (:body response)) "(ns ring.util.response"))))
+      (is (= (get-in response [:headers "Content-Length"]) (str (count body-str))))
+      (is (string? (get-in response [:headers "Last-Modified"])))
+      (is (.contains body-str "(ns ring.util.response"))))
   
   (testing "with map + metadata"
     (let [response (response/render ^{:has-metadata? true} {:body "foo"} {})]
