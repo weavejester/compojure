@@ -36,6 +36,7 @@
     (let [response (response/render (io/resource "resources/test.txt") {})]
       (is (instance? File (:body response)))
       (is (= (get-in response [:headers "Content-Length"]) "7"))
+      (is (= (get-in response [:headers "Content-Type"]) "text/plain"))
       (is (string? (get-in response [:headers "Last-Modified"])))
       (is (= (slurp (:body response)) "foobar\n"))))
 
@@ -44,6 +45,7 @@
           body-str (slurp (:body response))]
       (is (instance? InputStream (:body response)))
       (is (= (get-in response [:headers "Content-Length"]) (str (count body-str))))
+      (is (nil? (get-in response [:headers "Content-Type"])))
       (is (string? (get-in response [:headers "Last-Modified"])))
       (is (.contains body-str "(ns ring.util.response"))))
   

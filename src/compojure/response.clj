@@ -1,6 +1,7 @@
 (ns compojure.response
   "A protocol for generating Ring response maps"
   (:require [clojure.java.io :as io]
+            [ring.util.mime-type :as mime]
             [ring.util.response :as response]))
 
 (defprotocol Renderable
@@ -12,6 +13,11 @@
   types."
   (render [this request]
     "Render the object into a form suitable for the given request map."))
+
+(defn- guess-content-type [response name]
+  (if-let [mime-type (mime/ext-mime-type (str name))]
+    (response/content-type response mime-type)
+    response))
 
 (extend-protocol Renderable
   nil
@@ -29,7 +35,9 @@
   clojure.lang.IDeref
   (render [ref request] (render (deref ref) request))
   java.io.File
-  (render [file _] (response/file-response file))
+  (render [file _]
+    (-> (response/file-response file)
+        (guess-content-type file)))
   clojure.lang.ISeq
   (render [coll _]
     (-> (response/response coll)
@@ -37,4 +45,6 @@
   java.io.InputStream
   (render [stream _] (response/response stream))
   java.net.URL
-  (render [url _] (response/url-response url)))
+  (render [url _]
+    (-> (response/url-response url)
+        (guess-content-type url))))
