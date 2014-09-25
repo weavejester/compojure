@@ -7,7 +7,6 @@
   This namespace provides functions and macros for concisely constructing
   routes and combining them together to form more complex functions."
   (:require [compojure.response :as response]
-            [clojure.string :as str]
             [clojure.tools.macro :as macro]
             [clout.core :as clout]
             [ring.util.codec :as codec]))
@@ -19,8 +18,7 @@
         form-method    (or (get-in request [:form-params "_method"])
                            (get-in request [:multipart-params "_method"]))]
     (if (and form-method (= request-method :post))
-      (= (str/upper-case (name method))
-         (str/upper-case form-method))
+      (.equalsIgnoreCase (name method) form-method)
       (= method request-method))))
 
 (defn- if-method
