@@ -6,11 +6,11 @@
 
   This namespace provides functions and macros for concisely constructing
   routes and combining them together to form more complex functions."
-  (:require [clojure.string :as str]
-            [ring.util.codec :as codec])
-  (:use clout.core
-        compojure.response
-        [clojure.tools.macro :only (name-with-attributes)]))
+  (:require [compojure.response :as response]
+            [clojure.string :as str]
+            [clojure.tools.macro :as macro]
+            [clout.core :as clout]
+            [ring.util.codec :as codec]))
 
 (defn- method-matches?
   "True if this request matches the supplied request method."
@@ -46,7 +46,7 @@
   "Evaluate the handler if the route matches the request."
   [route handler]
   (fn [request]
-    (if-let [params (route-matches route request)]
+    (if-let [params (clout/route-matches route request)]
       (handler (assoc-route-params request (decode-route-params params))))))
 
 (defn- prepare-route
@@ -54,14 +54,14 @@
   [route]
   (cond
     (string? route)
-      `(route-compile ~route)
+      `(clout/route-compile ~route)
     (vector? route)
-      `(route-compile
+      `(clout/route-compile
         ~(first route)
         ~(apply hash-map (rest route)))
     :else
       `(if (string? ~route)
-         (route-compile ~route)
+         (clout/route-compile ~route)
          ~route)))
 
 (defn- assoc-&-binding [binds req sym]
@@ -101,7 +101,7 @@
   (if-method method
     (if-route route
       (fn [request]
-        (render (handler request) request)))))
+        (response/render (handler request) request)))))
 
 (defn compile-route
   "Compile a route in the form (method path & body) into a function."
@@ -125,7 +125,7 @@
   "Define a Ring handler function from a sequence of routes. The name may
   optionally be followed by a doc-string and metadata map."
   [name & routes]
-  (let [[name routes] (name-with-attributes name routes)]
+  (let [[name routes] (macro/name-with-attributes name routes)]
    `(def ~name (routes ~@routes))))
 
 (defmacro GET "Generate a GET route."
@@ -165,7 +165,7 @@
 
 (defn- if-context [route handler]
   (fn [request]
-    (if-let [params (route-matches route request)]
+    (if-let [params (clout/route-matches route request)]
       (let [uri     (:uri request)
             path    (:path-info request uri)
             context (or (:context request) "")
@@ -181,13 +181,13 @@
   (let [re-context {:__path-info #"|/.*"}]
     (cond
       (string? route)
-       `(route-compile ~(str route ":__path-info") ~re-context)
+       `(clout/route-compile ~(str route ":__path-info") ~re-context)
       (vector? route)
-       `(route-compile
+       `(clout/route-compile
          ~(str (first route) ":__path-info")
          ~(merge (apply hash-map (rest route)) re-context))
       :else
-       `(route-compile (str ~route ":__path-info") ~re-context))))
+       `(clout/route-compile (str ~route ":__path-info") ~re-context))))
 
 (defmacro context
   "Give all routes in the form a common path prefix and set of bindings.
