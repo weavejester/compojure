@@ -6,7 +6,8 @@
 
   This namespace provides functions and macros for concisely constructing
   routes and combining them together to form more complex functions."
-  (:require [clojure.string :as str])
+  (:require [clojure.string :as str]
+            [ring.util.codec :as codec])
   (:use clout.core
         compojure.response
         [clojure.tools.macro :only (name-with-attributes)]))
@@ -33,6 +34,9 @@
         (if-let [response (handler request)]
           (assoc response :body nil)))))
 
+(defn- decode-route-params [params]
+  (into {} (for [[k v] params] [k (codec/url-decode v)])))
+
 (defn- assoc-route-params
   "Associate route parameters with the request map."
   [request params]
@@ -43,7 +47,7 @@
   [route handler]
   (fn [request]
     (if-let [params (route-matches route request)]
-      (handler (assoc-route-params request params)))))
+      (handler (assoc-route-params request (decode-route-params params))))))
 
 (defn- prepare-route
   "Pre-compile the route."
@@ -159,22 +163,19 @@
 (defn- remove-suffix [path suffix]
   (subs path 0 (- (count path) (count suffix))))
 
-(defn- path-normalize [path]
-  (path-encode (path-decode path)))
-
-(defn- wrap-context [handler]
+(defn- if-context [route handler]
   (fn [request]
-    (let [uri     (path-normalize (:uri request))
-          path    (:path-info request uri)
-          context (or (:context request) "")
-          subpath (-> request :route-params :__path-info path-encode)]
-      (handler
-       (-> request
-           (update-in [:params] dissoc :__path-info)
-           (update-in [:route-params] dissoc :__path-info)
-           (assoc :uri       uri
-                  :path-info (if (= subpath "") "/" subpath)
-                  :context   (remove-suffix uri subpath)))))))
+    (if-let [params (route-matches route request)]
+      (let [uri     (:uri request)
+            path    (:path-info request uri)
+            context (or (:context request) "")
+            subpath (:__path-info params)
+            params  (dissoc params :__path-info)]
+        (handler
+         (-> request
+             (assoc-route-params (decode-route-params params))
+             (assoc :path-info (if (= subpath "") "/" subpath)
+                    :context   (remove-suffix uri subpath))))))))
 
 (defn- context-route [route]
   (let [re-context {:__path-info #"|/.*"}]
@@ -198,11 +199,11 @@
       (GET \"/profile\" [] ...)
       (GET \"/settings\" [] ...))"
   [path args & routes]
-  `(#'if-route ~(context-route path)
-     (#'wrap-context
-       (fn [request#]
-         (let-request [~args request#]
-           (routing request# ~@routes))))))
+  `(#'if-context
+    ~(context-route path)
+    (fn [request#]
+      (let-request [~args request#]
+        (routing request# ~@routes)))))
 
 (defmacro let-routes
   "Takes a vector of bindings and a body of routes. Equivalent to:

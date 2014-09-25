@@ -5,8 +5,9 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.3.0"]
                  [org.clojure/tools.macro "0.1.0"]
-                 [clout "1.2.0"]
-                 [ring/ring-core "1.3.1"]]
+                 [clout "2.0.0-SNAPSHOT"]
+                 [ring/ring-core "1.3.1"]
+                 [ring/ring-codec "1.0.0"]]
   :plugins [[codox "0.8.10"]]
   :codox {:src-dir-uri "http://github.com/weavejester/compojure/blob/1.1.9/"
           :src-linenum-anchor-prefix "L"}

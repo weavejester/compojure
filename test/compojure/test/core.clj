@@ -144,7 +144,15 @@
           request        (request :get "/ip/0%3A0%3A0%3A0%3A0%3A0%3A0%3A1%250") ]
       (is (= (-> request handler :body)        "0:0:0:0:0:0:0:1%0"))
       (is (= (-> request cxt-handler :body)    "0:0:0:0:0:0:0:1%0"))
-      (is (= (-> request in-cxt-handler :body) "0:0:0:0:0:0:0:1%0")))))
+      (is (= (-> request in-cxt-handler :body) "0:0:0:0:0:0:0:1%0"))))
+  (testing "url decoding with sensitive characters"
+    (let [handler        (GET "/emote/:emote" [emote] emote)
+          cxt-handler    (context "/emote/:emote" [emote] (GET "/" [] emote))
+          in-cxt-handler (context "/emote" [] (GET "/:emote" [emote] emote))
+          request        (request :get "/emote/%5C%3F%2F") ]
+      (is (= (-> request handler :body)        "\\?/"))
+      (is (= (-> request cxt-handler :body)    "\\?/"))
+      (is (= (-> request in-cxt-handler :body) "\\?/")))))
 
 (deftest let-routes-test
   (let [handler (let-routes [a "foo", b "bar"]
