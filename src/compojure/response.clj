@@ -36,7 +36,7 @@
   (render [ref request] (render (deref ref) request))
   java.io.File
   (render [file _]
-    (-> (response/file-response file)
+    (-> (response/file-response (str file))
         (guess-content-type file)))
   clojure.lang.ISeq
   (render [coll _]
