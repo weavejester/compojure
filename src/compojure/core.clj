@@ -40,12 +40,29 @@
   [request params]
   (merge-with merge request {:route-params params, :params params}))
 
+(defn- remove-last-char [^String s]
+  (if s (subs s 0 (max 0 (dec (.length s))))))
+
+(defn- remove-ending-slash [request]
+  (-> request
+      (update-in [:uri] remove-last-char)
+      (update-in [:path-info] remove-last-char)))
+
+(defn- redirect-if-ending-slash [route request]
+  (if (.endsWith ^String (:uri request) "/")
+    (let [request (remove-ending-slash request)]
+      (if (clout/route-matches route request)
+        {:status  301
+         :headers {"Location" (:uri request)}
+         :body    ""}))))
+
 (defn- if-route
   "Evaluate the handler if the route matches the request."
   [route handler]
   (fn [request]
     (if-let [params (clout/route-matches route request)]
-      (handler (assoc-route-params request (decode-route-params params))))))
+      (handler (assoc-route-params request (decode-route-params params)))
+      (redirect-if-ending-slash route request))))
 
 (defn- prepare-route
   "Pre-compile the route."

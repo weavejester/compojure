@@ -83,6 +83,30 @@
       (is (nil? (route (request :get "/foo/1.1"))))
       (is (route (request :get "/foo/10"))))))
 
+(deftest slash-redirection
+  (let [route (GET "/foo" [] "foo")]
+    (testing "normal route if no ending slash"
+      (is (= (route (request :get "/foo"))
+             {:status  200
+              :headers {"Content-Type" "text/html; charset=utf-8"}
+              :body    "foo"})))
+    (testing "redirection with ending slash"
+      (is (= (route (request :get "/foo/"))
+             {:status  301
+              :headers {"Location" "/foo"}
+              :body    ""})))
+    (testing "no redirection if route doesn't match"
+      (is (nil? (route (request :get "/foobar/"))))))
+
+  (let [route (GET "/foo/" [] "foo")]
+    (testing "override with ending slash on route"
+      (is (= (route (request :get "/foo/"))
+             {:status  200
+              :headers {"Content-Type" "text/html; charset=utf-8"}
+              :body    "foo"})))
+    (testing "no redirection if no ending slash"
+      (is (nil? (route (request :get "/foo")))))))
+
 (deftest routing-test
   (routing (request :get "/bar")
     (GET "/foo" [] (is false) nil)
