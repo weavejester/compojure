@@ -19,8 +19,7 @@
   (-> (GET (add-wildcard path) {{file-path :*} :route-params}
         (let [options (merge {:root "public"} options)]
           (file-response file-path options)))
-      (wrap-content-type options)
-      (wrap-head)))
+      (wrap-content-type options)))
 
 (defn resources
   "A route for serving resources on the classpath. Accepts the following
@@ -30,8 +29,7 @@
   (-> (GET (add-wildcard path) {{resource-path :*} :route-params}
         (let [root (:root options "public")]
           (resource-response (str root "/" resource-path))))
-      (wrap-content-type options)
-      (wrap-head)))
+      (wrap-content-type options)))
 
 (defn not-found
   "A route that returns a 404 not found response, with its argument as the
