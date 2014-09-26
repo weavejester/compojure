@@ -1,11 +1,10 @@
 (ns compojure.route
   "Route functions that define common behavior."
   (:require [compojure.response :as response])
-  (:use compojure.core
-        [ring.util.response :only (file-response resource-response status)]
-        [ring.util.codec :only (url-decode)]
-        ring.middleware.content-type
-        ring.middleware.head))
+  (:use [compojure.core :only [GET]]
+        [ring.util.response :only [file-response resource-response status]]
+        [ring.middleware.content-type :only [wrap-content-type]]
+        [ring.middleware.head :only [wrap-head]]))
 
 (defn- add-wildcard
   "Add a wildcard to the end of a route path."
