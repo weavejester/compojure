@@ -33,7 +33,7 @@
            expected-response)))
 
   (testing "with file"
-    (let [response (response/render (io/file "test/resources/test.txt") {})]
+    (let [response (response/render (io/file "test/test_files/test.txt") {})]
       (is (instance? File (:body response)))
       (is (= (get-in response [:headers "Content-Length"]) "7"))
       (is (= (get-in response [:headers "Content-Type"]) "text/plain"))
@@ -41,7 +41,7 @@
       (is (= (slurp (:body response)) "foobar\n"))))
 
   (testing "with file URL"
-    (let [response (response/render (io/resource "resources/test.txt") {})]
+    (let [response (response/render (io/resource "test_files/test.txt") {})]
       (is (instance? File (:body response)))
       (is (= (get-in response [:headers "Content-Length"]) "7"))
       (is (= (get-in response [:headers "Content-Type"]) "text/plain"))

@@ -15,7 +15,7 @@
       (is (= (:body response) "bar")))))
 
 (deftest resources-route
-  (let [route    (route/resources "/foo" {:root "resources"})
+  (let [route    (route/resources "/foo" {:root "test_files"})
         response (route (request :get "/foo/test.txt"))]
     (is (= (:status response) 200))
     (is (= (slurp (:body response)) "foobar\n"))
@@ -23,7 +23,7 @@
            "text/plain"))))
 
 (deftest files-route
-  (let [route    (route/files "/foo" {:root "test/resources"})
+  (let [route    (route/files "/foo" {:root "test/test_files"})
         response (route (request :get "/foo/test.txt"))]
     (is (= (:status response) 200))
     (is (= (slurp (:body response)) "foobar\n"))
@@ -41,14 +41,14 @@
       (is (= (get-in response [:headers "Content-Type"])
              "text/plain"))))
   (testing "resources"
-    (let [route    (route/resources "/foo" {:root "resources"})
+    (let [route    (route/resources "/foo" {:root "test_files"})
           response (route (request :head "/foo/test.txt"))]
       (is (= (:status response) 200))
       (is (nil? (:body response)))
       (is (= (get-in response [:headers "Content-Type"])
              "text/plain"))))
   (testing "files"
-    (let [route    (route/files "/foo" {:root "test/resources"})
+    (let [route    (route/files "/foo" {:root "test/test_files"})
           response (route (request :head "/foo/test.txt"))]
       (is (= (:status response) 200))
       (is (nil? (:body response)))
