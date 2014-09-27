@@ -11,9 +11,7 @@
             [clout.core :as clout]
             [ring.util.codec :as codec]))
 
-(defn- method-matches?
-  "True if this request matches the supplied request method."
-  [method request]
+(defn- method-matches? [method request]
   (let [request-method (request :request-method)
         form-method    (or (get-in request [:form-params "_method"])
                            (get-in request [:multipart-params "_method"]))]
@@ -21,9 +19,7 @@
       (.equalsIgnoreCase (name method) form-method)
       (= method request-method))))
 
-(defn- if-method
-  "Evaluate the handler if the request method matches."
-  [method handler]
+(defn- if-method [method handler]
   (fn [request]
     (cond
       (or (nil? method) (method-matches? method request))
@@ -35,21 +31,15 @@
 (defn- decode-route-params [params]
   (into {} (for [[k v] params] [k (codec/url-decode v)])))
 
-(defn- assoc-route-params
-  "Associate route parameters with the request map."
-  [request params]
+(defn- assoc-route-params [request params]
   (merge-with merge request {:route-params params, :params params}))
 
-(defn- if-route
-  "Evaluate the handler if the route matches the request."
-  [route handler]
+(defn- if-route [route handler]
   (fn [request]
     (if-let [params (clout/route-matches route request)]
       (handler (assoc-route-params request (decode-route-params params))))))
 
-(defn- prepare-route
-  "Pre-compile the route."
-  [route]
+(defn- prepare-route [route]
   (cond
     (string? route)
       `(clout/route-compile ~route)
@@ -71,9 +61,7 @@
   (assoc binds sym `(get-in ~req [:params ~(keyword sym)]
                       (get-in ~req [:params ~(str sym)]))))
 
-(defn- vector-bindings
-  "Create the bindings for a vector of parameters."
-  [args req]
+(defn- vector-bindings [args req]
   (loop [args args, binds {}]
     (if-let [sym (first args)]
       (cond
