@@ -92,14 +92,21 @@
     `(let [~@(vector-bindings bindings request)] ~@body)
     `(let [~bindings ~request] ~@body)))
 
+(defn- wrap-route-middleware [handler]
+  (fn [request]
+    (if-let [mw (:route-middleware request)]
+      ((mw handler) request)
+      (handler request))))
+
 (defn make-route
   "Returns a function that will only call the handler if the method and Clout
   route match the request."
   [method route handler]
   (if-method method
     (if-route route
-      (fn [request]
-        (response/render (handler request) request)))))
+      (wrap-route-middleware
+        (fn [request]
+          (response/render (handler request) request))))))
 
 (defn compile-route
   "Compile a route in the form (method path & body) into a function."
@@ -208,3 +215,12 @@
   (let [...] (routes ...))"
   [bindings & body]
   `(let ~bindings (routes ~@body)))
+
+(defn wrap-routes
+  "Apply a middleware function to routes after they have been matched."
+  ([handler middleware]
+     (fn [request]
+       (let [mw (:route-middleware request identity)]
+         (handler (assoc request :route-middleware (comp middleware mw))))))
+  ([handler middleware & args]
+     (wrap-routes handler #(apply middleware % args))))

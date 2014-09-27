@@ -171,3 +171,23 @@
       :post "/foo/10" nil
       :get  "/bar/10" nil
       :get  "/foo"    nil)))
+
+(deftest route-middleware-test
+  (let [route      (GET "/foo" [] "foo")
+        middleware (fn [_ s] #(render s %))
+        handler    (wrap-routes route middleware "bar")]
+    (testing "route doesn't match"
+      (is (nil? (handler (request :get "/bar")))))
+    (testing "route matches"
+      (is (= (:body (handler (request :get "/foo"))) "bar"))))
+
+  (let [route (routes
+               (GET "/foo" [] "foo")
+               (GET "/bar" [] "bar"))
+        middleware (fn [_ s] #(render s %))
+        handler    (wrap-routes route middleware "baz")]
+    (testing "combined routes don't match"
+      (is (nil? (handler (request :get "/baz")))))
+    (testing "combined routes match"
+      (is (= (:body (handler (request :get "/foo"))) "baz"))
+      (is (= (:body (handler (request :get "/bar"))) "baz")))))
