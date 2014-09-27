@@ -1,4 +1,4 @@
-(ns compojure.test.route
+(ns compojure.route-test
   (:use clojure.test
         ring.mock.request)
   (:require [compojure.route :as route] :reload))

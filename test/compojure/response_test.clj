@@ -1,4 +1,4 @@
-(ns compojure.test.response
+(ns compojure.response-test
   (:use clojure.test)
   (:require [clojure.java.io :as io])
   (:require [compojure.response :as response] :reload)

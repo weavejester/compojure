@@ -1,4 +1,4 @@
-(ns compojure.test.core
+(ns compojure.core-test
   (:use clojure.test
         ring.mock.request
         compojure.core
