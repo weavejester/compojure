@@ -1,10 +1,9 @@
 (ns compojure.route
   "Route functions that define common behavior."
   (:require [compojure.response :as response]
-            [compojure.core :refer [GET]]
+            [compojure.core :refer [GET rfn]]
             [ring.util.response :refer [file-response resource-response status]]
-            [ring.middleware.content-type :refer [wrap-content-type]]
-            [ring.middleware.head :refer [wrap-head]]))
+            [ring.middleware.content-type :refer [wrap-content-type]]))
 
 (defn- add-wildcard
   "Add a wildcard to the end of a route path."
@@ -35,7 +34,6 @@
   "A route that returns a 404 not found response, with its argument as the
   response body."
   [body]
-  (wrap-head
-    (fn [request]
-      (-> (response/render body request)
-          (status 404)))))
+  (rfn request
+    (-> (response/render body request)
+        (status 404))))

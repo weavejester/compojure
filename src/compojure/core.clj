@@ -153,6 +153,16 @@
   [path args & body]
   (compile-route nil path args body))
 
+(defmacro rfn "Generate a route that matches any method and path."
+  [args & body]
+  `(#'wrap-route-middleware
+    (fn [request#]
+      (let [result#   (let-request [~args request#] ~@body)
+            response# (response/render result# request#)]
+        (if (and response# (= :head (:request-method request#)))
+          (assoc response# :body nil)
+          response#)))))
+
 (defn- remove-suffix [path suffix]
   (subs path 0 (- (count path) (count suffix))))
 

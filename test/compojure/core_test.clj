@@ -83,6 +83,23 @@
       (is (nil? (route (mock/request :get "/foo/1.1"))))
       (is (route (mock/request :get "/foo/10"))))))
 
+(deftest rfn-test
+  (testing "response rendering"
+    (is (= ((rfn [] "foo") (mock/request :get "/"))
+           (response/render "foo" {}))))
+
+  (testing "head requests"
+    (is (= ((rfn [] "foo") (mock/request :head "/"))
+           (assoc (response/render "foo" {}) :body nil))))
+
+  (testing "vector binding"
+    (is (= ((rfn [id] id) (assoc (mock/request :get "/") :params {"id" "bar"}))
+           (response/render "bar" {}))))
+
+  (testing "map binding"
+    (is (= ((rfn {x :x} x) (assoc (mock/request :get "/") :x "baz"))
+           (response/render "baz" {})))))
+
 (deftest routing-test
   (routing (mock/request :get "/bar")
     (GET "/foo" [] (is false) nil)
