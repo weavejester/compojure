@@ -1,9 +1,7 @@
 (ns compojure.response-test
-  (:use clojure.test)
-  (:require [clojure.java.io :as io])
-  (:require [compojure.response :as response] :reload)
-  (:import [java.io File InputStream]
-           java.net.URL))
+  (:require [clojure.test :refer :all]
+            [clojure.java.io :as io]
+            [compojure.response :as response]))
 
 (def expected-response
   {:status  200
@@ -34,7 +32,7 @@
 
   (testing "with file"
     (let [response (response/render (io/file "test/test_files/test.txt") {})]
-      (is (instance? File (:body response)))
+      (is (instance? java.io.File (:body response)))
       (is (= (get-in response [:headers "Content-Length"]) "7"))
       (is (= (get-in response [:headers "Content-Type"]) "text/plain"))
       (is (string? (get-in response [:headers "Last-Modified"])))
@@ -42,7 +40,7 @@
 
   (testing "with file URL"
     (let [response (response/render (io/resource "test_files/test.txt") {})]
-      (is (instance? File (:body response)))
+      (is (instance? java.io.File (:body response)))
       (is (= (get-in response [:headers "Content-Length"]) "7"))
       (is (= (get-in response [:headers "Content-Type"]) "text/plain"))
       (is (string? (get-in response [:headers "Last-Modified"])))
@@ -51,7 +49,7 @@
   (testing "with stream URL"
     (let [response (response/render (io/resource "ring/util/response.clj") {})
           body-str (slurp (:body response))]
-      (is (instance? InputStream (:body response)))
+      (is (instance? java.io.InputStream (:body response)))
       (is (= (get-in response [:headers "Content-Length"]) (str (count body-str))))
       (is (nil? (get-in response [:headers "Content-Type"])))
       (is (string? (get-in response [:headers "Last-Modified"])))
