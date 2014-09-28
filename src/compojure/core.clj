@@ -9,7 +9,8 @@
   (:require [compojure.response :as response]
             [clojure.tools.macro :as macro]
             [clout.core :as clout]
-            [ring.util.codec :as codec]))
+            [ring.util.codec :as codec]
+            [medley.core :refer [map-vals]]))
 
 (defn- method-matches? [method request]
   (let [request-method (request :request-method)
@@ -29,7 +30,7 @@
           (assoc response :body nil)))))
 
 (defn- decode-route-params [params]
-  (into {} (for [[k v] params] [k (codec/url-decode v)])))
+  (map-vals codec/url-decode params))
 
 (defn- assoc-route-params [request params]
   (merge-with merge request {:route-params params, :params params}))
