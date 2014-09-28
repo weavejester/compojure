@@ -76,7 +76,13 @@
           (throw (Exception. (str "Unexpected binding: " sym))))
       (mapcat identity binds))))
 
+(defn warn-on-*-bindings! [bindings]
+  (when (and (vector? bindings) (contains? (set bindings) '*))
+    (binding [*out* *err*]
+      (println "WARNING: * should not be used as a route binding."))))
+
 (defmacro let-request [[bindings request] & body]
+  (warn-on-*-bindings! bindings)
   (if (vector? bindings)
     `(let [~@(vector-bindings bindings request)] ~@body)
     `(let [~bindings ~request] ~@body)))

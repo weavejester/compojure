@@ -47,7 +47,13 @@
        (is (= (params {:x "a", :y "b"})))
        nil)
      (-> (mock/request :get "/foo")
-         (assoc :params {:x "a", :y "b"})))))
+         (assoc :params {:x "a", :y "b"}))))
+
+  (testing "* binding warning"
+    (is (= (with-out-str
+             (binding [*err* *out*]
+               (eval '(compojure.core/GET "/foo/*" [*] (str *)))))
+           "WARNING: * should not be used as a route binding.\n"))))
 
 (deftest route-matching
   (testing "_method parameter"
