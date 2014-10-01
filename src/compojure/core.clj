@@ -76,7 +76,7 @@
           (throw (Exception. (str "Unexpected binding: " sym))))
       (mapcat identity binds))))
 
-(defn warn-on-*-bindings! [bindings]
+(defn- warn-on-*-bindings! [bindings]
   (when (and (vector? bindings) (contains? (set bindings) '*))
     (binding [*out* *err*]
       (println "WARNING: * should not be used as a route binding."))))
