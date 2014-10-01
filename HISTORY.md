@@ -1,3 +1,15 @@
+## 1.2.0 (2014-10-01)
+
+* Minimum Clojure version is now 1.5.1
+* Improved URL and File responses
+* Added `rfn` macro
+* Added `wrap-routes` function
+* Made `compile-route` function public
+* Updated Clout dependency to 2.0.0
+* Fixed remaining context URL encoding bug
+* Deprecated `compojure.handler` namespace in favor of Ring-Defaults
+* Warning for using `*` as an route argument
+
 ## 1.1.9 (2014-09-07)
 
 * `_method` parameter works for multipart forms
