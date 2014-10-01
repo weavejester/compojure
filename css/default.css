@@ -6,12 +6,13 @@ body {
 pre, code {
    font-family: Monaco, DejaVu Sans Mono, Consolas, monospace;
    font-size: 9pt;
+   margin: 15px 0;
 }
 
 h2 {
    font-weight: normal;
-   font-size: 18pt;
-   padding: 7px 0 0 0;
+   font-size: 28px;
+   padding: 10px 0 2px 0;
    margin: 0;
 }
 
@@ -26,7 +27,7 @@ h2 {
    height: 20px;
    background: #444;
    color: #fff;
-   padding: 5px;
+   padding: 5px 7px;
 }
 
 #content {
@@ -36,7 +37,7 @@ h2 {
    overflow: auto;
    background: #fff;
    color: #333;
-   padding: 0 1em;
+   padding: 0 18px;
 }
 
 .sidebar {
@@ -47,15 +48,15 @@ h2 {
 }
 
 #namespaces {
-   background: #e6e6e6;
-   border-right: solid 1px #bbb;
+   background: #e2e2e2;
+   border-right: solid 1px #cccccc;
    left: 0;
    width: 250px;
 }
 
 #vars {
-   background: #eeeeee;
-   border-right: solid 1px #ccc;
+   background: #f2f2f2;
+   border-right: solid 1px #cccccc;
    left: 251px;
    width: 200px;
 }
@@ -74,7 +75,7 @@ h2 {
    background: -o-linear-gradient(top, #555 0%, #222 100%);
    background: -ms-linear-gradient(top, #555 0%, #222 100%);
    background: linear-gradient(top, #555 0%, #222 100%);
-   box-shadow: 0 0 10px #555;
+   box-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
    z-index: 100;
 }
 
@@ -114,9 +115,9 @@ h2 {
 
 .sidebar h3 {
    margin: 0;
-   padding: 10px 0.5em 0 0.5em;
-   font-size: 14pt;
-   font-weight: normal
+   padding: 10px 10px 0 10px;
+   font-size: 19px;
+   font-weight: normal;
 }
 
 .sidebar ul {
@@ -132,6 +133,7 @@ h2 {
 .sidebar li a, .sidebar li .no-link {
     border-left: 3px solid transparent;
     padding: 0 7px;
+    white-space: nowrap;
 }
 
 .sidebar li .no-link {
@@ -215,31 +217,11 @@ h2 {
     clear: both;
 }
 
-h4.type, h4.added, h4.deprecated {
-    margin: 0;
-    float: left;
-    font-variant: small-caps;
-    font-size: 13px;
-    font-weight: bold;
-    margin-top: 3px;
-    margin-left: 10px;
-}
-
-h4.type {
-    color: #717171;
-}
-
-h4.added {
-    color: #508820;
-}
-
-h4.deprecated {
-    color: #880000;
-}
-
 .public {
-   margin-top: 1.8em;
-   margin-bottom: 2.4em;
+    margin: 0;
+    border-top: 1px solid #e0e0e0;
+    padding-top: 14px;
+    padding-bottom: 6px;
 }
 
 .public:last-child {
@@ -263,9 +245,9 @@ h4.deprecated {
 
 .members .inner {
     padding-top: 5px;
-    padding-left: 15px;
+    padding-left: 12px;
     margin-top: 2px;
-    margin-left: 4px;
+    margin-left: 7px;
     border-left: 1px solid #bbb;
 }
 
@@ -274,8 +256,56 @@ h4.deprecated {
 }
 
 .members .public {
+    border-top: none;
     margin-top: 0;
-    margin-bottom: 1em;
+    padding-top: 6px;
+    padding-bottom: 0;
+}
+
+.members .public:first-child {
+    padding-top: 0;
+}
+
+h4.type,
+h4.dynamic,
+h4.added,
+h4.deprecated {
+    float: left;
+    margin: 3px 10px 15px 0;
+    font-size: 15px;
+    font-weight: bold;
+    font-variant: small-caps;
+}
+
+.public h4.type,
+.public h4.dynamic,
+.public h4.added,
+.public h4.deprecated {
+    font-size: 13px;
+    font-weight: bold;
+    margin: 3px 0 0 10px;
+}
+
+.members h4.type,
+.members h4.added,
+.members h4.deprecated {
+    margin-top: 1px;
+}
+
+h4.type {
+    color: #717171;
+}
+
+h4.dynamic {
+    color: #9933aa;
+}
+
+h4.added {
+    color: #508820;
+}
+
+h4.deprecated {
+    color: #880000;
 }
 
 .namespace {
@@ -287,45 +317,137 @@ h4.deprecated {
 }
 
 .index {
-   padding: 0;
-   font-size: 80%;
-   margin: 15px 0;
+    padding: 0;
+    font-size: 80%;
+    margin: 15px 0;
+    line-height: 16px;
 }
 
 .index * {
-   display: inline;
+    display: inline;
+}
+
+.index p {
+    padding-right: 3px;
 }
 
 .index li {
-   padding: 0 .5em;
+    padding-right: 5px;
 }
 
 .index ul {
-   padding-left: 0;
+    padding-left: 0;
 }
 
 .usage code {
     display: block;
     color: #008;
+    margin: 2px 0;
 }
 
 .usage code:first-child {
-    padding-top: 0.5em;
+    padding-top: 10px;
 }
 
-div.doc {
-    margin-top: 10px;
+p {
+    margin: 15px 0;
+}
+
+.public p:first-child, .public pre.plaintext {
+    margin-top: 12px;
+}
+
+.doc {
+    margin: 0 0 26px 0;
+    clear: both;
+}
+
+.public .doc {
+    margin: 0;
+}
+
+.namespace-index .doc {
     margin-bottom: 20px;
 }
 
-pre.doc {
-    margin: 10px 0;
+.namespace-index .namespace .doc {
+    margin-bottom: 10px;
 }
 
-.src-link a {
+.markdown {
+    line-height: 18px;
+    font-size: 14px;
+}
+
+.doc, .public, .namespace .index {
+    max-width: 680px;
+    overflow-x: visible;
+}
+
+.markdown code, .src-link a {
     background: #f6f6f6;
     border: 1px solid #e4e4e4;
     border-radius: 2px;
+}
+
+.markdown pre {
+    background: #f4f4f4;
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    padding: 5px 10px;
+    margin: 0 10px;
+}
+
+.markdown pre code {
+    background: transparent;
+    border: none;
+}
+
+.doc ul, .doc ol {
+    padding-left: 30px;
+}
+
+.doc table {
+    border-collapse: collapse;
+    margin: 0 10px;
+}
+
+.doc table td, .doc table th {
+    border: 1px solid #dddddd;
+    padding: 4px 6px;
+}
+
+.doc table th {
+    background: #f2f2f2;
+}
+
+.doc dl {
+    margin: 0 10px 20px 10px;
+}
+
+.doc dl dt {
+    font-weight: bold;
+    margin: 0;
+    padding: 3px 0;
+    border-bottom: 1px solid #ddd;
+}
+
+.doc dl dd {
+    padding: 5px 0;
+    margin: 0 0 5px 10px;
+}
+
+.doc abbr {
+    border-bottom: 1px dotted #333;
+    font-variant: none
+    cursor: help;
+}
+
+.src-link {
+    margin-bottom: 15px;
+}
+
+.src-link a {
     font-size: 70%;
     padding: 1px 4px;
     text-decoration: none;
