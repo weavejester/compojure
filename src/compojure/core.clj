@@ -81,7 +81,7 @@
     (binding [*out* *err*]
       (println "WARNING: * should not be used as a route binding."))))
 
-(defmacro let-request [[bindings request] & body]
+(defmacro ^:no-doc let-request [[bindings request] & body]
   (warn-on-*-bindings! bindings)
   (if (vector? bindings)
     `(let [~@(vector-bindings bindings request)] ~@body)
@@ -94,20 +94,21 @@
       (handler request))))
 
 (defn make-route
-  "Returns a function that will only call the handler if the method and Clout
-  route match the request."
-  [method route handler]
+  "Returns a function that will only call the handler if the method and path
+  match the request."
+  [method path handler]
   (if-method method
-    (if-route route
+    (if-route path
       (wrap-route-middleware
         (fn [request]
           (response/render (handler request) request))))))
 
 (defn compile-route
-  "Compile a route in the form (method path & body) into a function."
-  [method route bindings body]
+  "Compile a route in the form (method path bindings & body) into a function.
+  Used to create custom route macros."
+  [method path bindings body]
   `(make-route
-    ~method ~(prepare-route route)
+    ~method ~(prepare-route path)
     (fn [request#]
       (let-request [~bindings request#] ~@body))))
 
