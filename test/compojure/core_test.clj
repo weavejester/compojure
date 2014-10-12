@@ -44,7 +44,7 @@
 
   (testing "map arguments"
     ((GET "/foo" {params :params}
-       (is (= (params {:x "a", :y "b"})))
+       (is (= params {:x "a", :y "b"}))
        nil)
      (-> (mock/request :get "/foo")
          (assoc :params {:x "a", :y "b"}))))
