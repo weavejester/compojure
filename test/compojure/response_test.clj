@@ -54,7 +54,7 @@
       (is (nil? (get-in response [:headers "Content-Type"])))
       (is (string? (get-in response [:headers "Last-Modified"])))
       (is (.contains body-str "(ns ring.util.response"))))
-  
+
   (testing "with map + metadata"
     (let [response (response/render ^{:has-metadata? true} {:body "foo"} {})]
       (is (= (:body response) "foo"))
