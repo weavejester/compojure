@@ -23,12 +23,20 @@
            "text/plain"))))
 
 (deftest files-route
-  (let [route    (route/files "/foo" {:root "test/test_files"})
-        response (route (mock/request :get "/foo/test.txt"))]
-    (is (= (:status response) 200))
-    (is (= (slurp (:body response)) "foobar\n"))
-    (is (= (get-in response [:headers "Content-Type"])
-           "text/plain"))))
+  (testing "text file"
+    (let [route    (route/files "/foo" {:root "test/test_files"})
+          response (route (mock/request :get "/foo/test.txt"))]
+      (is (= (:status response) 200))
+      (is (= (slurp (:body response)) "foobar\n"))
+      (is (= (get-in response [:headers "Content-Type"])
+             "text/plain"))))
+  (testing "root"
+    (let [route    (route/files "/" {:root "test/test_files"})
+          response (route (mock/request :get "/"))]
+      (is (= (:status response) 200))
+      (is (= (slurp (:body response)) "<!doctype html><title></title>\n"))
+      (is (= (get-in response [:headers "Content-Type"])
+             "text/html")))))
 
 (deftest head-method
   (testing "not found"
