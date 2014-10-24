@@ -1,3 +1,8 @@
+## 1.2.1 (2014-10-24)
+
+* Fixed warning message in Clojure 1.7
+* Fixed regression on index file content type in `route/files`
+
 ## 1.2.0 (2014-10-01)
 
 * Minimum Clojure version is now 1.5.1
