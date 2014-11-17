@@ -30,7 +30,7 @@
   (render [resp-map _]
     (merge (with-meta (response/response "") (meta resp-map))
            resp-map))
-  clojure.lang.IFn
+  clojure.lang.Fn
   (render [func request] (render (func request) request))
   clojure.lang.IDeref
   (render [ref request] (render (deref ref) request))
