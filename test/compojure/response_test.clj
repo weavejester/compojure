@@ -62,5 +62,5 @@
 
   (testing "with vector"
     (is (thrown-with-msg? IllegalArgumentException
-                          #"No implementation of method: :render of protocol: #'compojure.response/Renderable"
+                          #"No implementation of method: :render of protocol"
                           (response/render [] {})))))
