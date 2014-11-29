@@ -58,4 +58,9 @@
   (testing "with map + metadata"
     (let [response (response/render ^{:has-metadata? true} {:body "foo"} {})]
       (is (= (:body response) "foo"))
-      (is (= (meta response) {:has-metadata? true})))))
+      (is (= (meta response) {:has-metadata? true}))))
+
+  (testing "with vector"
+    (is (thrown-with-msg? IllegalArgumentException
+                          #"No implementation of method: :render of protocol: #'compojure.response/Renderable"
+                          (response/render [] {})))))
