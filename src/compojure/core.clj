@@ -195,7 +195,7 @@
        `(clout/route-compile ~(str route ":__path-info") ~re-context)
       (vector? route)
        `(clout/route-compile
-         ~(str (first route) ":__path-info")
+         (str ~(first route) ":__path-info")
          ~(merge (apply hash-map (rest route)) re-context))
       :else
        `(clout/route-compile (str ~route ":__path-info") ~re-context))))

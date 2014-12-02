@@ -139,6 +139,12 @@
       (is (map? (handler (mock/request :get "/foo/10"))))
       (is (nil? (handler (mock/request :get "/bar/10"))))))
 
+  (testing "list with regex matching"
+    (let [handler (context [(str "/foo" "/:id") :id #"\d+"] [id] identity)]
+      (is (map? (handler (mock/request :get "/foo/10"))))
+      (is (nil? (handler (mock/request :get "/foo/ab"))))
+      (is (nil? (handler (mock/request :get "/bar/10"))))))
+
   (testing "context key"
     (let [handler (context "/foo/:id" [id] :context)]
       (are [url ctx] (= (handler (mock/request :get url)) ctx)
