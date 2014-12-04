@@ -13,7 +13,9 @@
   :codox {:src-dir-uri "http://github.com/weavejester/compojure/blob/1.3.0/"
           :src-linenum-anchor-prefix "L"}
   :profiles
-  {:dev {:dependencies [[ring-mock "0.1.5"]
+  {:dev {:jvm-opts ^:replace []
+         :dependencies [[ring-mock "0.1.5"]
+                        [criterium "0.4.3"]
                         [javax.servlet/servlet-api "2.5"]]}
    :1.6 {:dependencies [[org.clojure/clojure "1.6.0"]]}
    :1.7 {:dependencies [[org.clojure/clojure "1.7.0-alpha2"]]}})
