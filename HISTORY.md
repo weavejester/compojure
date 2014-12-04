@@ -1,3 +1,8 @@
+## 1.3.0 (2014-12-04)
+
+* Fixed context macro when used with list and regex
+* Updated Clout dependency to 2.1.0 for inline regex syntax in routes
+
 ## 1.2.2 (2014-11-29)
 
 * Don't treat vector responses as handler functions
