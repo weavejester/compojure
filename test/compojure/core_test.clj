@@ -87,6 +87,12 @@
     (let [route (GET ["/foo/:id" :id #"\d+"] [id] id)]
       (is (nil? (route (mock/request :get "/foo/bar"))))
       (is (nil? (route (mock/request :get "/foo/1.1"))))
+      (is (route (mock/request :get "/foo/10")))))
+
+  (testing "inline regular expressions"
+    (let [route (GET "/foo/:id{\\d+}" [id] id)]
+      (is (nil? (route (mock/request :get "/foo/bar"))))
+      (is (nil? (route (mock/request :get "/foo/1.1"))))
       (is (route (mock/request :get "/foo/10"))))))
 
 (deftest rfn-test

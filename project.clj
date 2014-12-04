@@ -5,7 +5,7 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/tools.macro "0.1.5"]
-                 [clout "2.0.0"]
+                 [clout "2.1.0"]
                  [medley "0.5.3"]
                  [ring/ring-core "1.3.2"]
                  [ring/ring-codec "1.0.0"]]
