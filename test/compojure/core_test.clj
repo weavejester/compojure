@@ -232,4 +232,20 @@
       (is (nil? (handler (mock/request :get "/baz")))))
     (testing "combined routes match"
       (is (= (:body (handler (mock/request :get "/foo"))) "baz"))
-      (is (= (:body (handler (mock/request :get "/bar"))) "baz")))))
+      (is (= (:body (handler (mock/request :get "/bar"))) "baz"))))
+
+  (testing "multiple middleware"
+    (let [route   (GET "/" req (str (::a req) (::b req)))
+          mw-foo  (fn [h] (fn [r] (h (assoc r ::a "foo"))))
+          mw-bar  (fn [h] (fn [r] (h (assoc r ::b "bar"))))
+          handler (-> route (wrap-routes mw-foo) (wrap-routes mw-bar))]
+      (is (= (:body (handler (mock/request :get "/"))) "foobar"))))
+
+  (testing "middleware setup only once"
+    (let [counter    (atom 0)
+          middleware (fn [h] (swap! counter inc) h)
+          route      (GET "/foo" [] "foo")
+          handler    (wrap-routes route middleware)]
+      (dotimes [_ 10]
+        (handler (mock/request :get "/foo")))
+      (is (= @counter 1)))))
