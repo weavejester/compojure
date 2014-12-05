@@ -1,3 +1,7 @@
+## 1.3.1 (2014-12-05)
+
+* Don't initiate middleware passed to `wrap-routes` more than once
+
 ## 1.3.0 (2014-12-04)
 
 * Fixed context macro when used with list and regex
