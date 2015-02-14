@@ -97,11 +97,14 @@
   "Returns a function that will only call the handler if the method and path
   match the request."
   [method path handler]
-  (if-method method
-    (if-route path
-      (wrap-route-middleware
-        (fn [request]
-          (response/render (handler request) request))))))
+  (with-meta
+    (if-method method
+      (if-route path
+        (wrap-route-middleware
+          (fn [request]
+            (response/render (handler request) request)))))
+    {:method method
+     :path path}))
 
 (defn compile-route
   "Compile a route in the form (method path bindings & body) into a function.
@@ -120,7 +123,9 @@
 (defn routes
   "Create a Ring handler by combining several handlers into one."
   [& handlers]
-  #(apply routing % handlers))
+  (with-meta
+    #(apply routing % handlers)
+    {:routes (mapv meta handlers)}))
 
 (defmacro defroutes
   "Define a Ring handler function from a sequence of routes. The name may
