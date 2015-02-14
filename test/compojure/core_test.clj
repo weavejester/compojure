@@ -249,3 +249,20 @@
       (dotimes [_ 10]
         (handler (mock/request :get "/foo")))
       (is (= @counter 1)))))
+
+(deftest route-metadata-test
+  (testing "routes provide metadata"
+    (let [handler (routes
+                    (GET "/foo" [] nil)
+                    (DELETE "/foobar" [] nil)
+                    (ANY "/bar/:baz/:bam" [baz bam] nil))
+          metadata (meta handler)]
+      (is (map? metadata))
+      (is (contains? metadata :routes))
+      (is (= 3 (count (:routes metadata))))
+      (let [[foo foobar bar] (:routes metadata)]
+        (is (= :get (:method foo)))
+        (is (= "/foo" (-> foo :path :source)))
+        (is (= :delete (:method foobar)))
+        (is (nil? (:method bar)))
+        (is (= [:baz :bam] (-> bar :path :keys)))))))
