@@ -14,7 +14,7 @@
           :src-linenum-anchor-prefix "L"}
   :profiles
   {:dev {:jvm-opts ^:replace []
-         :dependencies [[ring-mock "0.1.5"]
+         :dependencies [[ring/ring-mock "0.2.0"]
                         [criterium "0.4.3"]
                         [javax.servlet/servlet-api "2.5"]]}
    :1.6 {:dependencies [[org.clojure/clojure "1.6.0"]]}
