@@ -40,10 +40,19 @@
     (if-let [params (clout/route-matches route request)]
       (handler (assoc-route-params request (decode-route-params params))))))
 
+(defn- literal? [x]
+  (if (coll? x)
+    (every? literal? x)
+    (not (or (symbol? x) (list? x)))))
+
 (defn- prepare-route [route]
   (cond
     (string? route)
-      `(clout/route-compile ~route)
+      (clout/route-compile route)
+    (and (vector? route) (literal? route))
+      (clout/route-compile
+       (first route)
+       (apply hash-map (rest route)))
     (vector? route)
       `(clout/route-compile
         ~(first route)
@@ -192,7 +201,11 @@
   (let [re-context {:__path-info #"|/.*"}]
     (cond
       (string? route)
-       `(clout/route-compile ~(str route ":__path-info") ~re-context)
+        (clout/route-compile (str route ":__path-info") re-context)
+      (and (vector? route) (literal? route))
+        (clout/route-compile
+         (str (first route) ":__path-info")
+         (merge (apply hash-map (rest route)) re-context))
       (vector? route)
        `(clout/route-compile
          (str ~(first route) ":__path-info")
