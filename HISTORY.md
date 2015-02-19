@@ -1,3 +1,8 @@
+## 1.3.2 (2015-01-19)
+
+* Fixed performance issue with routes in closures (see #133)
+* Updated Medley dependency to 0.5.5
+
 ## 1.3.1 (2014-12-05)
 
 * Don't initiate middleware passed to `wrap-routes` more than once
