@@ -129,7 +129,7 @@
 (defn routes
   "Create a Ring handler by combining several handlers into one."
   [& handlers]
-  #(apply routing % handlers))
+  #(apply routing % (filter some? handlers)))
 
 (defmacro defroutes
   "Define a Ring handler function from a sequence of routes. The name may
