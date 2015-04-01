@@ -5,7 +5,7 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/tools.macro "0.1.5"]
-                 [clout "2.1.0"]
+                 [clout "2.1.1"]
                  [medley "0.5.5"]
                  [ring/ring-core "1.3.2"]
                  [ring/ring-codec "1.0.0"]]
@@ -18,4 +18,4 @@
                         [criterium "0.4.3"]
                         [javax.servlet/servlet-api "2.5"]]}
    :1.6 {:dependencies [[org.clojure/clojure "1.6.0"]]}
-   :1.7 {:dependencies [[org.clojure/clojure "1.7.0-alpha5"]]}})
+   :1.7 {:dependencies [[org.clojure/clojure "1.7.0-alpha6"]]}})
