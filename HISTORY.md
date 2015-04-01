@@ -1,3 +1,7 @@
+## 1.3.3 (2015-01-01)
+
+* Updated Clout dependency to 2.1.1 to fix Clojure 1.7.0-alpha6 issue (see #137)
+
 ## 1.3.2 (2015-01-19)
 
 * Fixed performance issue with routes in closures (see #133)
