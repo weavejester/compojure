@@ -1,3 +1,7 @@
+## 1.3.4 (2015-05-08)
+
+* Updated Clout dependency to 2.1.2 to fix Clojure 1.7.0-beta2 issue (see clout#24)
+
 ## 1.3.3 (2015-01-01)
 
 * Updated Clout dependency to 2.1.1 to fix Clojure 1.7.0-alpha6 issue (see #137)
