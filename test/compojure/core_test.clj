@@ -37,7 +37,7 @@
                   (assoc :params {:y "bar"}))]
       ((GET "/:x" [x :as r]
             (is (= x "foo"))
-            (is (= (dissoc r :params :route-params)
+            (is (= (dissoc r :params :route-params :compojure/route)
                    (dissoc req :params)))
             nil)
        req)))
@@ -249,3 +249,16 @@
       (dotimes [_ 10]
         (handler (mock/request :get "/foo")))
       (is (= @counter 1)))))
+
+(deftest route-information-test
+  (let [route (GET "/foo/:id" req req)
+        request (route (mock/request :get "/foo/1"))]
+    (testing "request has matched route information"
+      (is (= (request :compojure/route)
+             [:get "/foo/:id"]))))
+
+  (let [route (ANY "/foo/:id" req req)
+        request (route (mock/request :post "/foo/1" {}))]
+    (testing "ANY request has matched route information"
+      (is (= (request :compojure/route)
+             [:any "/foo/:id"])))))
