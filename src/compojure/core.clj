@@ -106,11 +106,13 @@
   "Returns a function that will only call the handler if the method and path
   match the request."
   [method path handler]
-  (if-method method
-    (if-route path
-      (wrap-route-middleware
-        (fn [request]
-          (response/render (handler request) request))))))
+   (let [route-info [(or method :any) (str path)]]
+     (if-method method
+       (if-route path
+         (wrap-route-middleware
+           (fn [request]
+             (let [request (assoc request :compojure/route route-info)]
+               (response/render (handler request) request))))))))
 
 (defn compile-route
   "Compile a route in the form (method path bindings & body) into a function.
