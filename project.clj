@@ -7,7 +7,7 @@
                  [org.clojure/tools.macro "0.1.5"]
                  [clout "2.1.2"]
                  [medley "0.6.0"]
-                 [ring/ring-core "1.3.2"]
+                 [ring/ring-core "1.4.0-RC2"]
                  [ring/ring-codec "1.0.0"]]
   :plugins [[codox "0.8.10"]]
   :codox {:src-dir-uri "http://github.com/weavejester/compojure/blob/1.3.4/"
