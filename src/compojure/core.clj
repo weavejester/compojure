@@ -62,27 +62,30 @@
          (clout/route-compile ~route)
          ~route)))
 
-(defn- assoc-&-binding [binds req sym]
-  (assoc binds sym `(dissoc (:params ~req)
-                            ~@(map keyword (keys binds))
-                            ~@(map str (keys binds)))))
+(defn- and-binding [req binds]
+  `(dissoc (:params ~req) ~@(map keyword (keys binds)) ~@(map str (keys binds))))
 
-(defn- assoc-symbol-binding [binds req sym]
-  (assoc binds sym `(get-in ~req [:params ~(keyword sym)]
-                      (get-in ~req [:params ~(str sym)]))))
+(defn- symbol-binding [req sym]
+  `(get-in ~req [:params ~(keyword sym)] (get-in ~req [:params ~(str sym)])))
+
+(defn- application-binding [req sym func]
+  `(~func ~(symbol-binding req sym)))
 
 (defn- vector-bindings [args req]
   (loop [args args, binds {}]
-    (if-let [sym (first args)]
-      (cond
-        (= '& sym)
-          (recur (nnext args) (assoc-&-binding binds req (second args)))
-        (= :as sym)
-          (recur (nnext args) (assoc binds (second args) req))
-        (symbol? sym)
-          (recur (next args) (assoc-symbol-binding binds req sym))
-        :else
-          (throw (Exception. (str "Unexpected binding: " sym))))
+    (if (first args)
+      (let [[x y z] args]
+        (cond
+          (= '& x)
+          (recur (nnext args) (assoc binds y (and-binding req binds)))
+          (= :as x)
+          (recur (nnext args) (assoc binds y req))
+          (and (symbol? x) (= :<< y) (nnext args))
+          (recur (drop 3 args) (assoc binds x (application-binding req x z)))
+          (symbol? x)
+          (recur (next args) (assoc binds x (symbol-binding req x)))
+          :else
+          (throw (Exception. (str "Unexpected binding: " x)))))
       (mapcat identity binds))))
 
 (defn- warn-on-*-bindings! [bindings]

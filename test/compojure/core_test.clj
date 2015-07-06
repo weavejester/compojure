@@ -42,6 +42,14 @@
             nil)
        req)))
 
+  (testing "vector 'x :<< coercion' arguments"
+    (let [req (mock/request :get "/foo/10")]
+      ((GET "/:x/:y" [x y :<< #(Integer/parseInt %)]
+         (is (= x "foo"))
+         (is (= y 10))
+         nil)
+       req)))
+
   (testing "map arguments"
     ((GET "/foo" {params :params}
        (is (= params {:x "a", :y "b"}))
