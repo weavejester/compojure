@@ -9,7 +9,7 @@
                  [medley "0.6.0"]
                  [ring/ring-core "1.4.0"]
                  [ring/ring-codec "1.0.0"]]
-  :plugins [[codox "0.8.10"]]
+  :plugins [[codox "0.8.12"]]
   :codox {:src-dir-uri "http://github.com/weavejester/compojure/blob/1.3.4/"
           :src-linenum-anchor-prefix "L"}
   :profiles
