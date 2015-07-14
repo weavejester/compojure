@@ -100,7 +100,7 @@
         (if (and (symbol? x) (= :<< y))
           (recur (drop 3 args) (conj syms x))
           (recur (next args) syms)))
-      syms)))
+      (seq syms))))
 
 (defmacro ^:no-doc let-request [[bindings request] & body]
   (warn-on-*-bindings! bindings)
