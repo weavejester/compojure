@@ -73,7 +73,7 @@
 
 (defn- vector-bindings [args req]
   (loop [args args, binds {}]
-    (if (first args)
+    (if (seq args)
       (let [[x y z] args]
         (cond
           (= '& x)
@@ -93,10 +93,22 @@
     (binding [*out* *err*]
       (println "WARNING: * should not be used as a route binding."))))
 
+(defn- application-symbols [args]
+  (loop [args args, syms '()]
+    (if (seq args)
+      (let [[x y] args]
+        (if (and (symbol? x) (= :<< y))
+          (recur (drop 3 args) (conj syms x))
+          (recur (next args) syms)))
+      syms)))
+
 (defmacro ^:no-doc let-request [[bindings request] & body]
   (warn-on-*-bindings! bindings)
   (if (vector? bindings)
-    `(let [~@(vector-bindings bindings request)] ~@body)
+    `(let [~@(vector-bindings bindings request)]
+       ~(if-let [syms (application-symbols bindings)]
+          `(if (and ~@syms) (do ~@body))
+          `(do ~@body)))
     `(let [~bindings ~request] ~@body)))
 
 (defn- wrap-route-middleware [handler]

@@ -2,6 +2,7 @@
   (:require [clojure.test :refer :all]
             [ring.mock.request :as mock]
             [compojure.response :as response]
+            [compojure.coercions :as coercions]
             [clout.core :as clout]
             [compojure.core :refer :all]))
 
@@ -49,6 +50,14 @@
          (is (= y 10))
          nil)
        req)))
+
+  (testing "nil coercions"
+    (is (not (nil? ((GET "/foo/:x" [x] (str x))
+                    (mock/request :get "/foo/bar")))))
+    (is (not (nil? ((GET "/foo/:x" [x :<< coercions/as-int] (str x))
+                    (mock/request :get "/foo/100")))))
+    (is (nil? ((GET "/foo/:x" [x :<< coercions/as-int] (str x))
+               (mock/request :get "/foo/bar")))))
 
   (testing "map arguments"
     ((GET "/foo" {params :params}
