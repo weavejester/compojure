@@ -1,3 +1,10 @@
+## 1.4.0 (2015-07-14)
+
+* Added new :<< syntax for coercing parameters (see #131)
+* Added `compojure.coercions` namespace
+* Added `:compojure/route` key to requests to indicate matching route
+* Updated Ring dependency to 1.4.0
+
 ## 1.3.4 (2015-05-08)
 
 * Updated Clout dependency to 2.1.2 to fix Clojure 1.7.0-beta2 issue (see clout#24)
