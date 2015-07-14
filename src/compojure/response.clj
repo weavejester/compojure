@@ -1,7 +1,6 @@
 (ns compojure.response
   "A protocol for generating Ring response maps"
-  (:require [clojure.java.io :as io]
-            [ring.util.mime-type :as mime]
+  (:require [ring.util.mime-type :as mime]
             [ring.util.response :as response]))
 
 (defprotocol Renderable
