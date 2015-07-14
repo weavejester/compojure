@@ -1,4 +1,5 @@
-(ns compojure.coercions)
+(ns compojure.coercions
+  "Functions for coercing route parameters into different types.")
 
 (defn as-int
   "Parse a string into an integer, or nil if the string cannot be parsed."
