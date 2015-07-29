@@ -117,17 +117,20 @@
       ((mw handler) request)
       (handler request))))
 
+(defn- wrap-route-info [handler route-info]
+  (fn [request]
+    (handler (assoc request :compojure/route route-info))))
+
 (defn make-route
   "Returns a function that will only call the handler if the method and path
   match the request."
   [method path handler]
-   (let [route-info [(or method :any) (str path)]]
-     (if-method method
-       (if-route path
-         (wrap-route-middleware
-           (fn [request]
-             (let [request (assoc request :compojure/route route-info)]
-               (response/render (handler request) request))))))))
+  (let [route-info [(or method :any) (str path)]]
+    (if-method method
+      (if-route path
+        (-> (fn [request] (response/render (handler request) request))
+            (wrap-route-middleware)
+            (wrap-route-info route-info))))))
 
 (defn compile-route
   "Compile a route in the form (method path bindings & body) into a function.
