@@ -265,7 +265,15 @@
           handler    (wrap-routes route middleware)]
       (dotimes [_ 10]
         (handler (mock/request :get "/foo")))
-      (is (= @counter 1)))))
+      (is (= @counter 1))))
+
+  (testing "matched route available in request"
+    (let [route      (GET "/foo" [] "foo")
+          matched    (atom nil)
+          middleware (fn [h] (fn [r] (reset! matched (:compojure/route r)) (h r)))
+          handler    (wrap-routes route middleware)
+          response   (handler (mock/request :get "/foo"))]
+      (is (= @matched [:get "/foo"])))))
 
 (deftest route-information-test
   (let [route (GET "/foo/:id" req req)
