@@ -41,6 +41,7 @@
   "A route that returns a 404 not found response, with its argument as the
   response body."
   [body]
-  (rfn request
+  (fn [request]
     (-> (response/render body request)
-        (status 404))))
+        (status 404)
+        (cond-> (= (:request-method request) :head) (assoc :body nil)))))
