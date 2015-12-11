@@ -8,6 +8,12 @@
    :headers {"Content-Type" "text/html; charset=utf-8"}
    :body    "<h1>Foo</h1>"})
 
+
+(defmulti handler-multi :body)
+
+(defmethod handler-multi :default [request]
+  expected-response)
+
 (deftest response-test
   (testing "with nil"
     (is (nil? (response/render nil {}))))
@@ -24,6 +30,10 @@
 
   (testing "with handler function"
     (is (= (response/render (constantly expected-response) {})
+           expected-response)))
+
+  (testing "with handler multimethod"
+    (is (= (response/render handler-multi {})
            expected-response)))
 
   (testing "with deref-able"

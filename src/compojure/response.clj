@@ -31,6 +31,8 @@
            resp-map))
   clojure.lang.Fn
   (render [func request] (render (func request) request))
+  clojure.lang.MultiFn
+  (render [func request] (render (func request) request))
   clojure.lang.IDeref
   (render [ref request] (render (deref ref) request))
   java.io.File
