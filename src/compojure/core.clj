@@ -35,9 +35,13 @@
 (defn- assoc-route-params [request params]
   (merge-with merge request {:route-params params, :params params}))
 
+(defn- route-matches [route request]
+  (let [path (:compojure/path request)]
+    (clout/route-matches route (cond-> request path (assoc :path-info path)))))
+
 (defn- if-route [route handler]
   (fn [request]
-    (if-let [params (clout/route-matches route request)]
+    (if-let [params (route-matches route request)]
       (handler (assoc-route-params request (decode-route-params params))))))
 
 (defn- literal? [x]
