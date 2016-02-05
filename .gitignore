@@ -1,7 +1,7 @@
 /target
 /classes
 /checkouts
-/doc
+/codox
 pom.xml
 pom.xml.asc
 *.jar

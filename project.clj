@@ -9,9 +9,10 @@
                  [medley "0.6.0"]
                  [ring/ring-core "1.4.0"]
                  [ring/ring-codec "1.0.0"]]
-  :plugins [[codox "0.8.13"]]
-  :codox {:src-dir-uri "http://github.com/weavejester/compojure/blob/1.4.0/"
-          :src-linenum-anchor-prefix "L"}
+  :plugins [[lein-codox "0.9.3"]]
+  :codox
+  {:output-path "codox"
+   :source-uri "http://github.com/weavejester/compojure/blob/{version}/{filepath}#L{line}"}
   :profiles
   {:dev {:jvm-opts ^:replace []
          :dependencies [[ring/ring-mock "0.2.0"]
