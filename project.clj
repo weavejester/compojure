@@ -14,6 +14,8 @@
   {:output-path "codox"
    :metadata {:doc/format :markdown}
    :source-uri "http://github.com/weavejester/compojure/blob/{version}/{filepath}#L{line}"}
+  :aliases
+  {"test-all" ["with-profile" "default:+1.8" "test"]}
   :profiles
   {:dev {:jvm-opts ^:replace []
          :dependencies [[ring/ring-mock "0.3.0"]
