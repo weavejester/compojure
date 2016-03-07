@@ -1,3 +1,12 @@
+## 1.5.0 (2016-03-07)
+
+* Added `wrap-canonical-redirect` middleware (see #142)
+* Added support for multimethods as render functions (see #147)
+* Added matched route to request map for middleware (see #141)
+* Updated docstrings to use markdown
+* Updated Medley dependency to 0.7.3
+* Minimum Clojure version is now 1.7.0
+
 ## 1.4.0 (2015-07-14)
 
 * Added new :<< syntax for coercing parameters (see #131)
