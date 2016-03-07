@@ -12,6 +12,7 @@
   :plugins [[lein-codox "0.9.3"]]
   :codox
   {:output-path "codox"
+   :metadata {:doc/format :markdown}
    :source-uri "http://github.com/weavejester/compojure/blob/{version}/{filepath}#L{line}"}
   :profiles
   {:dev {:jvm-opts ^:replace []

@@ -2,7 +2,7 @@
   "A DSL for building Ring handlers from smaller routes.
 
   Compojure routes are semantically the same as Ring handlers, with the
-  exception that routes may return nil to indicate they do not match.
+  exception that routes may return `nil` to indicate they do not match.
 
   This namespace provides functions and macros for concisely constructing
   routes and combining them together to form more complex functions."
@@ -137,7 +137,7 @@
             (wrap-route-info route-info))))))
 
 (defn compile-route
-  "Compile a route in the form (method path bindings & body) into a function.
+  "Compile a route in the form `(method path bindings & body)` into a function.
   Used to create custom route macros."
   [method path bindings body]
   `(make-route
@@ -162,31 +162,31 @@
   (let [[name routes] (macro/name-with-attributes name routes)]
    `(def ~name (routes ~@routes))))
 
-(defmacro GET "Generate a GET route."
+(defmacro GET "Generate a `GET` route."
   [path args & body]
   (compile-route :get path args body))
 
-(defmacro POST "Generate a POST route."
+(defmacro POST "Generate a `POST` route."
   [path args & body]
   (compile-route :post path args body))
 
-(defmacro PUT "Generate a PUT route."
+(defmacro PUT "Generate a `PUT` route."
   [path args & body]
   (compile-route :put path args body))
 
-(defmacro DELETE "Generate a DELETE route."
+(defmacro DELETE "Generate a `DELETE` route."
   [path args & body]
   (compile-route :delete path args body))
 
-(defmacro HEAD "Generate a HEAD route."
+(defmacro HEAD "Generate a `HEAD` route."
   [path args & body]
   (compile-route :head path args body))
 
-(defmacro OPTIONS "Generate an OPTIONS route."
+(defmacro OPTIONS "Generate an `OPTIONS` route."
   [path args & body]
   (compile-route :options path args body))
 
-(defmacro PATCH "Generate a PATCH route."
+(defmacro PATCH "Generate a `PATCH` route."
   [path args & body]
   (compile-route :patch path args body))
 
@@ -243,9 +243,9 @@
   The following example demonstrates defining two routes with a common
   path prefix ('/user/:id') and a common binding ('id'):
 
-    (context \"/user/:id\" [id]
-      (GET \"/profile\" [] ...)
-      (GET \"/settings\" [] ...))"
+      (context \"/user/:id\" [id]
+        (GET \"/profile\" [] ...)
+        (GET \"/settings\" [] ...))"
   [path args & routes]
   `(#'if-context
     ~(context-route path)
@@ -254,8 +254,11 @@
         (routing request# ~@routes)))))
 
 (defmacro let-routes
-  "Takes a vector of bindings and a body of routes. Equivalent to:
-  (let [...] (routes ...))"
+  "Takes a vector of bindings and a body of routes.
+
+  Equivalent to:
+
+      (let [...] (routes ...))"
   [bindings & body]
   `(let ~bindings (routes ~@body)))
 

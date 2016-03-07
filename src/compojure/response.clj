@@ -5,7 +5,7 @@
 
 (defprotocol Renderable
   "A protocol that tells Compojure how to handle the return value of routes
-  defined by GET, POST, etc.
+  defined by [[GET]], [[POST]], etc.
 
   This protocol supports rendering strings, maps, functions, refs, files, seqs,
   input streams and URLs by default, and may be extended to cover many custom

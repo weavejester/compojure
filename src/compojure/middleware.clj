@@ -1,4 +1,5 @@
 (ns compojure.middleware
+  "Optional middleware to enhance routing in Compojure."
   (:require [compojure.core :refer [wrap-routes]]
             [ring.util.response :as resp]))
 
@@ -13,10 +14,10 @@
   (resp/redirect (:compojure/path request) 301))
 
 (defn wrap-canonical-redirect
-  "Middleware that permanently redirects any non-canonical route to its canonical
-  equivalent, based on a make-canonical function that changes a URI string into
-  its canonical form. If not supplied, make-canonical function will default to
-  remove-trailing-slash."
+  "Middleware that permanently redirects any non-canonical route to its
+  canonical equivalent, based on a make-canonical function that changes a URI
+  string into its canonical form. If not supplied, the make-canonical function
+  will default to [[remove-trailing-slash]]."
   ([handler]
    (wrap-canonical-redirect handler remove-trailing-slash))
   ([handler make-canonical]
