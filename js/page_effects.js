@@ -31,15 +31,15 @@ function scrollToCurrentVarLink(elements) {
 }
 
 function setCurrentVarLink() {
-    $('#vars a').parent().removeClass('current')
+    $('.secondary a').parent().removeClass('current')
     $('.anchor').
         filter(function(index) { return visibleInParent(this) }).
         each(function(index, element) {
-            findLinkByFragment("#vars a", element.id).
+            findLinkByFragment(".secondary a", element.id).
                 parent().
                 addClass('current')
         });
-    scrollToCurrentVarLink('#vars .current');
+    scrollToCurrentVarLink('.secondary .current');
 }
 
 var hasStorage = (function() { try { return localStorage.getItem } catch(e) {} }())
@@ -71,28 +71,41 @@ function sidebarContentWidth(element) {
     return Math.max.apply(Math, widths)
 }
 
-function resizeSidebars() {
-    var nsWidth  = sidebarContentWidth('#namespaces') + 30
-    var varWidth = 0
+function calculateSize(width, snap, margin, minimum) {
+    if (width == 0) {
+        return 0
+    }
+    else {
+        return Math.max(minimum, (Math.ceil(width / snap) * snap) + (margin * 2))
+    }
+}
 
-    if ($('#vars').length != 0) {
-        varWidth = sidebarContentWidth('#vars') + 30
+function resizeSidebars() {
+    var primaryWidth   = sidebarContentWidth('.primary')
+    var secondaryWidth = 0
+
+    if ($('.secondary').length != 0) {
+        secondaryWidth = sidebarContentWidth('.secondary')
     }
 
     // snap to grid
-    var snap = 30;
-    nsWidth  = Math.ceil(nsWidth / snap) * snap;
-    varWidth = Math.ceil(varWidth / snap) * snap;
+    primaryWidth   = calculateSize(primaryWidth, 32, 13, 160)
+    secondaryWidth = calculateSize(secondaryWidth, 32, 13, 160)
 
-    $('#namespaces').css('width', nsWidth)
-    $('#vars').css('width', varWidth)
-    $('#vars, .namespace-index').css('left', nsWidth + 1)
-    $('.namespace-docs').css('left', nsWidth + varWidth + 2)
+    $('.primary').css('width', primaryWidth)
+    $('.secondary').css('width', secondaryWidth).css('left', primaryWidth + 1)
+
+    if (secondaryWidth > 0) {
+        $('#content').css('left', primaryWidth + secondaryWidth + 2)
+    }
+    else {
+        $('#content').css('left', primaryWidth + 1)
+    }
 }
 
 $(window).ready(resizeSidebars)
 $(window).ready(setCurrentVarLink)
-$(window).ready(function() { persistScrollPosition('#namespaces')})
+$(window).ready(function() { persistScrollPosition('.primary')})
 $(window).ready(function() {
     $('#content').scroll(setCurrentVarLink)
     $(window).resize(setCurrentVarLink)
