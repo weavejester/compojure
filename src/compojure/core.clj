@@ -208,18 +208,20 @@
   (subs path 0 (- (count path) (count suffix))))
 
 (defn- if-context [route handler]
-  (fn [request]
-    (if-let [params (clout/route-matches route request)]
-      (let [uri     (:uri request)
-            path    (:path-info request uri)
-            context (or (:context request) "")
-            subpath (:__path-info params)
-            params  (dissoc params :__path-info)]
-        (handler
-         (-> request
-             (assoc-route-params (decode-route-params params))
-             (assoc :path-info (if (= subpath "") "/" subpath)
-                    :context   (remove-suffix uri subpath))))))))
+  (if (#{":__path-info" "/:__path-info"} (:source route))
+    handler
+    (fn [request]
+      (if-let [params (clout/route-matches route request)]
+        (let [uri     (:uri request)
+              path    (:path-info request uri)
+              context (or (:context request) "")
+              subpath (:__path-info params)
+              params  (dissoc params :__path-info)]
+          (handler
+           (-> request
+               (assoc-route-params (decode-route-params params))
+               (assoc :path-info (if (= subpath "") "/" subpath)
+                      :context   (remove-suffix uri subpath)))))))))
 
 (defn- context-route [route]
   (let [re-context {:__path-info #"|/.*"}]

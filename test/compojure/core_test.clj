@@ -214,7 +214,18 @@
           request        (mock/request :get "/emote/%5C%3F%2F") ]
       (is (= (-> request handler :body)        "\\?/"))
       (is (= (-> request cxt-handler :body)    "\\?/"))
-      (is (= (-> request in-cxt-handler :body) "\\?/")))))
+      (is (= (-> request in-cxt-handler :body) "\\?/"))))
+
+  (testing "root context"
+    (let [handler (context "/" []
+                    (GET "/" [] "root")
+                    (GET "/foo" [] "foo")
+                    (GET "/foo/:x" [x] x))]
+      (are [url body] (= (:body (handler (mock/request :get url)))
+                         body)
+        "/"      "root"
+        "/foo"   "foo"
+        "/foo/2" "2"))))
 
 (deftest let-routes-test
   (let [handler (let-routes [a "foo", b "bar"]
