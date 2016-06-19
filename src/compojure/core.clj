@@ -111,7 +111,7 @@
   (if (vector? bindings)
     `(let [~@(vector-bindings bindings request)]
        ~(if-let [syms (application-symbols bindings)]
-          `(if (and ~@syms) (do ~@body))
+          `(if (and ~@(for [s syms] `(not (nil? ~s)))) (do ~@body))
           `(do ~@body)))
     `(let [~bindings ~request] ~@body)))
 

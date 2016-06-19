@@ -56,6 +56,8 @@
                     (mock/request :get "/foo/bar")))))
     (is (not (nil? ((GET "/foo/:x" [x :<< coercions/as-int] (str x))
                     (mock/request :get "/foo/100")))))
+    (is (not (nil? ((GET "/foo/:x" [x :<< #(Boolean/valueOf %)] (str x))
+                    (mock/request :get "/foo/false")))))
     (is (nil? ((GET "/foo/:x" [x :<< coercions/as-int] (str x))
                (mock/request :get "/foo/bar")))))
 
