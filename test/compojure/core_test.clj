@@ -302,22 +302,44 @@
              [:any "/foo/:id"])))))
 
 (deftest route-async-test
-  (let [route (GET "/hello/:name" [name] (str "hello " name))]
-    (testing "matching request"
-      (let [request   (mock/request :get "/hello/world")
-            response  (promise)
-            exception (promise)]
-        (route request response exception)
-        (is (not (realized? exception)))
-        (is (= @response
-               {:status  200
-                :headers {"Content-Type" "text/html; charset=utf-8"}
-                :body    "hello world"}))))
+  (testing "single route"
+    (let [route (GET "/hello/:name" [name] (str "hello " name))]
+      (testing "matching request"
+        (let [request   (mock/request :get "/hello/world")
+              response  (promise)
+              exception (promise)]
+          (route request response exception)
+          (is (not (realized? exception)))
+          (is (= @response
+                 {:status  200
+                  :headers {"Content-Type" "text/html; charset=utf-8"}
+                  :body    "hello world"}))))
 
-    (testing "not-matching request"
-      (let [request   (mock/request :get "/goodbye/world")
-            response  (promise)
-            exception (promise)]
-        (route request response exception)
-        (is (not (realized? exception)))
-        (is (nil? @response))))))
+      (testing "not-matching request"
+        (let [request   (mock/request :get "/goodbye/world")
+              response  (promise)
+              exception (promise)]
+          (route request response exception)
+          (is (not (realized? exception)))
+          (is (nil? @response))))))
+
+  (testing "multiple routes"
+    (let [route (routes
+                 (GET "/foo" [] "foo")
+                 (GET "/bar" [] "bar")
+                 (GET "/baz" [] "baz"))]
+      (testing "matching request"
+        (let [request   (mock/request :get "/bar")
+              response  (promise)
+              exception (promise)]
+          (route request response exception)
+          (is (not (realized? exception)))
+          (is (= (:body @response) "bar"))))
+
+      (testing "not-matching request"
+        (let [request   (mock/request :get "/quz")
+              response  (promise)
+              exception (promise)]
+          (route request response exception)
+          (is (not (realized? exception)))
+          (is (nil? @response)))))))

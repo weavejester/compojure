@@ -181,7 +181,17 @@
 (defn routes
   "Create a Ring handler by combining several handlers into one."
   [& handlers]
-  #(apply routing % handlers))
+  (fn
+    ([request]
+     (apply routing request handlers))
+    ([request respond raise]
+     (letfn [(f [handlers]
+               (if (seq handlers)
+                 (let [handler  (first handlers)
+                       respond' #(if % (respond %) (f (rest handlers)))]
+                   (handler request respond' raise))
+                 (respond nil)))]
+       (f handlers)))))
 
 (defmacro defroutes
   "Define a Ring handler function from a sequence of routes. The name may
