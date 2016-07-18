@@ -12,22 +12,27 @@
             [ring.util.codec :as codec]
             [medley.core :refer [map-vals]]))
 
-(defn- method-matches? [method request]
-  (let [request-method (request :request-method)
-        form-method    (or (get-in request [:form-params "_method"])
-                           (get-in request [:multipart-params "_method"]))]
-    (if (and form-method (= request-method :post))
-      (.equalsIgnoreCase (name method) form-method)
-      (= method request-method))))
+(defn- form-method [request]
+  (or (get-in request [:form-params "_method"])
+      (get-in request [:multipart-params "_method"])))
 
-(defn- if-method [method handler]
-  (fn [request]
-    (cond
-      (or (nil? method) (method-matches? method request))
-        (handler request)
-      (and (= :get method) (= :head (:request-method request)))
-        (if-let [response (handler request)]
-          (assoc response :body nil)))))
+(defn- method-matches? [request method]
+  (or (nil? method)
+      (let [request-method (:request-method request)]
+        (case request-method
+          :head
+          (or (= method :head) (= method :get))
+          :post
+          (if-let [fm (form-method request)]
+            (.equalsIgnoreCase (name method) fm)
+            (= method :post))
+          ;else
+          (= request-method method)))))
+
+(defn- head-response [response request method]
+  (if (and (= :get method) (= :head (:request-method request)))
+    (assoc response :body nil)
+    response))
 
 (defn- decode-route-params [params]
   (map-vals codec/url-decode params))
@@ -39,10 +44,9 @@
   (let [path (:compojure/path request)]
     (clout/route-matches route (cond-> request path (assoc :path-info path)))))
 
-(defn- if-route [route handler]
-  (fn [request]
-    (if-let [params (route-matches route request)]
-      (handler (assoc-route-params request (decode-route-params params))))))
+(defn- route-request [request route]
+  (if-let [params (route-matches route request)]
+    (assoc-route-params request (decode-route-params params))))
 
 (defn- literal? [x]
   (if (coll? x)
@@ -125,16 +129,21 @@
   (fn [request]
     (handler (assoc request :compojure/route route-info))))
 
+(defn- wrap-route-matches [handler method path]
+  (fn [request]
+    (if (method-matches? request method)
+      (if-let [request (route-request request path)]
+        (some-> (handler request)
+                (head-response request method))))))
+
 (defn make-route
   "Returns a function that will only call the handler if the method and path
   match the request."
   [method path handler]
-  (let [route-info [(or method :any) (str path)]]
-    (if-method method
-      (if-route path
-        (-> (fn [request] (response/render (handler request) request))
-            (wrap-route-middleware)
-            (wrap-route-info route-info))))))
+  (-> (fn [request] (response/render (handler request) request))
+      (wrap-route-middleware)
+      (wrap-route-info [(or method :any) (str path)])
+      (wrap-route-matches method path)))
 
 (defn compile-route
   "Compile a route in the form `(method path bindings & body)` into a function.
