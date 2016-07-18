@@ -30,7 +30,7 @@
           (= request-method method)))))
 
 (defn- head-response [response request method]
-  (if (and (= :get method) (= :head (:request-method request)))
+  (if (and response (= :get method) (= :head (:request-method request)))
     (assoc response :body nil)
     response))
 
@@ -120,27 +120,45 @@
     `(let [~bindings ~request] ~@body)))
 
 (defn- wrap-route-middleware [handler]
-  (fn [request]
-    (if-let [mw (:route-middleware request)]
-      ((mw handler) request)
-      (handler request))))
+  (fn
+    ([request]
+     (if-let [mw (:route-middleware request)]
+       ((mw handler) request)
+       (handler request)))
+    ([request respond raise]
+     (if-let [mw (:route-middleware request)]
+       ((mw handler) request respond raise)
+       (handler request respond raise)))))
 
 (defn- wrap-route-info [handler route-info]
-  (fn [request]
-    (handler (assoc request :compojure/route route-info))))
+  (fn
+    ([request]
+     (handler (assoc request :compojure/route route-info)))
+    ([request respond raise]
+     (handler (assoc request :compojure/route route-info) respond raise))))
 
 (defn- wrap-route-matches [handler method path]
-  (fn [request]
-    (if (method-matches? request method)
-      (if-let [request (route-request request path)]
-        (some-> (handler request)
-                (head-response request method))))))
+  (fn
+    ([request]
+     (if (method-matches? request method)
+       (if-let [request (route-request request path)]
+         (-> (handler request)
+             (head-response request method)))))
+    ([request respond raise]
+     (if (method-matches? request method)
+       (if-let [request (route-request request path)]
+         (handler request #(respond (head-response % request method)) raise)
+         (respond nil))))))
 
 (defn make-route
   "Returns a function that will only call the handler if the method and path
   match the request."
   [method path handler]
-  (-> (fn [request] (response/render (handler request) request))
+  (-> (fn
+        ([request]
+         (response/render (handler request) request))
+        ([request respond raise]
+         (respond (response/render (handler request) request))))
       (wrap-route-middleware)
       (wrap-route-info [(or method :any) (str path)])
       (wrap-route-matches method path)))
@@ -150,7 +168,8 @@
   Used to create custom route macros."
   [method path bindings body]
   `(make-route
-    ~method ~(prepare-route path)
+    ~method
+    ~(prepare-route path)
     (fn [request#]
       (let-request [~bindings request#] ~@body))))
 
