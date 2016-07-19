@@ -342,4 +342,17 @@
               exception (promise)]
           (route request response exception)
           (is (not (realized? exception)))
-          (is (nil? @response)))))))
+          (is (nil? @response))))))
+
+  (testing "rfn"
+    (let [route     (rfn [name] (str "hello " name))
+          request   (-> (mock/request :get "/")
+                        (assoc :params {:name "world"}))
+          response  (promise)
+          exception (promise)]
+      (route request response exception)
+      (is (not (realized? exception)))
+      (is (= @response
+             {:status  200
+              :headers {"Content-Type" "text/html; charset=utf-8"}
+              :body    "hello world"})))))

@@ -9,6 +9,7 @@
   (:require [compojure.response :as response]
             [clojure.tools.macro :as macro]
             [clout.core :as clout]
+            [ring.middleware.head :refer [wrap-head]]
             [ring.util.codec :as codec]
             [medley.core :refer [map-vals]]))
 
@@ -232,15 +233,18 @@
   [path args & body]
   (compile-route nil path args body))
 
+(defn ^:no-doc make-rfn [handler]
+  (-> (fn
+        ([request]
+         (response/render (handler request) request))
+        ([request respond raise]
+         (respond (response/render (handler request) request))))
+      wrap-route-middleware
+      wrap-head))
+
 (defmacro rfn "Generate a route that matches any method and path."
   [args & body]
-  `(#'wrap-route-middleware
-    (fn [request#]
-      (let [result#   (let-request [~args request#] ~@body)
-            response# (response/render result# request#)]
-        (if (and response# (= :head (:request-method request#)))
-          (assoc response# :body nil)
-          response#)))))
+  `(make-rfn (fn [request#] (let-request [~args request#] ~@body))))
 
 (defn- remove-suffix [path suffix]
   (subs path 0 (- (count path) (count suffix))))
