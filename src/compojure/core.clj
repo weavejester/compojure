@@ -320,17 +320,31 @@
   `(let ~bindings (routes ~@body)))
 
 (defn- pre-init [middleware]
-  (let [proxy (middleware (fn [req] ((:route-handler req) req)))]
+  (let [proxy (middleware
+               (fn
+                 ([request]
+                  ((:route-handler request) request))
+                 ([request respond raise]
+                  ((:route-handler request) request respond raise))))]
     (fn [handler]
-      (fn [request]
-        (proxy (assoc request :route-handler handler))))))
+      (let [prep-request #(assoc % :route-handler handler)]
+        (fn
+          ([request]
+           (proxy (prep-request request)))
+          ([request respond raise]
+           (proxy (prep-request request) respond raise)))))))
 
 (defn wrap-routes
   "Apply a middleware function to routes after they have been matched."
   ([handler middleware]
-     (let [middleware (pre-init middleware)]
-       (fn [request]
-         (let [mw (:route-middleware request identity)]
-           (handler (assoc request :route-middleware (comp middleware mw)))))))
+   (let [middleware   (pre-init middleware)
+         prep-request (fn [request]
+                        (let [mw (:route-middleware request identity)]
+                          (assoc request :route-middleware (comp middleware mw))))]
+       (fn
+         ([request]
+          (handler (prep-request request)))
+         ([request respond raise]
+          (handler (prep-request request) respond raise)))))
   ([handler middleware & args]
      (wrap-routes handler #(apply middleware % args))))

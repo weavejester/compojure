@@ -375,4 +375,29 @@
               exception (promise)]
           (route request response exception)
           (is (not (realized? exception)))
+          (is (nil? @response))))))
+
+  (testing "wrap-routes"
+    (let [route (wrap-routes
+                 (GET "/foo" [] "foo")
+                 (fn [handler]
+                   (fn [request respond raise]
+                     (handler request
+                              #(respond (assoc % ::r (:compojure/route request)))
+                              raise))))]
+      (testing "matching request"
+        (let [request   (mock/request :get "/foo")
+              response  (promise)
+              exception (promise)]
+          (route request response exception)
+          (is (not (realized? exception)))
+          (is (= (:body @response) "foo"))
+          (is (= (::r @response) [:get "/foo"]))))
+
+      (testing "not-matching request"
+        (let [request   (mock/request :get "/bar")
+              response  (promise)
+              exception (promise)]
+          (route request response exception)
+          (is (not (realized? exception)))
           (is (nil? @response)))))))
