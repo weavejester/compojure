@@ -10,8 +10,14 @@
     (.substring uri 0 (dec (.length uri)))
     uri))
 
-(defn- redirect-to-canonical [request]
-  (resp/redirect (:compojure/path request) 301))
+(defn- redirect-to-canonical
+  ([request]
+   (resp/redirect (:compojure/path request) 301))
+  ([request respond raise]
+   (respond (redirect-to-canonical request))))
+
+(defn- assoc-path [request path]
+  (assoc request :compojure/path path))
 
 (defn wrap-canonical-redirect
   "Middleware that permanently redirects any non-canonical route to its
@@ -22,8 +28,14 @@
    (wrap-canonical-redirect handler remove-trailing-slash))
   ([handler make-canonical]
    (let [redirect-handler (wrap-routes handler (constantly redirect-to-canonical))]
-     (fn [{uri :uri :as request}]
-       (let [canonical-uri (make-canonical uri)]
-         (if (= uri canonical-uri)
-           (handler request)
-           (redirect-handler (assoc request :compojure/path canonical-uri))))))))
+     (fn
+       ([{uri :uri :as request}]
+        (let [canonical-uri (make-canonical uri)]
+          (if (= uri canonical-uri)
+            (handler request)
+            (redirect-handler (assoc-path request canonical-uri)))))
+       ([{uri :uri :as request} respond raise]
+        (let [canonical-uri (make-canonical uri)]
+          (if (= uri canonical-uri)
+            (handler request respond raise)
+            (redirect-handler (assoc-path request canonical-uri) respond raise))))))))

@@ -6,7 +6,7 @@
             [ring.mock.request :as mock]
             [ring.util.response :as resp]))
 
-(deftest test-canonical-redirect
+(deftest canonical-redirect-test
   (let [handler (wrap-canonical-redirect
                  (routes
                   (GET "/foo" [] "foo")
@@ -28,3 +28,25 @@
            {:status 404
             :headers {"Content-Type" "text/html; charset=utf-8"}
             :body "not found"}))))
+
+(deftest canonical-redirect-async-test
+  (let [handler (wrap-canonical-redirect (GET "/foo" [] "foo"))]
+    (testing "matching route"
+      (let [response  (promise)
+            exception (promise)]
+        (handler (mock/request :get "/foo") response exception)
+        (is (not (realized? exception)))
+        (is (= @response
+               {:status 200
+                :headers {"Content-Type" "text/html; charset=utf-8"}
+                :body "foo"}))))
+
+    (testing "redirect"
+      (let [response  (promise)
+            exception (promise)]
+        (handler (mock/request :get "/foo/") response exception)
+        (is (not (realized? exception)))
+        (is (= @response
+               {:status 301
+                :headers {"Location" "/foo"}
+                :body ""}))))))
