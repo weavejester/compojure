@@ -151,15 +151,19 @@
          (handler request #(respond (head-response % request method)) raise)
          (respond nil))))))
 
+(defn- wrap-response [handler]
+  (fn
+    ([request]
+     (response/render (handler request) request))
+    ([request respond raise]
+     (response/send (handler request) request respond raise))))
+
 (defn make-route
   "Returns a function that will only call the handler if the method and path
   match the request."
   [method path handler]
-  (-> (fn
-        ([request]
-         (response/render (handler request) request))
-        ([request respond raise]
-         (respond (response/render (handler request) request))))
+  (-> handler
+      (wrap-response)
       (wrap-route-middleware)
       (wrap-route-info [(or method :any) (str path)])
       (wrap-route-matches method path)))
@@ -234,11 +238,8 @@
   (compile-route nil path args body))
 
 (defn ^:no-doc make-rfn [handler]
-  (-> (fn
-        ([request]
-         (response/render (handler request) request))
-        ([request respond raise]
-         (respond (response/render (handler request) request))))
+  (-> handler
+      wrap-response
       wrap-route-middleware
       wrap-head))
 

@@ -14,7 +14,7 @@
 (defmethod handler-multi :default [request]
   expected-response)
 
-(deftest response-test
+(deftest render-test
   (testing "with nil"
     (is (nil? (response/render nil {}))))
 
@@ -74,3 +74,24 @@
     (is (thrown-with-msg? IllegalArgumentException
                           #"No implementation of method: :render of protocol"
                           (response/render [] {})))))
+
+(deftest send-test
+  (testing "render fallback"
+    (let [response  (promise)
+          exception (promise)]
+      (response/send "foo" {} response exception)
+      (is (not (realized? exception)))
+      (is (= @response
+             {:status  200
+              :headers {"Content-Type" "text/html; charset=utf-8"}
+              :body    "foo"}))))
+  
+  (testing "function return value"
+    (let [response  (promise)
+          exception (promise)]
+      (response/send (fn [_ respond _] (respond "bar")) {} response exception)
+      (is (not (realized? exception)))
+      (is (= @response
+             {:status  200
+              :headers {"Content-Type" "text/html; charset=utf-8"}
+              :body    "bar"})))))
