@@ -355,4 +355,24 @@
       (is (= @response
              {:status  200
               :headers {"Content-Type" "text/html; charset=utf-8"}
-              :body    "hello world"})))))
+              :body    "hello world"}))))
+
+  (testing "context"
+    (let [route (context "/:name" [name]
+                  (GET "/bar" [] (str name "bar"))
+                  (GET "/baz" [] (str name "baz")))]
+      (testing "matching request"
+        (let [request   (mock/request :get "/foo/baz")
+              response  (promise)
+              exception (promise)]
+          (route request response exception)
+          (is (not (realized? exception)))
+          (is (= (:body @response) "foobaz"))))
+
+      (testing "not-matching request"
+        (let [request   (mock/request :get "/foo/quz")
+              response  (promise)
+              exception (promise)]
+          (route request response exception)
+          (is (not (realized? exception)))
+          (is (nil? @response)))))))

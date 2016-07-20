@@ -249,21 +249,17 @@
 (defn- remove-suffix [path suffix]
   (subs path 0 (- (count path) (count suffix))))
 
-(defn- if-context [route handler]
-  (if (#{":__path-info" "/:__path-info"} (:source route))
-    handler
-    (fn [request]
-      (if-let [params (clout/route-matches route request)]
-        (let [uri     (:uri request)
-              path    (:path-info request uri)
-              context (or (:context request) "")
-              subpath (:__path-info params)
-              params  (dissoc params :__path-info)]
-          (handler
-           (-> request
-               (assoc-route-params (decode-route-params params))
-               (assoc :path-info (if (= subpath "") "/" subpath)
-                      :context   (remove-suffix uri subpath)))))))))
+(defn- context-request [request route]
+  (if-let [params (clout/route-matches route request)]
+    (let [uri     (:uri request)
+          path    (:path-info request uri)
+          context (or (:context request) "")
+          subpath (:__path-info params)
+          params  (dissoc params :__path-info)]
+      (-> request
+          (assoc-route-params (decode-route-params params))
+          (assoc :path-info (if (= subpath "") "/" subpath)
+                 :context   (remove-suffix uri subpath))))))
 
 (defn- context-route [route]
   (let [re-context {:__path-info #"|/.*"}]
@@ -281,6 +277,23 @@
       :else
        `(clout/route-compile (str ~route ":__path-info") ~re-context))))
 
+(defn ^:no-doc make-context [route make-handler]
+  (letfn [(handler
+            ([request]
+             ((make-handler request) request))
+            ([request respond raise]
+             ((make-handler request) request respond raise)))]
+    (if (#{":__path-info" "/:__path-info"} (:source route))
+      handler
+      (fn
+        ([request]
+         (if-let [request (context-request request route)]
+           (handler request)))
+        ([request respond raise]
+         (if-let [request (context-request request route)]
+           (handler request respond raise)
+           (respond nil)))))))
+
 (defmacro context
   "Give all routes in the form a common path prefix and set of bindings.
 
@@ -291,11 +304,11 @@
         (GET \"/profile\" [] ...)
         (GET \"/settings\" [] ...))"
   [path args & routes]
-  `(#'if-context
+  `(make-context
     ~(context-route path)
     (fn [request#]
       (let-request [~args request#]
-        (routing request# ~@routes)))))
+        (routes ~@routes)))))
 
 (defmacro let-routes
   "Takes a vector of bindings and a body of routes.
