@@ -1,3 +1,8 @@
+## 1.6.0-beta1 (2016-07-22)
+
+* Updated Ring dependency to 1.6.0-beta4
+* Added support for asynchronous handlers
+
 ## 1.5.1 (2016-06-19)
 
 * Fixed coercions for functions that return false (see #150)
