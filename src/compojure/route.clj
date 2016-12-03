@@ -56,7 +56,10 @@
   supplied response body. The response body may be anything accepted by the
   [[response/render]] function."
   [body]
-  (fn [request]
-    (-> (response/render body request)
-        (status 404)
-        (cond-> (= (:request-method request) :head) (assoc :body nil)))))
+  (fn handler
+    ([request]
+     (-> (response/render body request)
+         (status 404)
+         (cond-> (= (:request-method request) :head) (assoc :body nil))))
+    ([request respond raise]
+     (respond (handler request)))))

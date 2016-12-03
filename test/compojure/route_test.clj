@@ -12,7 +12,15 @@
     (let [response ((route/not-found {:status 200 :body "bar"})
                     (mock/request :get "/"))]
       (is (= (:status response) 404))
-      (is (= (:body response) "bar")))))
+      (is (= (:body response) "bar"))))
+  (testing "async arity"
+    (let [handler   (route/not-found "baz")
+          response  (promise)
+          exception (promise)]
+      (handler (mock/request :get "/") response exception)
+      (is (not (realized? exception)))
+      (is (= (:status @response) 404))
+      (is (= (:body @response) "baz")))))
 
 (deftest resources-route
   (let [route    (route/resources "/foo" {:root "test_files"})
