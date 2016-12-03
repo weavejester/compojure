@@ -6,7 +6,7 @@
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [org.clojure/tools.macro "0.1.5"]
                  [clout "2.1.2"]
-                 [medley "0.8.2"]
+                 [medley "0.8.4"]
                  [ring/ring-core "1.6.0-beta6"]
                  [ring/ring-codec "1.0.1"]]
   :plugins [[lein-codox "0.9.5"]]
@@ -19,6 +19,6 @@
   :profiles
   {:dev {:jvm-opts ^:replace []
          :dependencies [[ring/ring-mock "0.3.0"]
-                        [criterium "0.4.3"]
+                        [criterium "0.4.4"]
                         [javax.servlet/servlet-api "2.5"]]}
    :1.8 {:dependencies [[org.clojure/clojure "1.8.0"]]}})
