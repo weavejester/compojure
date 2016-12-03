@@ -1,3 +1,8 @@
+## 1.6.0-beta2 (2016-12-03)
+
+* Fixed bug when route called asynchronously with non-matching method
+* Added asynchronous support to compojure.route/not-found
+
 ## 1.6.0-beta1 (2016-07-22)
 
 * Updated Ring dependency to 1.6.0-beta4
