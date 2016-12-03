@@ -149,7 +149,8 @@
      (if (method-matches? request method)
        (if-let [request (route-request request path)]
          (handler request #(respond (head-response % request method)) raise)
-         (respond nil))))))
+         (respond nil))
+       (respond nil)))))
 
 (defn- wrap-response [handler]
   (fn

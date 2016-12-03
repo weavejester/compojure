@@ -336,8 +336,16 @@
           (is (not (realized? exception)))
           (is (= (:body @response) "bar"))))
 
-      (testing "not-matching request"
+      (testing "not-matching URI"
         (let [request   (mock/request :get "/quz")
+              response  (promise)
+              exception (promise)]
+          (route request response exception)
+          (is (not (realized? exception)))
+          (is (nil? @response))))
+
+      (testing "not-matching method"
+        (let [request   (mock/request :post "/bar")
               response  (promise)
               exception (promise)]
           (route request response exception)
