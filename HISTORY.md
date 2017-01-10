@@ -1,3 +1,7 @@
+## 1.6.0-beta3 (2017-01-10)
+
+* Updated Ring dependency to 1.6.0-beta7 to fix path traversal vulnerability
+
 ## 1.6.0-beta2 (2016-12-03)
 
 * Fixed bug when route called asynchronously with non-matching method
