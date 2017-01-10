@@ -1,3 +1,7 @@
+## 1.5.2 (2017-01-10)
+
+* Updated Ring dependency to 1.5.1 to fix path traversal vulnerability
+
 ## 1.5.1 (2016-06-19)
 
 * Fixed coercions for functions that return false (see #150)
