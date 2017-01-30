@@ -342,7 +342,7 @@
    (let [middleware   (pre-init middleware)
          prep-request (fn [request]
                         (let [mw (:route-middleware request identity)]
-                          (assoc request :route-middleware (comp middleware mw))))]
+                          (assoc request :route-middleware (comp mw middleware))))]
        (fn
          ([request]
           (handler (prep-request request)))
