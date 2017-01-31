@@ -286,7 +286,21 @@
           middleware (fn [h] (fn [r] (reset! matched (:compojure/route r)) (h r)))
           handler    (wrap-routes route middleware)
           response   (handler (mock/request :get "/foo"))]
-      (is (= @matched [:get "/foo"])))))
+      (is (= @matched [:get "/foo"]))))
+
+  (testing "nested route-middlewares are applied in order"
+    (let [mw (fn [handler value]
+               (fn [req]
+                 (let [resp (handler (update req :stack str value))]
+                   (update resp :body str value))))
+          handler (wrap-routes
+                    (routes
+                      (wrap-routes (GET "/foo" req (:stack req)) mw "a")
+                      (wrap-routes (GET "/bar" req (:stack req)) mw "b"))
+                    mw
+                    "1")]
+      (is (= "1aa1" (:body (handler (mock/request :get "/foo")))))
+      (is (= "1bb1" (:body (handler (mock/request :get "/bar"))))))))
 
 (deftest route-information-test
   (let [route (GET "/foo/:id" req req)
