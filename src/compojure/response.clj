@@ -39,7 +39,7 @@
   (render [body _]
     (-> (response/response body)
         (response/content-type "text/html; charset=utf-8")))
-  clojure.lang.APersistentMap
+  clojure.lang.IPersistentMap
   (render [resp-map _]
     (merge (with-meta (response/response "") (meta resp-map))
            resp-map))
