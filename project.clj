@@ -9,7 +9,7 @@
                  [medley "1.0.0"]
                  [ring/ring-core "1.6.0"]
                  [ring/ring-codec "1.0.1"]]
-  :plugins [[lein-codox "0.9.5"]]
+  :plugins [[lein-codox "0.10.3"]]
   :codox
   {:output-path "codox"
    :metadata {:doc/format :markdown}
