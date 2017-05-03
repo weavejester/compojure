@@ -1,3 +1,9 @@
+## 1.6.0 (2017-05-03)
+
+* Update Ring dependency to 1.6.0
+* Fixed middleware ordering on `wrap-routes` (see #157)
+* Fixed `Renderable` protocol to use `IPersistentMap` (see #167)
+
 ## 1.6.0-beta3 (2017-01-10)
 
 * Updated Ring dependency to 1.6.0-beta7 to fix path traversal vulnerability
@@ -40,7 +46,6 @@
 * Updated Ring dependency to 1.4.0
 
 ## 1.3.4 (2015-05-08)
-
 * Updated Clout dependency to 2.1.2 to fix Clojure 1.7.0-beta2 issue (see clout#24)
 
 ## 1.3.3 (2015-01-01)
