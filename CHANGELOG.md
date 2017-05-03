@@ -19,7 +19,7 @@
 ## 1.5.1 (2016-06-19)
 
 * Fixed coercions for functions that return false (see #150)
-* Fixed contexts with a route of "/" (seee #125)
+* Fixed contexts with a route of "/" (see #125)
 * Updated Ring dependency to 1.5.0
 * Updated Medley dependency to 0.8.2
 
