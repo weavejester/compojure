@@ -134,7 +134,12 @@
 (deftest routing-test
   (routing (mock/request :get "/bar")
     (GET "/foo" [] (is false) nil)
-    (GET "/bar" [] (is true) nil)))
+    (GET "/bar" [] (is true) nil))
+
+  (testing "one route is nil"
+    (routing (mock/request :get "/bar")
+      nil
+      (GET "/bar" [] (is true) nil))))
 
 (deftest routes-test
   ((routes

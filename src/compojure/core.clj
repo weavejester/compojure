@@ -180,9 +180,10 @@
       (let-request [~bindings request#] ~@body))))
 
 (defn routing
-  "Apply a list of routes to a Ring request map."
+  "Apply a list of routes to a Ring request map. Skips nil values."
   [request & handlers]
-  (some #(% request) handlers))
+  (->> (remove nil? handlers)
+       (some #(% request))))
 
 (defn routes
   "Create a Ring handler by combining several handlers into one."
