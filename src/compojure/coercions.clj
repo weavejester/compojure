@@ -6,7 +6,7 @@
   [s]
   (try
     (Long/parseLong s)
-    (catch NumberFormatException _ nil)))
+    (catch NumberFormatException _)))
 
 (def ^:private uuid-pattern
   #"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}")
@@ -17,4 +17,4 @@
   (if (re-matches uuid-pattern s)
     (try
       (java.util.UUID/fromString s)
-      (catch IllegalArgumentException _ nil))))
+      (catch IllegalArgumentException _))))
