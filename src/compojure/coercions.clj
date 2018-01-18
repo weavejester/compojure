@@ -14,7 +14,7 @@
 (defn as-uuid
   "Parse a string into a UUID, or `nil` if the string cannot be parsed."
   [s]
-  (if (re-matches uuid-pattern s)
+  (when (re-matches uuid-pattern s)
     (try
       (java.util.UUID/fromString s)
       (catch IllegalArgumentException _ nil))))
