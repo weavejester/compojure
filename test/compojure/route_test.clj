@@ -23,12 +23,21 @@
       (is (= (:body @response) "baz")))))
 
 (deftest resources-route
-  (let [route    (route/resources "/foo" {:root "test_files"})
-        response (route (mock/request :get "/foo/test.txt"))]
-    (is (= (:status response) 200))
-    (is (= (slurp (:body response)) "foobar\n"))
-    (is (= (get-in response [:headers "Content-Type"])
-           "text/plain"))))
+  (testing "text file"
+    (let [route    (route/resources "/foo" {:root "test_files"})
+          response (route (mock/request :get "/foo/test.txt"))]
+      (is (= (:status response) 200))
+      (is (= (slurp (:body response)) "foobar\n"))
+      (is (= (get-in response [:headers "Content-Type"])
+            "text/plain"))))
+  (testing "exclude? allows you to exclude some requests"
+    (let [exclude?           #(= "/foo/index.html" (:uri %))
+          route              (route/resources "/foo" {:root "test_files" :exclude? exclude?})
+          found-response     (route (mock/request :get "/foo/test.txt"))
+          not-found-response (route (mock/request :get "/foo/index.html"))]
+      (is (= (:status found-response) 200))
+      (is (= (slurp (:body found-response)) "foobar\n"))
+      (is (nil? not-found-response)))))
 
 (deftest files-route
   (testing "text file"
@@ -44,7 +53,15 @@
       (is (= (:status response) 200))
       (is (= (slurp (:body response)) "<!doctype html><title></title>\n"))
       (is (= (get-in response [:headers "Content-Type"])
-             "text/html")))))
+             "text/html"))))
+  (testing "exclude? allows you to exclude some requests"
+    (let [exclude?           #(= "/foo/index.html" (:uri %))
+          route              (route/files "/foo" {:root "test/test_files" :exclude? exclude?})
+          found-response     (route (mock/request :get "/foo/test.txt"))
+          not-found-response (route (mock/request :get "/foo/index.html"))]
+      (is (= (:status found-response) 200))
+      (is (= (slurp (:body found-response)) "foobar\n"))
+      (is (nil? not-found-response)))))
 
 (deftest head-method
   (testing "not found"

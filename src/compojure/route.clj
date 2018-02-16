@@ -23,15 +23,21 @@
   : the root path where the files are stored, defaults to \"public\"
 
   :mime-types
-  : an optional map of file extensions to mime types"
+  : an optional map of file extensions to mime types
+
+  :exclude?
+  : a function that is called with the current request. If this function returns true, the file is ignored. Useful for ignoring hidden files."
   ([path]
    (files path {}))
   ([path options]
-   (GET (add-wildcard path) {{file-path :*} :route-params}
-     (let [options  (merge {:root "public"} options)
-           response (file-response file-path options)]
-       (if response
-         (add-mime-type response (str (:body response)) options))))))
+   (let [options  (merge {:root "public"} options)
+         exclude? (:exclude? options (constantly false))]
+     (GET (add-wildcard path) request
+       (when-not (exclude? request)
+         (let [file-path (get-in request [:route-params :*])
+               response (file-response file-path options)]
+           (if response
+             (add-mime-type response (str (:body response)) options))))))))
 
 (defn resources
   "Returns a route for serving resources on the classpath.
@@ -42,14 +48,20 @@
   : the root prefix path of the resources, defaults to \"public\"
 
   :mime-types
-  : an optional map of file extensions to mime types"
+  : an optional map of file extensions to mime types
+
+  :exclude?
+  : a function that is called with the current request. If this function returns true, the file is ignored. Useful for ignoring hidden files."
   ([path]
    (resources path {}))
   ([path options]
-   (GET (add-wildcard path) {{resource-path :*} :route-params}
-     (let [root (:root options "public")]
-       (some-> (resource-response (str root "/" resource-path))
-               (add-mime-type resource-path options))))))
+   (let [exclude? (:exclude? options (constantly false))]
+     (GET (add-wildcard path) request
+       (when-not (exclude? request)
+         (let [root (:root options "public")
+               resource-path (get-in request [:route-params :*])]
+           (some-> (resource-response (str root "/" resource-path))
+                   (add-mime-type resource-path options))))))))
 
 (defn not-found
   "Returns a route that always returns a 404 \"Not Found\" response with the
