@@ -1,3 +1,9 @@
+## 1.6.1 (2018-04-15)
+
+* Updated Ring dependency to 1.6.3
+* Updated Ring-Codec dependency to 1.1.0
+* Updated Clout dependency to 2.2.1
+
 ## 1.6.0 (2017-05-03)
 
 * Update Ring dependency to 1.6.0
