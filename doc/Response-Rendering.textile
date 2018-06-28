@@ -1,0 +1,1 @@
+The response of a Compojure route passes through the @compojure.response/render@ multimethod.
