@@ -1,6 +1,6 @@
 # Compojure
 
-[![Build Status](https://travis-ci.org/weavejester/compojure.svg?branch=master)](https://travis-ci.org/weavejester/compojure)
+[![Build Status](https://travis-ci.org/weavejester/compojure.svg?branch=master)](https://travis-ci.org/weavejester/compojure) [![compojure on cljdoc](https://cljdoc.xyz/badge/compojure)](https://cljdoc.xyz/d/compojure/compojure/CURRENT)
 
 Compojure is a small routing library for [Ring][1] that allows web
 applications to be composed of small, independent parts.
@@ -13,8 +13,14 @@ Add the following dependency to your `project.clj` file:
 
 ## Documentation
 
-* [Wiki](https://github.com/weavejester/compojure/wiki)
-* [API Docs](http://weavejester.github.com/compojure)
+All documentation can be found on [cljdoc](https://cljdoc.xyz/d/compojure/compojure/CURRENT):
+
+- [Getting Started](https://cljdoc.xyz/d/compojure/compojure/CURRENT/doc/getting-started)
+- [Routes In Detail](https://cljdoc.xyz/d/compojure/compojure/CURRENT/doc/routes-in-detail)
+- [Destructuring Syntax](https://cljdoc.xyz/d/compojure/compojure/CURRENT/doc/destructuring-syntax)
+- [Nesting Routes](https://cljdoc.xyz/d/compojure/compojure/CURRENT/doc/nesting-routes)
+
+As well as an [overview over Compojure's API](https://cljdoc.xyz/d/compojure/compojure/CURRENT/api/compojure)
 
 ## Community
 
@@ -36,10 +42,10 @@ from two routes:
   (route/not-found "<h1>Page not found</h1>"))
 ```
 
-Also refer to the [Getting Started][2] page on the wiki.
+Also refer to the [Getting Started][2] documentation.
 
 [1]:https://github.com/ring-clojure/ring
-[2]:https://github.com/weavejester/compojure/wiki/Getting-Started
+[2]:https://cljdoc.xyz/d/compojure/compojure/CURRENT/doc/getting-started
 
 ## License
 

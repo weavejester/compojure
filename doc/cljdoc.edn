@@ -1,0 +1,7 @@
+{:cljdoc.doc/tree [["Readme" {:file "README.md"}]
+                   ["Getting Started" {:file "doc/Getting-Started.md"}]
+                   ["Routes In Detail" {:file "doc/Routes-In-Detail.md"}]
+                   ["Destructuring Syntax" {:file "doc/Destructuring-Syntax.md"}]
+                   ["Nesting Routes" {:file "doc/Nesting-routes.md"}]
+                   ["Emacs Indentation" {:file "doc/Emacs-indentation.md"}]
+                   ["Common Problems" {:file "doc/Common-Problems.md"}]]}
