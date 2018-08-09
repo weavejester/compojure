@@ -282,9 +282,12 @@
 (defn ^:no-doc make-context [route make-handler]
   (letfn [(handler
             ([request]
-             ((make-handler request) request))
+             (when-let [context-handler (make-handler request)]
+               (context-handler request)))
             ([request respond raise]
-             ((make-handler request) request respond raise)))]
+             (if-let [context-handler (make-handler request)]
+               (context-handler request respond raise)
+               (respond nil))))]
     (if (#{":__path-info" "/:__path-info"} (:source route))
       handler
       (fn
