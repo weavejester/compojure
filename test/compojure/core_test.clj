@@ -61,6 +61,16 @@
     (is (nil? ((GET "/foo/:x" [x :<< coercions/as-int] (str x))
                (mock/request :get "/foo/bar")))))
 
+  (testing "nil coercions in contexts"
+    (is (not (nil? ((context "/foo/:x" [x] (GET "/" [] (str x)))
+                    (mock/request :get "/foo/bar")))))
+    (is (not (nil? ((context "/foo/:x" [x :<< coercions/as-int] (GET "/" [] (str x)))
+                    (mock/request :get "/foo/100")))))
+    (is (not (nil? ((context "/foo/:x" [x :<< #(Boolean/valueOf %)] (GET "/" [] (str x)))
+                    (mock/request :get "/foo/false")))))
+    (is (nil? ((context "/foo/:x" [x :<< coercions/as-int] (GET "/" [] (str x)))
+               (mock/request :get "/foo/bar")))))
+
   (testing "map arguments"
     ((GET "/foo" {params :params}
        (is (= params {:x "a", :y "b"}))
@@ -397,7 +407,25 @@
               exception (promise)]
           (route request response exception)
           (is (not (realized? exception)))
-          (is (nil? @response))))))
+          (is (nil? @response)))))
+
+    (testing "with coercion"
+      (let [route (context "/:id" [id :<< coercions/as-int]
+                    (GET "/" [] (str id)))]
+        (testing "matching request"
+          (let [request   (mock/request :get "/123")
+                response  (promise)
+                exception (promise)]
+            (route request response exception)
+            (is (not (realized? exception)))
+            (is (= (:body @response) "123"))))
+        (testing "not-matching request"
+          (let [request   (mock/request :get "/foo")
+                response  (promise)
+                exception (promise)]
+            (route request response exception)
+            (is (not (realized? exception)))
+            (is (nil? @response)))))))
 
   (testing "wrap-routes"
     (let [route (wrap-routes
