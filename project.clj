@@ -7,8 +7,8 @@
                  [org.clojure/tools.macro "0.1.5"]
                  [clout "2.2.1"]
                  [medley "1.0.0"]
-                 [ring/ring-core "1.6.3"]
-                 [ring/ring-codec "1.1.0"]]
+                 [ring/ring-core "1.8.1"]
+                 [ring/ring-codec "1.1.2"]]
   :plugins [[lein-codox "0.10.3"]]
   :codox
   {:output-path "codox"
@@ -18,7 +18,7 @@
   {"test-all" ["with-profile" "default:+1.8:+1.9:+1.10" "test"]}
   :profiles
   {:dev {:jvm-opts ^:replace []
-         :dependencies [[ring/ring-mock "0.3.2"]
+         :dependencies [[ring/ring-mock "0.4.0"]
                         [criterium "0.4.4"]
                         [javax.servlet/servlet-api "2.5"]]}
    :1.8 {:dependencies [[org.clojure/clojure "1.8.0"]]}
