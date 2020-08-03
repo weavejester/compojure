@@ -6,10 +6,10 @@
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [org.clojure/tools.macro "0.1.5"]
                  [clout "2.2.1"]
-                 [medley "1.0.0"]
+                 [medley "1.3.0"]
                  [ring/ring-core "1.8.1"]
                  [ring/ring-codec "1.1.2"]]
-  :plugins [[lein-codox "0.10.3"]]
+  :plugins [[lein-codox "0.10.7"]]
   :codox
   {:output-path "codox"
    :metadata {:doc/format :markdown}
@@ -19,7 +19,7 @@
   :profiles
   {:dev {:jvm-opts ^:replace []
          :dependencies [[ring/ring-mock "0.4.0"]
-                        [criterium "0.4.4"]
+                        [criterium "0.4.6"]
                         [javax.servlet/servlet-api "2.5"]]}
    :1.8 {:dependencies [[org.clojure/clojure "1.8.0"]]}
    :1.9 {:dependencies [[org.clojure/clojure "1.9.0"]]}
