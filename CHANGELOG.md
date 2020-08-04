@@ -1,3 +1,10 @@
+## 1.6.2 (2020-08-04)
+
+* Fixed exception when coercion in context fails (see #184)
+* Updated Ring dependency to 1.8.1
+* Updated Ring-Codec dependency to 1.1.2
+* Updated Medley dependency to 1.3.0
+
 ## 1.6.1 (2018-04-15)
 
 * Updated Ring dependency to 1.6.3

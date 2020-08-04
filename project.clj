@@ -1,4 +1,4 @@
-(defproject compojure "1.6.1"
+(defproject compojure "1.6.2"
   :description "A concise routing library for Ring"
   :url "https://github.com/weavejester/compojure"
   :license {:name "Eclipse Public License"
