@@ -1,3 +1,13 @@
+## 1.8.0 (2020-08-04)
+
+* Updated Ring dependency to 1.8.1
+* Updated Ring-Codec dependency to 1.1.2
+* Updated Ring-Mock dependency to 0.4.0
+* Updated Criterium dependency to 0.4.6
+* Updated Medley dependency to 1.3.0
+* Updated Lein-Codox plugin to 0.10.7
+* Avoid exception when coercion in context fails (see #183)
+
 ## 1.6.1 (2018-04-15)
 
 * Updated Ring dependency to 1.6.3
