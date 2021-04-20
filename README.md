@@ -14,7 +14,7 @@ Add the following dependency to your `project.clj` file:
 ## Documentation
 
 * [Wiki](https://github.com/weavejester/compojure/wiki)
-* [API Docs](http://weavejester.github.com/compojure)
+* [API Docs](http://weavejester.github.io/compojure)
 
 ## Community
 
