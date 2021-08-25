@@ -255,13 +255,14 @@
   (if-let [params (clout/route-matches route request)]
     (let [uri     (:uri request)
           path    (:path-info request uri)
-          context (or (:context request) "")
           subpath (:__path-info params)
-          params  (dissoc params :__path-info)]
+          params  (dissoc params :__path-info)
+          context (remove-suffix (str route) ":__path-info")]
       (-> request
           (assoc-route-params (decode-route-params params))
           (assoc :path-info (if (= subpath "") "/" subpath)
-                 :context   (remove-suffix uri subpath))))))
+                 :context   (remove-suffix uri subpath))
+          (update :compojure/context str context)))))
 
 (defn- context-route [route]
   (let [re-context {:__path-info #"|/.*"}]
