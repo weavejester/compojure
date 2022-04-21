@@ -6,7 +6,7 @@
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [org.clojure/tools.macro "0.1.5"]
                  [clout "2.2.1"]
-                 [medley "1.3.0"]
+                 [medley "1.4.0"]
                  [ring/ring-core "1.8.1"]
                  [ring/ring-codec "1.1.2"]]
   :plugins [[lein-codox "0.10.7"]]
