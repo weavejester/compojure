@@ -188,6 +188,26 @@
         "/foo/10/b%20r" "/foo/10"
         "/bar/10"       nil)))
 
+  (testing "compojure/context key"
+    (let [resp               (fn [req bar] {:body [bar (:compojure/context req)] :status 200})
+          handler            (GET "/foo/:bar" [bar :as req] (resp req bar))
+          cxt-handler        (context "/foo/:bar" [bar] (GET "/" req (resp req bar)))
+          in-cxt-handler     (context "/foo" [] (GET "/:bar" [bar :as req] (resp req bar)))
+          root-cxt-handler   (context "/" [] (GET "/foo/:bar" [bar :as req] (resp req bar)))
+          request            (mock/request :get "/foo/bar") ]
+      (is (= (-> request handler :body)          ["bar" nil]))
+      (is (= (-> request cxt-handler :body)      ["bar" "/foo/:bar"]))
+      (is (= (-> request in-cxt-handler :body)   ["bar" "/foo"]))
+      (is (= (-> request root-cxt-handler :body) ["bar" nil]))))
+
+  (testing "compojure/context key in nested context"
+    (let [handler (context "/foo" []
+                    (context "/:bar" [bar]
+                      (GET "/baz" req {:status 200
+                                       :body   [bar (:compojure/context req)]})))
+          request (mock/request :get "/foo/bar/baz")]
+      (is (= (-> request handler :body) ["bar" "/foo/:bar"]))))
+
   (testing "path-info   key"
     (let [handler (context "/foo/:id" [id] :path-info)]
       (are [url ctx] (= (handler (mock/request :get url)) ctx)
@@ -297,6 +317,14 @@
           handler    (wrap-routes route middleware)
           response   (handler (mock/request :get "/foo"))]
       (is (= @matched [:get "/foo"]))))
+
+  (testing "matched route context available in request"
+    (let [route      (context "/foo/:bar" [] (GET "/baz" [] "foo"))
+          matched    (atom nil)
+          middleware (fn [h] (fn [r] (reset! matched (:compojure/context r)) (h r)))
+          handler    (wrap-routes route middleware)
+          response   (handler (mock/request :get "/foo/bar/baz"))]
+      (is (= @matched "/foo/:bar"))))
 
   (testing "nested route-middlewares are applied in order"
     (let [mw (fn [handler value]
