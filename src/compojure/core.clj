@@ -134,9 +134,11 @@
 (defn- wrap-route-info [handler route-info]
   (fn
     ([request]
-     (handler (assoc request :compojure/route route-info)))
+     (handler (assoc request :compojure/route route-info
+                     :compojure/full-route (str (:compojure/context request) (second route-info)))))
     ([request respond raise]
-     (handler (assoc request :compojure/route route-info) respond raise))))
+     (handler (assoc request :compojure/route route-info
+                     :compojure/full-route (str (:compojure/context request) (second route-info)) respond raise)))))
 
 (defn- wrap-route-matches [handler method path]
   (fn
@@ -257,27 +259,37 @@
           path    (:path-info request uri)
           context (or (:context request) "")
           subpath (:__path-info params)
-          params  (dissoc params :__path-info)]
+          params  (dissoc params :__path-info)
+          context-route (:context-route (meta route))]
       (-> request
           (assoc-route-params (decode-route-params params))
           (assoc :path-info (if (= subpath "") "/" subpath)
-                 :context   (remove-suffix uri subpath))))))
+                 :context   (remove-suffix uri subpath)
+                 :compojure/context (str (:compojure/context request) context-route))))))
 
 (defn- context-route [route]
   (let [re-context {:__path-info #"|/.*"}]
-    (cond
-      (string? route)
-        (clout/route-compile (str route ":__path-info") re-context)
-      (and (vector? route) (literal? route))
-        (clout/route-compile
-         (str (first route) ":__path-info")
-         (merge (apply hash-map (rest route)) re-context))
-      (vector? route)
-       `(clout/route-compile
-         (str ~(first route) ":__path-info")
-         ~(merge (apply hash-map (rest route)) re-context))
-      :else
-       `(clout/route-compile (str ~route ":__path-info") ~re-context))))
+        (cond
+          (string? route)
+          (with-meta (clout/route-compile (str route ":__path-info") re-context) {:context-route route})
+          (and (vector? route) (literal? route))
+          (with-meta (clout/route-compile
+                      (str (first route) ":__path-info")
+                      (merge (apply hash-map (rest route)) re-context)) {:context-route (first route)})
+          (vector? route)
+          `(let [uncompiled-route# ~(first route)]
+             (with-meta
+               (clout/route-compile
+                (str uncompiled-route# ":__path-info")
+                ~(merge (apply hash-map (rest route)) re-context))
+               {:context-route uncompiled-route#}))
+          :else
+          `(let [path# ~route]
+             (with-meta
+                (clout/route-compile (str path# ":__path-info") ~re-context)
+               (if (string? path#)
+                 {:context-route path#}
+                 {}))))))
 
 (defn ^:no-doc make-context [route make-handler]
   (letfn [(handler
