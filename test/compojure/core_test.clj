@@ -38,7 +38,11 @@
                   (assoc :params {:y "bar"}))]
       ((GET "/:x" [x :as r]
             (is (= x "foo"))
-            (is (= (dissoc r :params :route-params :compojure/route)
+            (is (= (dissoc r
+                           :params
+                           :route-params
+                           :compojure/route
+                           :compojure/full-route)
                    (dissoc req :params)))
             nil)
        req)))
@@ -323,7 +327,29 @@
         request (route (mock/request :post "/foo/1" {}))]
     (testing "ANY request has matched route information"
       (is (= (request :compojure/route)
-             [:any "/foo/:id"])))))
+             [:any "/foo/:id"]))
+      (is (= (request :compojure/full-route)
+             "/foo/:id"))))
+
+  (let [route (context "/foo/:foo-id" [_] (GET "/bar/:bar-id" req req))
+        request (route (mock/request :get "/foo/1/bar/2"))]
+    (testing "request has matched route information with path prefix"
+      (is (= (request :compojure/route)
+             [:get "/bar/:bar-id"]))
+      (is (= (request :compojure/route-context)
+             "/foo/:foo-id"))
+      (is (= (request :compojure/full-route)
+             "/foo/:foo-id/bar/:bar-id"))))
+
+  (let [route (context "/foo/:foo-id" [_]
+                (context "/bar/:bar-id" [_]
+                  (GET "/baz/:baz-id" req req)))
+        request (route (mock/request :get "/foo/1/bar/2/baz/3"))]
+    (testing "request has matched route information with multiple path prefix"
+      (is (= (request :compojure/route-context)
+             "/foo/:foo-id/bar/:bar-id"))
+      (is (= (request :compojure/full-route)
+             "/foo/:foo-id/bar/:bar-id/baz/:baz-id")))))
 
 (deftest route-async-test
   (testing "single route"
