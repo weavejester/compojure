@@ -251,7 +251,7 @@
 (defn- remove-suffix [path suffix]
   (subs path 0 (- (count path) (count suffix))))
 
-(defn- context-request [request route]
+(defn- context-request [request route route-context]
   (if-let [params (clout/route-matches route request)]
     (let [uri     (:uri request)
           path    (:path-info request uri)
@@ -261,7 +261,8 @@
       (-> request
           (assoc-route-params (decode-route-params params))
           (assoc :path-info (if (= subpath "") "/" subpath)
-                 :context   (remove-suffix uri subpath))))))
+                 :context   (remove-suffix uri subpath))
+          (update :compojure/route-context str route-context)))))
 
 (defn- context-route [route]
   (let [re-context {:__path-info #"|/.*"}]
@@ -279,7 +280,7 @@
       :else
        `(clout/route-compile (str ~route ":__path-info") ~re-context))))
 
-(defn ^:no-doc make-context [route make-handler]
+(defn ^:no-doc make-context [route path make-handler]
   (letfn [(handler
             ([request]
              (when-let [context-handler (make-handler request)]
@@ -292,10 +293,10 @@
       handler
       (fn
         ([request]
-         (if-let [request (context-request request route)]
+         (if-let [request (context-request request route path)]
            (handler request)))
         ([request respond raise]
-         (if-let [request (context-request request route)]
+         (if-let [request (context-request request route path)]
            (handler request respond raise)
            (respond nil)))))))
 
@@ -311,6 +312,7 @@
   [path args & routes]
   `(make-context
     ~(context-route path)
+    ~path
     (fn [request#]
       (let-request [~args request#]
         (routes ~@routes)))))
