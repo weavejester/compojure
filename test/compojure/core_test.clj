@@ -196,6 +196,23 @@
         "/foo/10/b%20r" "/b%20r"
         "/bar/10"       nil)))
 
+  (testing ":compojure/route-context key"
+    (let [handler (context "/foo/:id" [_] :compojure/route-context)]
+      (are [url route-context] (= (handler (mock/request :get url)) route-context)
+        "/foo/10"       "/foo/:id"
+        "/foo/10/bar"   "/foo/:id"
+        "/foo/10/b%20r" "/foo/:id"
+        "/bar/10"       nil)))
+
+  (testing ":compojure/route-context key in nested context"
+    (let [handler (context "/foo/:foo-id" [_]
+                    (context "/bar/:bar-id" [_] :compojure/route-context))]
+      (are [url route-context] (= (handler (mock/request :get url)) route-context)
+        "/foo/1/bar/2"       "/foo/:foo-id/bar/:bar-id"
+        "/foo/1/bar/2/baz"   "/foo/:foo-id/bar/:bar-id"
+        "/foo/1/bar/2/b%20r" "/foo/:foo-id/bar/:bar-id"
+        "/bar/10"       nil)))
+
   (testing "routes"
     (let [handler (context "/foo/:id" [id]
                     (GET "/" [] "root")
