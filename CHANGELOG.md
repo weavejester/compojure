@@ -1,3 +1,7 @@
+## 1.6.3 (2022-05-12)
+
+* Updated Medley dependency to 1.4.0 (see #206)
+
 ## 1.6.2 (2020-08-04)
 
 * Fixed exception when coercion in context fails (see #184)
