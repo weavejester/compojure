@@ -15,7 +15,7 @@
    :metadata {:doc/format :markdown}
    :source-uri "http://github.com/weavejester/compojure/blob/{version}/{filepath}#L{line}"}
   :aliases
-  {"test-all" ["with-profile" "default:+1.8:+1.9:+1.10" "test"]}
+  {"test-all" ["with-profile" "default:+1.8:+1.9:+1.10:+1.11" "test"]}
   :profiles
   {:dev {:jvm-opts ^:replace []
          :dependencies [[ring/ring-mock "0.4.0"]
@@ -23,4 +23,5 @@
                         [javax.servlet/servlet-api "2.5"]]}
    :1.8 {:dependencies [[org.clojure/clojure "1.8.0"]]}
    :1.9 {:dependencies [[org.clojure/clojure "1.9.0"]]}
-   :1.10 {:dependencies [[org.clojure/clojure "1.10.0"]]}})
+   :1.10 {:dependencies [[org.clojure/clojure "1.10.0"]]}
+   :1.11 {:dependencies [[org.clojure/clojure "1.11.1"]]}})
