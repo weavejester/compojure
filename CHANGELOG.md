@@ -1,3 +1,9 @@
+## 1.7.0 (2022-05-21)
+
+* Added `:compojure/route-context` key to requests (see #212)
+* Updated Ring dependency to 1.9.3
+* Updated Ring-Codec dependency to 1.2.0
+
 ## 1.6.3 (2022-05-12)
 
 * Updated Medley dependency to 1.4.0 (see #206)
