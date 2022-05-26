@@ -18,11 +18,15 @@
             :body "foo"}))
     (is (= (handler (mock/request :get "/foo/"))
            {:status 301
-            :headers {"Location" "/foo"}
+            :headers {"Location" "http://localhost/foo"}
             :body ""}))
     (is (= (handler (mock/request :get "/bar/"))
            {:status 301
-            :headers {"Location" "/bar"}
+            :headers {"Location" "http://localhost/bar"}
+            :body ""}))
+    (is (= (handler (mock/request :get "/foo/?bar=baz"))
+           {:status 301
+            :headers {"Location" "http://localhost/foo?bar=baz"}
             :body ""}))
     (is (= (handler (mock/request :get "/baz/"))
            {:status 404
@@ -48,5 +52,5 @@
         (is (not (realized? exception)))
         (is (= @response
                {:status 301
-                :headers {"Location" "/foo"}
+                :headers {"Location" "http://localhost/foo"}
                 :body ""}))))))
