@@ -1,3 +1,8 @@
+## 1.7.1 (2024-01-31)
+
+* Updated Ring dependency to 1.11.0
+* Updated minimum Clojure version to 1.9.0
+
 ## 1.7.0 (2022-05-21)
 
 * Added `:compojure/route-context` key to requests (see #212)
