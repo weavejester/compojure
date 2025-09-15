@@ -1,3 +1,10 @@
+## 1.7.2 (2025-09-15)
+
+* Updated Medley dependency to 1.9.0 (see #222)
+* Updated Ring dependency to 1.15.1
+* Updated Ring-Codec dependency to 1.3.0
+* Updated tools.macro dependency to 0.2.1
+
 ## 1.7.1 (2024-01-31)
 
 * Updated Ring dependency to 1.11.0
