@@ -5,7 +5,11 @@ applications to be composed of small, independent parts.
 
 ## Installation
 
-Add the following dependency to your `project.clj` file:
+Add the following dependency to your deps.edn file:
+
+    compojure/compojure {:mvn/version "1.7.1"}
+
+Or to your Leiningen project file:
 
     [compojure "1.7.1"]
 
