@@ -1,6 +1,4 @@
-# Compojure
-
-[![Build Status](https://travis-ci.org/weavejester/compojure.svg?branch=master)](https://travis-ci.org/weavejester/compojure)
+# Compojure [![Build Status](https://github.com/weavejester/compojure/actions/workflows/test.yml/badge.svg)](https://github.com/weavejester/compojure/actions/workflows/test.yml)
 
 Compojure is a small routing library for [Ring][1] that allows web
 applications to be composed of small, independent parts.
