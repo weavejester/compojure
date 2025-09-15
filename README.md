@@ -41,6 +41,6 @@ Also refer to the [Getting Started][2] page on the wiki.
 
 ## License
 
-Copyright © 2024 James Reeves
+Copyright © 2025 James Reeves
 
 Distributed under the Eclipse Public License, the same as Clojure.
